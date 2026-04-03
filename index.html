@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keby – Hochwertiges Olivenöl aus der Türkei</title>
+  <meta name="description" content="Keby – Natives Olivenöl Extra aus türkischen Olivenhainen. 750ml Flasche und 5 Liter Kanister. Direkt vom Erzeuger." />
+  <meta property="og:title" content="Keby – Hochwertiges Olivenöl aus der Türkei" />
+  <meta property="og:description" content="Natives Olivenöl Extra in Premium-Qualität. Direkt aus der Türkei." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f7f4ee;
+      --warm-white: #fdfcf9;
+      --olive: #5a6b3a;
+      --olive-dark: #3a4525;
+      --olive-light: #8fa068;
+      --gold: #c4a24a;
+      --gold-light: #e8d49a;
+      --text: #2a2a22;
+      --text-muted: #6b6b5a;
+      --border: rgba(90, 107, 58, 0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--warm-white);
+      color: var(--text);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      background: rgba(253,252,249,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: padding 0.3s;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 42px;
+      height: 42px;
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--olive-dark);
+      letter-spacing: 0.04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--olive); }
+
+    .nav-cart {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--olive-dark);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: 2px;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .nav-cart:hover { background: var(--olive); }
+
+    .cart-count {
+      background: var(--gold);
+      color: var(--olive-dark);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 70% 30%, rgba(196,162,74,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(90,107,58,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Olive branch decorative SVG */
+    .hero-deco {
+      position: absolute;
+      top: 120px;
+      right: -60px;
+      width: 400px;
+      opacity: 0.07;
+      pointer-events: none;
+      animation: floatDeco 8s ease-in-out infinite;
+    }
+
+    @keyframes floatDeco {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-20px) rotate(-3deg); }
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 3rem 4rem 5rem;
+      animation: fadeSlideLeft 0.9s ease both;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-tag::before {
+      content: '';
+      display: block;
+      width: 30px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--olive-dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--olive);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--olive-dark);
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2.5rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      transition: background 0.2s, gap 0.2s;
+      align-self: flex-start;
+    }
+
+    .hero-cta:hover { background: var(--olive); gap: 1rem; }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat-item { text-align: left; }
+
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--olive-dark);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .hero-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 3rem;
+      background: var(--cream);
+      position: relative;
+      animation: fadeSlideRight 0.9s ease both;
+      animation-delay: 0.15s;
+    }
+
+    .hero-image-wrap {
+      position: relative;
+      width: 320px;
+    }
+
+    .hero-image-wrap img {
+      width: 100%;
+      border-radius: 4px;
+      box-shadow: 0 40px 80px rgba(58,69,37,0.2);
+    }
+
+    .hero-badge {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 90px;
+      height: 90px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--olive-dark);
+      line-height: 1.2;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(196,162,74,0.4);
+      animation: rotateBadge 20s linear infinite;
+    }
+
+    @keyframes rotateBadge {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .hero-badge-inner { animation: rotateBadgeInner 20s linear infinite; }
+
+    @keyframes rotateBadgeInner {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+
+    /* ── SECTION COMMON ── */
+    section {
+      padding: 6rem 5rem;
+    }
+
+    .section-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-tag::after {
+      content: '';
+      display: block;
+      flex: 1;
+      max-width: 40px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      color: var(--olive-dark);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    /* ── PRODUCTS ── */
+    #produkte {
+      background: var(--cream);
+    }
+
+    .products-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .products-header .section-tag {
+      justify-content: center;
+    }
+
+    .products-header .section-tag::after { display: none; }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background: var(--warm-white);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(58,69,37,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .product-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(58,69,37,0.15);
+    }
+
+    .product-img-wrap {
+      position: relative;
+      height: 320px;
+      background: var(--cream);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-img-wrap img {
+      transform: scale(1.04);
+    }
+
+    .product-top-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: var(--olive-dark);
+      color: white;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      border-radius: 2px;
+    }
+
+    .product-body {
+      padding: 1.75rem 2rem 2rem;
+    }
+
+    .product-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--olive-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .product-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .product-attrs {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .attr-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--olive);
+      background: rgba(90,107,58,0.08);
+      padding: 0.3rem 0.75rem;
+      border-radius: 2px;
+      border: 1px solid rgba(90,107,58,0.15);
+    }
+
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .product-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--olive-dark);
+      line-height: 1;
+    }
+
+    .product-price span {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      font-family: 'Jost', sans-serif;
+    }
+
+    .btn-add {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--olive-dark);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2px;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-add:hover { background: var(--olive); transform: scale(1.02); }
+    .btn-add:active { transform: scale(0.98); }
+
+    /* ── FEATURES ── */
+    #vorteile {
+      background: var(--olive-dark);
+      color: white;
+    }
+
+    #vorteile .section-title { color: var(--gold-light); }
+    #vorteile .section-tag { color: var(--gold); }
+    #vorteile .section-tag::after { background: var(--gold); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .feature-item {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .feature-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      color: white;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature-text {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* ── ORIGIN ── */
+    #herkunft {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      padding: 6rem 5rem;
+    }
+
+    .origin-image {
+      border-radius: 4px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background: var(--cream);
+      position: relative;
+    }
+
+    .origin-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .origin-image-frame {
+      position: absolute;
+      inset: -12px;
+      border: 1px solid var(--gold);
+      border-radius: 4px;
+      z-index: -1;
+    }
+
+    .origin-content .section-tag { margin-bottom: 0.75rem; }
+
+    .origin-text {
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--text-muted);
+      margin-top: 1.25rem;
+    }
+
+    .origin-list {
+      list-style: none;
+      margin-top: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .origin-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .origin-list li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── CART OVERLAY ── */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(42,42,34,0.5);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .cart-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .cart-panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 420px;
+      background: var(--warm-white);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cart-panel.open {
+      transform: translateX(0);
+    }
+
+    .cart-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.75rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--olive-dark);
+    }
+
+    .cart-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      padding: 0.25rem;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+    }
+
+    .cart-empty {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-item-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+
+    .cart-item-name {
+      font-size: 0.88rem;
+      color: var(--olive-dark);
+      font-weight: 400;
+      margin-bottom: 0.3rem;
+    }
+
+    .cart-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .qty-btn {
+      width: 24px; height: 24px;
+      border: 1px solid var(--border);
+      background: none;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: background 0.15s;
+    }
+
+    .qty-btn:hover { background: var(--cream); }
+
+    .qty-num {
+      font-size: 0.88rem;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .cart-item-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--olive-dark);
+      font-weight: 600;
+    }
+
+    .cart-footer {
+      padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .cart-total-label {
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .cart-total-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--olive-dark);
+    }
+
+    .btn-checkout {
+      width: 100%;
+      background: var(--olive-dark);
+      color: white;
+      border: none;
+      padding: 1.1rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s;
+      margin-bottom: 0.75rem;
+    }
+
+    .btn-checkout:hover { background: var(--olive); }
+
+    .checkout-note {
+      font-size: 0.75rem;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--olive-dark);
+      color: white;
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      z-index: 300;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--olive-dark);
+      color: rgba(255,255,255,0.5);
+      padding: 3rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--gold-light);
+    }
+
+    .footer-center {
+      text-align: center;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: flex-end;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--gold-light); }
+
+    /* Demo badge */
+    .demo-badge {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(42,42,34,0.85);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.65rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 2px;
+      z-index: 500;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeSlideLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeSlideRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-left { padding: 3rem 1.5rem; }
+      .hero-right { padding: 2rem 1.5rem; }
+      section { padding: 4rem 1.5rem; }
+      .products-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; gap: 2rem; }
+      #herkunft { grid-template-columns: 1fr; padding: 4rem 1.5rem; }
+      footer { grid-template-columns: 1fr; text-align: center; }
+      .footer-links { justify-content: center; }
+      .cart-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg class="nav-logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="20" stroke="#3a4525" stroke-width="1.5"/>
+      <ellipse cx="21" cy="22" rx="7" ry="11" fill="#5a6b3a" opacity="0.9"/>
+      <path d="M21 11 C16 16 14 20 15 25 C17 22 20 20 21 11Z" fill="#8fa068"/>
+      <path d="M21 11 C26 16 28 20 27 25 C25 22 22 20 21 11Z" fill="#3a4525" opacity="0.7"/>
+    </svg>
+    <span class="nav-brand">Keby</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#produkte">Produkte</a></li>
+    <li><a href="#vorteile">Qualität</a></li>
+    <li><a href="#herkunft">Herkunft</a></li>
+  </ul>
+  <button class="nav-cart" onclick="toggleCart()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    Warenkorb
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+
+  <!-- decorative olive branch -->
+  <svg class="hero-deco" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M150 380 C150 380 80 300 90 200 C100 100 150 20 150 20" stroke="#3a4525" stroke-width="4" fill="none"/>
+    <ellipse cx="110" cy="160" rx="35" ry="18" fill="#5a6b3a" transform="rotate(-40 110 160)"/>
+    <ellipse cx="130" cy="220" rx="35" ry="18" fill="#3a4525" transform="rotate(30 130 220)"/>
+    <ellipse cx="105" cy="280" rx="35" ry="18" fill="#5a6b3a" transform="rotate(-20 105 280)"/>
+    <ellipse cx="170" cy="130" rx="30" ry="16" fill="#3a4525" transform="rotate(50 170 130)"/>
+    <ellipse cx="165" cy="190" rx="28" ry="15" fill="#5a6b3a" transform="rotate(-35 165 190)"/>
+    <circle cx="98" cy="148" r="5" fill="#c4a24a"/>
+    <circle cx="120" cy="208" r="5" fill="#c4a24a"/>
+    <circle cx="162" cy="118" r="4" fill="#c4a24a"/>
+  </svg>
+
+  <div class="hero-left">
+    <div class="hero-tag">Natives Olivenöl Extra</div>
+    <h1 class="hero-title">
+      Türkisches Gold<br/>
+      <em>direkt aus der</em><br/>
+      Natur
+    </h1>
+    <p class="hero-desc">
+      Handverlesene Oliven aus sonnenverwöhnten Hainen der Türkei.
+      Kalt gepresst, ungefiltert, kompromisslos rein — für Genießer
+      die den Unterschied schmecken.
+    </p>
+    <a href="#produkte" class="hero-cta">
+      Jetzt entdecken
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Natürlich</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">Kalt</div>
+        <div class="stat-label">Gepresst</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2x</div>
+        <div class="stat-label">Größen</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-image-wrap">
+      <img src="https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80" alt="Keby Olivenöl" />
+      <div class="hero-badge">
+        <div class="hero-badge-inner">
+          <div>Premium</div>
+          <div>Qualität</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUKTE -->
+<section id="produkte">
+  <div class="products-header">
+    <div class="section-tag">Unsere Produkte</div>
+    <h2 class="section-title">Ausgewählte Olivenöle</h2>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:0.5rem;">Zwei Größen — ein Geschmack</p>
+  </div>
+
+  <div class="products-grid">
+
+    <!-- Produkt 1 -->
+    <div class="product-card" id="card-750">
+      <div class="product-img-wrap">
+        <span class="product-top-badge">Bestseller</span>
+        <img src="https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80" alt="Natives Olivenöl Extra 750ml" />
+      </div>
+      <div class="product-body">
+        <div class="product-name">Natives Olivenöl Extra<br/>750 ml</div>
+        <p class="product-desc">
+          Ideal für den täglichen Genuss. Fruchtig-mildes Aroma mit einem Hauch
+          von Mandel und frisch gemähtem Gras. Perfekt zum Verfeinern und Dippen.
+        </p>
+        <div class="product-attrs">
+          <span class="attr-tag">Kalt gepresst</span>
+          <span class="attr-tag">Extra vergine</span>
+          <span class="attr-tag">Glasflasche</span>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">
+            12,90 <span>€</span>
+            <div style="font-size:0.72rem; font-family:'Jost', sans-serif; color:var(--text-muted); font-weight:300; margin-top:2px">inkl. MwSt.</div>
+          </div>
+          <button class="btn-add" onclick="addToCart('Natives Olivenöl Extra 750ml', 12.90, 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=100&q=80')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            In den Warenkorb
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Produkt 2 -->
+    <div class="product-card" id="card-5l">
+      <div class="product-img-wrap">
+        <span class="product-top-badge">Vorteilsgröße</span>
+        <img src="https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=600&q=80" alt="Natives Olivenöl Extra 5 Liter Kanister" />
+      </div>
+      <div class="product-body">
+        <div class="product-name">Natives Olivenöl Extra<br/>5 Liter Kanister</div>
+        <p class="product-desc">
+          Für Familien und Gastronomen. Dasselbe Premium-Olivenöl in der
+          wirtschaftlichen Großpackung. Günstiger pro Liter — gleiche
+          kompromisslose Qualität aus türkischen Hainen.
+        </p>
+        <div class="product-attrs">
+          <span class="attr-tag">Kalt gepresst</span>
+          <span class="attr-tag">Extra vergine</span>
+          <span class="attr-tag">5 Liter</span>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">
+            49,90 <span>€</span>
+            <div style="font-size:0.72rem; font-family:'Jost', sans-serif; color:var(--text-muted); font-weight:300; margin-top:2px">inkl. MwSt.</div>
+          </div>
+          <button class="btn-add" onclick="addToCart('Natives Olivenöl Extra 5L Kanister', 49.90, 'https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=100&q=80')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            In den Warenkorb
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- VORTEILE -->
+<section id="vorteile">
+  <div class="section-tag">Warum Keby</div>
+  <h2 class="section-title">Qualität ohne Kompromisse</h2>
+
+  <div class="features-grid">
+    <div class="feature-item">
+      <svg class="feature-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/>
+        <path d="M24 8 C18 16 16 20 18 28 C20 24 23 22 24 8Z" fill="#8fa068"/>
+        <path d="M24 8 C30 16 32 20 30 28 C28 24 25 22 24 8Z" fill="#5a6b3a"/>
+        <circle cx="24" cy="32" r="4" fill="#c4a24a"/>
+      </svg>
+      <div class="feature-title">Direktimport</div>
+      <p class="feature-text">Frisch von türkischen Olivenhainen direkt zu Ihnen. Kein Zwischenhändler, keine langen Lagerzeiten.</p>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/>
+        <path d="M14 24 L20 30 L34 18" stroke="#c4a24a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="feature-title">Zertifizierte Qualität</div>
+      <p class="feature-text">Extra vergine — die höchste Güteklasse. Geringer Säuregehalt, reicher Geschmack, natürliche Antioxidantien.</p>
+    </div>
+    <div class="feature-item">
+      <svg class="feature-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/>
+        <rect x="16" y="16" width="16" height="20" rx="2" stroke="#c4a24a" stroke-width="1.5"/>
+        <path d="M19 22h10M19 27h7" stroke="#c4a24a" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="feature-title">Schneller Versand</div>
+      <p class="feature-text">Lieferung innerhalb von 2–4 Werktagen nach ganz Deutschland. Sicher verpackt, pünktlich angekommen.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HERKUNFT -->
+<section id="herkunft">
+  <div class="origin-image">
+    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80" alt="Türkische Olivenhaine" />
+    <div class="origin-image-frame"></div>
+  </div>
+  <div class="origin-content">
+    <div class="section-tag">Unsere Herkunft</div>
+    <h2 class="section-title">Aus dem Herzen<br/>der Türkei</h2>
+    <p class="origin-text">
+      Die Olivenhaine, aus denen unser Öl stammt, werden seit Generationen
+      gepflegt. Die besondere Kombination aus mediterranem Klima, mineralreichem
+      Boden und traditionellem Handwerk macht den einzigartigen Charakter
+      des Keby-Olivenöls aus.
+    </p>
+    <ul class="origin-list">
+      <li>Manuelle Ernte für schonende Verarbeitung</li>
+      <li>Kaltpressung innerhalb von 24 Stunden nach der Ernte</li>
+      <li>Keine Zusätze, keine Konservierungsstoffe</li>
+      <li>Regelmäßige Qualitätskontrollen durch unabhängige Labore</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Keby</div>
+  <div class="footer-center">
+    © 2025 Keby – Hochwertiges Olivenöl aus der Türkei
+  </div>
+  <div class="footer-links">
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="#">Kontakt</a>
+  </div>
+</footer>
+
+<!-- WARENKORB -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-panel-header">
+    <div class="cart-panel-title">Warenkorb</div>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">Ihr Warenkorb ist leer.</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Gesamtsumme</span>
+      <span class="cart-total-price" id="cartTotal">0,00 €</span>
+    </div>
+    <button class="btn-checkout" onclick="checkout()">Zur Kasse gehen →</button>
+    <p class="checkout-note">Versandkostenfrei ab 30 € · Zahlung via PayPal / Überweisung</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- DEMO BADGE -->
+<div class="demo-badge">Demo · Erstellt von Hasi Elektronic | ab 490 €</div>
+
+<script>
+  // ── Cart State ──
+  let cart = [];
+
+  function addToCart(name, price, img) {
+    const existing = cart.find(i => i.name === name);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({ name, price, img, qty: 1 });
+    }
+    updateCartUI();
+    showToast('✓ ' + name.split(' ').slice(0,3).join(' ') + ' hinzugefügt');
+    openCart();
+  }
+
+  function updateQty(name, delta) {
+    const item = cart.find(i => i.name === name);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    const total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+    document.getElementById('cartCount').textContent = count;
+    document.getElementById('cartTotal').textContent = total.toFixed(2).replace('.', ',') + ' €';
+
+    const container = document.getElementById('cartItems');
+    if (cart.length === 0) {
+      container.innerHTML = '<div class="cart-empty">Ihr Warenkorb ist leer.</div>';
+      return;
+    }
+    container.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <img class="cart-item-img" src="${item.img}" alt="${item.name}" />
+        <div>
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-qty">
+            <button class="qty-btn" onclick="updateQty('${item.name}', -1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="updateQty('${item.name}', 1)">+</button>
+          </div>
+        </div>
+        <div class="cart-item-price">${(item.qty * item.price).toFixed(2).replace('.', ',')} €</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleCart() {
+    const panel = document.getElementById('cartPanel');
+    const overlay = document.getElementById('cartOverlay');
+    panel.classList.toggle('open');
+    overlay.classList.toggle('open');
+  }
+
+  function openCart() {
+    document.getElementById('cartPanel').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('open');
+  }
+
+  function checkout() {
+    if (cart.length === 0) return;
+    showToast('Weiterleitung zur Zahlung ...');
+    setTimeout(() => {
+      alert('Checkout-Integration folgt (PayPal / Stripe).\n\nBestellsumme: ' + document.getElementById('cartTotal').textContent);
+    }, 800);
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── Scroll Animations ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 120);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.product-card, .feature-item').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
