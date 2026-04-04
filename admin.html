@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Keby Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --olive:#3d6b2a;--olive-dark:#2a4a1a;--olive-light:#eef4ea;
+  --gold:#c4a24a;--cream:#f7f4ee;--white:#fff;
+  --text:#2a2a22;--muted:#6b6b5a;--border:#e0ddd5;
+  --red:#c0392b;--green:#27ae60;--sidebar:240px;
+}
+body{font-family:"Jost",sans-serif;background:#f4f2ed;color:var(--text);font-weight:300;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--olive-dark),var(--olive))}
+.login-box{background:white;border-radius:8px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-logo img{width:68px;height:68px;object-fit:contain}
+.login-title{font-size:1.1rem;font-weight:500;color:var(--olive-dark);text-align:center;margin-bottom:0.2rem}
+.login-sub{font-size:0.78rem;color:var(--muted);text-align:center;margin-bottom:1.75rem}
+.login-lang{display:flex;justify-content:center;gap:0.5rem;margin-bottom:1.5rem}
+.lang-btn{padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;font-size:0.75rem;font-family:"Jost",sans-serif;color:var(--muted);transition:all 0.2s}
+.lang-btn.active{background:var(--olive-dark);color:white;border-color:var(--olive-dark)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem}
+.form-input,.form-select,.form-textarea{width:100%;border:1px solid var(--border);border-radius:4px;padding:0.65rem 0.9rem;font-family:"Jost",sans-serif;font-size:0.88rem;transition:border-color 0.2s;outline:none;background:white}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--olive)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.btn-login{width:100%;background:var(--olive-dark);color:white;border:none;padding:0.9rem;border-radius:4px;font-family:"Jost",sans-serif;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.btn-login:hover{background:var(--olive)}
+.login-error{background:#fdf2f2;border:1px solid #f5c6cb;color:var(--red);font-size:0.8rem;padding:0.6rem 0.85rem;border-radius:4px;margin-bottom:1rem;display:none}
+
+/* LAYOUT */
+.admin-layout{display:none;min-height:100vh}
+.sidebar{width:var(--sidebar);background:var(--olive-dark);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:10}
+.sidebar-logo{padding:1.25rem;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:0.75rem}
+.sidebar-logo img{width:38px;height:38px;object-fit:contain}
+.sidebar-brand{font-size:1rem;color:white;font-weight:500;line-height:1.2}
+.sidebar-brand span{font-size:0.68rem;display:block;color:rgba(255,255,255,0.45);font-weight:300;letter-spacing:0.06em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:0.75rem 0}
+.nav-item{display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1.25rem;color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.2s;font-size:0.83rem;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:white}
+.nav-item.active{background:rgba(255,255,255,0.1);color:white;border-left-color:var(--gold)}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.1)}
+.lang-switch{display:flex;gap:0.4rem;margin-bottom:0.75rem}
+.lang-sw-btn{flex:1;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);border:none;padding:0.4rem;border-radius:3px;font-family:"Jost",sans-serif;font-size:0.72rem;cursor:pointer;transition:all 0.2s}
+.lang-sw-btn.active{background:var(--gold);color:var(--olive-dark);font-weight:500}
+.btn-logout{width:100%;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55);border:none;padding:0.6rem;border-radius:4px;font-family:"Jost",sans-serif;font-size:0.76rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.btn-logout:hover{background:rgba(255,255,255,0.15);color:white}
+
+.main-content{margin-left:var(--sidebar);padding:2rem;min-height:100vh}
+.page-header{margin-bottom:1.75rem}
+.page-title{font-size:1.35rem;font-weight:500;color:var(--olive-dark)}
+.page-sub{font-size:0.8rem;color:var(--muted);margin-top:0.2rem}
+
+/* CARDS */
+.card{background:white;border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;margin-bottom:1.5rem}
+.card-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:0.88rem;font-weight:500;color:var(--olive-dark)}
+.card-body{padding:1.5rem}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.5rem}
+.stat-card{background:white;border-radius:6px;padding:1.25rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:center;gap:1rem}
+.stat-icon{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon.green{background:rgba(39,174,96,0.12)}
+.stat-icon.gold{background:rgba(196,162,74,0.12)}
+.stat-icon.blue{background:rgba(41,128,185,0.12)}
+.stat-num{font-size:1.5rem;font-weight:600;color:var(--olive-dark);line-height:1}
+.stat-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.2rem}
+
+/* PRODUCT GRID */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem}
+.prod-card{background:white;border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;transition:box-shadow 0.2s}
+.prod-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.prod-card-img{height:180px;background:var(--cream);position:relative;overflow:hidden}
+.prod-card-img img{width:100%;height:100%;object-fit:cover}
+.prod-card-badge{position:absolute;top:10px;left:10px;background:var(--olive-dark);color:white;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.55rem;border-radius:2px}
+.prod-card-body{padding:1.1rem 1.25rem}
+.prod-card-name{font-weight:500;color:var(--olive-dark);font-size:0.9rem;margin-bottom:0.4rem;line-height:1.3}
+.prod-card-desc{font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:0.75rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prod-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:0.75rem;border-top:1px solid var(--border)}
+.prod-card-price{font-size:1.2rem;font-weight:600;color:var(--olive-dark)}
+.prod-card-price span{font-size:0.75rem;font-weight:300;color:var(--muted)}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:6px;padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--cream)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--olive);background:var(--olive-light)}
+.upload-zone p{font-size:0.83rem;color:var(--muted);margin-top:0.5rem}
+.upload-zone strong{color:var(--olive)}
+#fileInput{display:none}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.85rem}
+.img-item{position:relative;border-radius:4px;overflow:hidden;background:var(--cream);aspect-ratio:1}
+.img-item img{width:100%;height:100%;object-fit:cover}
+.img-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);opacity:0;transition:opacity 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.4rem}
+.img-item:hover .img-overlay{opacity:1}
+.img-act{background:white;border:none;border-radius:3px;padding:0.3rem 0.65rem;font-size:0.7rem;cursor:pointer;font-family:"Jost",sans-serif;font-weight:500;transition:background 0.15s}
+.img-act.copy{color:var(--olive-dark)}
+.img-act.del{color:var(--red)}
+.img-name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:0.62rem;padding:0.25rem 0.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:0.75rem;display:none}
+.progress-fill{height:100%;background:var(--olive);width:0%;transition:width 0.3s}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;border-radius:4px;font-family:"Jost",sans-serif;font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.2s}
+.btn-primary{background:var(--olive-dark);color:white}
+.btn-primary:hover{background:var(--olive)}
+.btn-secondary{background:var(--cream);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:rgba(192,57,43,0.1);color:var(--red);border:1px solid rgba(192,57,43,0.2)}
+.btn-danger:hover{background:var(--red);color:white}
+.btn-sm{padding:0.35rem 0.75rem;font-size:0.7rem}
+.btn-edit{background:var(--olive-dark);color:white;border:none;padding:0.5rem 1rem;border-radius:4px;font-family:"Jost",sans-serif;font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:0.4rem}
+.btn-edit:hover{background:var(--olive)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:8px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto}
+.modal-header{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1}
+.modal-title{font-size:0.95rem;font-weight:500;color:var(--olive-dark)}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);padding:0.2rem}
+.modal-body{padding:1.25rem 1.5rem}
+.modal-footer{padding:0.9rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:0.75rem;position:sticky;bottom:0;background:white}
+
+/* BADGE */
+.badge{display:inline-block;font-size:0.63rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.18rem 0.5rem;border-radius:3px;font-weight:500}
+.badge-green{background:rgba(39,174,96,0.12);color:#1a7a40}
+.badge-gold{background:rgba(196,162,74,0.12);color:#7a6020}
+
+/* IMG PREVIEW IN MODAL */
+.img-preview{width:100%;height:160px;object-fit:cover;border-radius:4px;margin-top:0.5rem;display:none;border:1px solid var(--border)}
+.img-preview.show{display:block}
+
+/* SECTION */
+.section{display:none}
+.section.active{display:block}
+
+/* INFO BOX */
+.info-box{background:var(--olive-light);border:1px solid rgba(61,107,42,0.2);border-radius:4px;padding:0.85rem 1.1rem;font-size:0.8rem;color:var(--olive-dark);display:flex;align-items:flex-start;gap:0.6rem}
+.info-box code{background:rgba(61,107,42,0.12);padding:0.1rem 0.35rem;border-radius:3px;font-size:0.76rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--olive-dark);color:white;padding:0.75rem 1.1rem;border-radius:4px;font-size:0.8rem;z-index:999;transform:translateY(60px);opacity:0;transition:all 0.3s;display:flex;align-items:center;gap:0.5rem;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--red)}
+.toast.success{background:var(--green)}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);position:fixed}
+  .sidebar.open{transform:translateX(0)}
+  .main-content{margin-left:0 !important;padding:1rem}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .prod-grid{grid-template-columns:1fr}
+  .mobile-header{display:flex !important}
+  .admin-layout{display:block !important}
+}
+.mobile-header{
+  display:none;
+  position:fixed;top:0;left:0;right:0;
+  background:var(--olive-dark);
+  padding:0.85rem 1.25rem;
+  align-items:center;
+  justify-content:space-between;
+  z-index:20;
+}
+.mobile-header-logo{display:flex;align-items:center;gap:0.5rem}
+.mobile-header-logo img{width:32px;height:32px;object-fit:contain}
+.mobile-header-brand{color:white;font-size:0.95rem;font-weight:500}
+.hamburger{background:none;border:none;cursor:pointer;padding:0.3rem;display:flex;flex-direction:column;gap:4px}
+.hamburger span{display:block;width:22px;height:2px;background:white;border-radius:2px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9}
+.sidebar-overlay.show{display:block}
+@media(min-width:769px){
+  .mobile-header{display:none !important}
+  .admin-layout{display:flex}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo.jpg" alt="Keby"></div>
+    <div class="login-title" data-tr="Keby Yönetim Paneli" data-de="Keby Admin">Keby Yönetim Paneli</div>
+    <div class="login-sub" data-tr="Lütfen giriş yapın" data-de="Bitte melden Sie sich an">Lütfen giriş yapın</div>
+    <div class="login-lang">
+      <button class="lang-btn active" onclick="setLang('tr',this)">🇹🇷 Türkçe</button>
+      <button class="lang-btn" onclick="setLang('de',this)">🇩🇪 Deutsch</button>
+    </div>
+    <div class="login-error" id="loginError" data-tr="Hatalı şifre. Tekrar deneyin." data-de="Falsches Passwort.">Hatalı şifre. Tekrar deneyin.</div>
+    <div class="form-group">
+      <label class="form-label" data-tr="Şifre" data-de="Passwort">Şifre</label>
+      <input type="password" class="form-input" id="passwordInput" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()" data-tr="Giriş Yap" data-de="Anmelden">Giriş Yap</button>
+  </div>
+</div>
+
+<!-- ADMIN LAYOUT -->
+<!-- MOBILE HEADER -->
+<div class="mobile-header" id="mobileHeader">
+  <div class="mobile-header-logo">
+    <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo.jpg" alt="Keby">
+    <span class="mobile-header-brand">Keby Admin</span>
+  </div>
+  <button class="hamburger" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="admin-layout" id="adminLayout" style="padding-top:0">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo.jpg" alt="Keby">
+      <div class="sidebar-brand">Keby<span data-tr="Yönetim Paneli" data-de="Admin Panel">Yönetim Paneli</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showSection('dashboard',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span data-tr="Gösterge Paneli" data-de="Dashboard">Gösterge Paneli</span>
+      </div>
+      <div class="nav-item" onclick="showSection('products',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span data-tr="Ürünler" data-de="Produkte">Ürünler</span>
+      </div>
+      <div class="nav-item" onclick="showSection('images',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span data-tr="Görseller" data-de="Bilder">Görseller</span>
+      </div>
+      <div class="nav-item" onclick="showSection('settings',this)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span data-tr="Ayarlar" data-de="Einstellungen">Ayarlar</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="lang-switch">
+        <button class="lang-sw-btn active" id="sw-tr" onclick="setLang('tr',null)">🇹🇷 TR</button>
+        <button class="lang-sw-btn" id="sw-de" onclick="setLang('de',null)">🇩🇪 DE</button>
+      </div>
+      <a href="index.html" target="_blank" style="display:flex;align-items:center;gap:0.5rem;color:rgba(255,255,255,0.45);text-decoration:none;font-size:0.76rem;margin-bottom:0.65rem;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span data-tr="Mağazayı Görüntüle" data-de="Shop ansehen">Mağazayı Görüntüle</span>
+      </a>
+      <button class="btn-logout" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span data-tr="Çıkış Yap" data-de="Abmelden">Çıkış Yap</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-content" id="mainContent" style="padding-top:1rem">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="page-header">
+        <div class="page-title" data-tr="Gösterge Paneli" data-de="Dashboard">Gösterge Paneli</div>
+        <div class="page-sub" data-tr="Keby yönetim paneline hoş geldiniz" data-de="Willkommen im Keby Admin-Bereich">Keby yönetim paneline hoş geldiniz</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg></div>
+          <div><div class="stat-num" id="stat-products">3</div><div class="stat-label" data-tr="Ürün" data-de="Produkte">Ürün</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4a24a" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+          <div><div class="stat-num" id="stat-images">0</div><div class="stat-label" data-tr="Görsel (R2)" data-de="Bilder (R2)">Görsel (R2)</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2980b9" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+          <div><div class="stat-num">Live</div><div class="stat-label">keby-shop.pages.dev</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title" data-tr="Hızlı Erişim" data-de="Schnellzugriff">Hızlı Erişim</div></div>
+        <div class="card-body" style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="showSection('products',document.querySelector('[onclick*=products]'))">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span data-tr="Ürünleri Düzenle" data-de="Produkte bearbeiten">Ürünleri Düzenle</span>
+          </button>
+          <button class="btn btn-secondary" onclick="showSection('images',document.querySelector('[onclick*=images]'))">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span data-tr="Görsel Yükle" data-de="Bild hochladen">Görsel Yükle</span>
+          </button>
+          <a href="index.html" target="_blank" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span data-tr="Mağazayı Aç" data-de="Shop öffnen">Mağazayı Aç</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="section" id="sec-products">
+      <div class="page-header">
+        <div class="page-title" data-tr="Ürünler" data-de="Produkte">Ürünler</div>
+        <div class="page-sub" data-tr="Fiyat, açıklama ve görselleri düzenleyin" data-de="Preise, Beschreibungen und Bilder bearbeiten">Fiyat, açıklama ve görselleri düzenleyin</div>
+      </div>
+      <div class="prod-grid" id="prodGrid">
+        <div style="color:var(--muted);font-size:0.85rem;padding:2rem;text-align:center" data-tr="Yükleniyor..." data-de="Lädt...">Yükleniyor...</div>
+      </div>
+    </div>
+
+    <!-- IMAGES -->
+    <div class="section" id="sec-images">
+      <div class="page-header">
+        <div class="page-title" data-tr="Görseller" data-de="Bilder verwalten">Görseller</div>
+        <div class="page-sub" data-tr="Cloudflare R2'ye görsel yükleyin" data-de="Bilder in Cloudflare R2 hochladen">Cloudflare R2'ye görsel yükleyin</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title" data-tr="Görsel Yükle" data-de="Bild hochladen">Görsel Yükle</div></div>
+        <div class="card-body">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto;display:block;opacity:0.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p><strong data-tr="Tıkla" data-de="Klicken">Tıkla</strong> <span data-tr="veya görseli sürükle bırak" data-de="oder Bild hierher ziehen">veya görseli sürükle bırak</span></p>
+            <p style="font-size:0.72rem;margin-top:0.2rem">JPG, PNG, WEBP – max. 10MB</p>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" multiple onchange="uploadFiles(this.files)">
+          <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span data-tr="Yüklü Görseller" data-de="Gespeicherte Bilder">Yüklü Görseller</span> (<span id="imgCount">0</span>)</div>
+          <button class="btn btn-secondary btn-sm" onclick="loadImages()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            <span data-tr="Yenile" data-de="Aktualisieren">Yenile</span>
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="img-grid" id="imgGrid">
+            <div style="color:var(--muted);font-size:0.83rem;grid-column:1/-1;text-align:center;padding:2rem" data-tr="Görseller yükleniyor..." data-de="Bilder werden geladen...">Görseller yükleniyor...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="sec-settings">
+      <div class="page-header">
+        <div class="page-title" data-tr="Ayarlar" data-de="Einstellungen">Ayarlar</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title" data-tr="Mağaza Bilgileri" data-de="Shop-Informationen">Mağaza Bilgileri</div></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" data-tr="Mağaza Adı" data-de="Shop Name">Mağaza Adı</label>
+              <input type="text" class="form-input" value="Keby Shop">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-Mail</label>
+              <input type="email" class="form-input" value="info@keby.shop">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">PayPal.me</label>
+              <input type="text" class="form-input" value="HasiElektronic">
+            </div>
+            <div class="form-group">
+              <label class="form-label">IBAN</label>
+              <input type="text" class="form-input" value="DE10 6045 0050 0008 6120 12">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="showToastMsg(lang==='tr'?'Ayarlar kaydedildi ✓':'Einstellungen gespeichert ✓','success')">
+            <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">API & Worker</div></div>
+        <div class="card-body">
+          <div class="info-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="font-size:0.8rem">
+              <strong>Worker:</strong> <code>https://keby-api.hguencavdi.workers.dev</code><br>
+              <strong>R2 Bucket:</strong> <code>hasi-elektronic → keby/</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRODUCT EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" data-tr="Ürün Düzenle" data-de="Produkt bearbeiten">Ürün Düzenle</div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label class="form-label" data-tr="Ürün Adı" data-de="Produktname">Ürün Adı</label>
+        <input type="text" class="form-input" id="editName">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-tr="Fiyat (€)" data-de="Preis (€)">Fiyat (€)</label>
+          <input type="number" class="form-input" id="editPrice" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-tr="KDV Oranı" data-de="MwSt.">KDV Oranı</label>
+          <select class="form-select" id="editMwst">
+            <option value="7%">7%</option>
+            <option value="19%">19%</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-tr="Kısa Açıklama" data-de="Kurzbeschreibung">Kısa Açıklama</label>
+        <textarea class="form-textarea" id="editDesc"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-tr="Rozet" data-de="Badge">Rozet</label>
+        <input type="text" class="form-input" id="editBadge">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-tr="Ürün Görseli URL (R2)" data-de="Bild URL aus R2">Ürün Görseli URL (R2)</label>
+        <input type="text" class="form-input" id="editImg" placeholder="https://keby-api.hguencavdi.workers.dev/img/..." oninput="previewImg(this.value)">
+        <img class="img-preview" id="imgPreview" src="" alt="Önizleme">
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem" data-tr="Görseli önce R2'ye yükleyin, ardından URL'yi buraya yapıştırın" data-de="Bild zuerst hochladen, dann URL hier einfügen">Görseli önce R2'ye yükleyin, ardından URL'yi buraya yapıştırın</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeEditModal()">
+        <span data-tr="İptal" data-de="Abbrechen">İptal</span>
+      </button>
+      <button class="btn btn-primary" onclick="saveProduct()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span data-tr="Kaydet" data-de="Speichern">Kaydet</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://keby-api.hguencavdi.workers.dev';
+const PASS = 'Keby2025!';
+const authToken = btoa(PASS);
+let products = [];
+let images = [];
+let lang = localStorage.getItem('keby_lang') || 'tr';
+
+// ── LANGUAGE ──
+const T = {
+  tr: {
+    copied: 'URL kopyalandı ✓',
+    deleted: 'Görsel silindi',
+    saved: 'Ürün kaydedildi ✓',
+    uploaded: 'yüklendi',
+    delConfirm: 'Bu görseli silmek istediğinizden emin misiniz?',
+    loadErr: 'Yüklenirken hata oluştu',
+    saveErr: 'Kaydedilemedi',
+    connErr: 'Bağlantı hatası',
+    paypal: 'PayPal'a yönlendiriliyor...',
+    noImages: 'Henüz görsel yüklenmedi.',
+    loading: 'Yükleniyor...',
+  },
+  de: {
+    copied: 'URL kopiert ✓',
+    deleted: 'Bild gelöscht',
+    saved: 'Produkt gespeichert ✓',
+    uploaded: 'hochgeladen',
+    delConfirm: 'Bild wirklich löschen?',
+    loadErr: 'Fehler beim Laden',
+    saveErr: 'Fehler beim Speichern',
+    connErr: 'Verbindungsfehler',
+    paypal: 'Weiterleitung zu PayPal...',
+    noImages: 'Noch keine Bilder hochgeladen.',
+    loading: 'Lädt...',
+  }
+};
+function t(key){ return T[lang][key] || key; }
+
+function setLang(l, btn) {
+  lang = l;
+  localStorage.setItem('keby_lang', l);
+  // Update all data-tr / data-de elements
+  document.querySelectorAll('[data-tr]').forEach(el => {
+    el.textContent = l === 'tr' ? el.dataset.tr : el.dataset.de;
+  });
+  // Login lang buttons
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Sidebar lang buttons
+  document.getElementById('sw-tr').classList.toggle('active', l === 'tr');
+  document.getElementById('sw-de').classList.toggle('active', l === 'de');
+}
+
+// ── LOGIN ──
+function doLogin(){
+  const pw = document.getElementById('passwordInput').value;
+  if(pw === PASS){
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('adminLayout').style.display = 'flex';
+    setLang(lang, null);
+    init();
+  } else {
+    const err = document.getElementById('loginError');
+    err.style.display = 'block';
+    err.textContent = lang === 'tr' ? 'Hatalı şifre. Tekrar deneyin.' : 'Falsches Passwort.';
+    document.getElementById('passwordInput').value = '';
+  }
+}
+function doLogout(){
+  document.getElementById('adminLayout').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('passwordInput').value = '';
+}
+
+// ── INIT ──
+async function init(){ await Promise.all([loadProducts(), loadImages()]); }
+
+// ── NAVIGATION ──
+function showSection(id, el){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id === 'images') loadImages();
+  if(id === 'products') renderProducts();
+}
+
+// ── PRODUCTS ──
+async function loadProducts(){
+  try {
+    const r = await fetch(`${API}/api/products`);
+    const data = await r.json();
+    products = data.products || [];
+    document.getElementById('stat-products').textContent = products.length;
+    renderProducts();
+  } catch(e){ showToastMsg(t('loadErr'),'error'); }
+}
+
+function renderProducts(){
+  const grid = document.getElementById('prodGrid');
+  if(!products.length){ grid.innerHTML = `<div style="color:var(--muted);text-align:center;padding:2rem">${t('loading')}</div>`; return; }
+  grid.innerHTML = products.map(p => `
+    <div class="prod-card">
+      <div class="prod-card-img">
+        <span class="prod-card-badge">${p.badge||''}</span>
+        ${p.images && p.images[0]
+          ? `<img src="${p.images[0]}" alt="${p.name}" onerror="this.style.display='none'">`
+          : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+        }
+      </div>
+      <div class="prod-card-body">
+        <div class="prod-card-name">${p.name}</div>
+        <div class="prod-card-desc">${p.desc||''}</div>
+        <div class="prod-card-footer">
+          <div class="prod-card-price">${p.price.toFixed(2).replace('.',',')} <span>€ · ${p.mwst}</span></div>
+          <button class="btn-edit" onclick="openEditModal('${p.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            ${lang === 'tr' ? 'Düzenle' : 'Bearbeiten'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openEditModal(id){
+  const p = products.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('editId').value = id;
+  document.getElementById('editName').value = p.name;
+  document.getElementById('editPrice').value = p.price;
+  document.getElementById('editMwst').value = p.mwst;
+  document.getElementById('editDesc').value = p.desc || '';
+  document.getElementById('editBadge').value = p.badge || '';
+  const imgUrl = (p.images && p.images[0]) || '';
+  document.getElementById('editImg').value = imgUrl;
+  previewImg(imgUrl);
+  document.getElementById('editModal').classList.add('open');
+}
+
+function previewImg(url){
+  const preview = document.getElementById('imgPreview');
+  if(url && url.startsWith('http')){
+    preview.src = url;
+    preview.classList.add('show');
+    preview.onerror = () => preview.classList.remove('show');
+  } else {
+    preview.classList.remove('show');
+  }
+}
+
+function closeEditModal(){ document.getElementById('editModal').classList.remove('open'); }
+
+async function saveProduct(){
+  const id = document.getElementById('editId').value;
+  const idx = products.findIndex(p => p.id === id);
+  if(idx === -1) return;
+
+  products[idx] = {
+    ...products[idx],
+    name: document.getElementById('editName').value,
+    price: parseFloat(document.getElementById('editPrice').value),
+    mwst: document.getElementById('editMwst').value,
+    desc: document.getElementById('editDesc').value,
+    badge: document.getElementById('editBadge').value,
+    images: document.getElementById('editImg').value ? [document.getElementById('editImg').value] : products[idx].images,
+  };
+
+  try {
+    const r = await fetch(`${API}/api/admin/products`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${authToken}`},
+      body: JSON.stringify({ products }),
+    });
+    const data = await r.json();
+    if(data.success){
+      closeEditModal();
+      renderProducts();
+      showToastMsg(t('saved'), 'success');
+    } else { showToastMsg(t('saveErr'),'error'); }
+  } catch(e){ showToastMsg(t('connErr'),'error'); }
+}
+
+// ── IMAGES ──
+async function loadImages(){
+  try {
+    const r = await fetch(`${API}/api/images`);
+    const data = await r.json();
+    images = data.images || [];
+    document.getElementById('imgCount').textContent = images.length;
+    document.getElementById('stat-images').textContent = images.length;
+    renderImages();
+  } catch(e){ showToastMsg(t('loadErr'),'error'); }
+}
+
+function renderImages(){
+  const grid = document.getElementById('imgGrid');
+  if(!images.length){
+    grid.innerHTML = `<div style="color:var(--muted);font-size:0.83rem;grid-column:1/-1;text-align:center;padding:2rem">${t('noImages')}</div>`;
+    return;
+  }
+  grid.innerHTML = images.map(img => `
+    <div class="img-item">
+      <img src="${API}/img/${img.key}" alt="" loading="lazy">
+      <div class="img-overlay">
+        <button class="img-act copy" onclick="copyUrl('${API}/img/${img.key}')">${lang==='tr'?'URL Kopyala':'URL kopieren'}</button>
+        <button class="img-act del" onclick="deleteImage('${img.key}')">${lang==='tr'?'Sil':'Löschen'}</button>
+      </div>
+      <div class="img-name">${img.key.split('/').pop()}</div>
+    </div>
+  `).join('');
+}
+
+async function uploadFiles(files){
+  if(!files.length) return;
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  bar.style.display = 'block';
+  for(let i=0; i<files.length; i++){
+    fill.style.width = ((i/files.length)*80)+'%';
+    const file = files[i];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', file.name.replace(/[^a-z0-9.-]/gi,'-').toLowerCase());
+    try {
+      const r = await fetch(`${API}/api/admin/upload`, {
+        method:'POST', headers:{'Authorization':`Bearer ${authToken}`}, body:formData,
+      });
+      const data = await r.json();
+      if(data.success) showToastMsg(`✓ ${file.name} ${t('uploaded')}`, 'success');
+      else showToastMsg(t('saveErr'),'error');
+    } catch(e){ showToastMsg(t('connErr'),'error'); }
+  }
+  fill.style.width='100%';
+  setTimeout(()=>{ bar.style.display='none'; fill.style.width='0%'; },800);
+  await loadImages();
+  document.getElementById('fileInput').value='';
+}
+
+async function deleteImage(key){
+  if(!confirm(t('delConfirm'))) return;
+  try {
+    const r = await fetch(`${API}/api/admin/image/${encodeURIComponent(key)}`,{
+      method:'DELETE', headers:{'Authorization':`Bearer ${authToken}`},
+    });
+    const data = await r.json();
+    if(data.success){ showToastMsg(t('deleted'),'success'); await loadImages(); }
+  } catch(e){ showToastMsg(t('connErr'),'error'); }
+}
+
+function copyUrl(url){
+  navigator.clipboard.writeText(url).then(()=>showToastMsg(t('copied'),'success'));
+}
+
+function dragOver(e){ e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function dragLeave(){ document.getElementById('uploadZone').classList.remove('drag'); }
+function dropFile(e){ e.preventDefault(); dragLeave(); uploadFiles(e.dataTransfer.files); }
+
+function showToastMsg(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// Init lang on load
+setLang(lang, null);
+
+// Mobile sidebar toggle
+function toggleSidebar(){
+  const sidebar = document.getElementById('adminLayout').querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+
+// On mobile, add top padding for fixed header
+function adjustLayout(){
+  const isMobile = window.innerWidth <= 768;
+  const main = document.getElementById('mainContent');
+  if(main) main.style.paddingTop = isMobile ? '60px' : '1rem';
+}
+window.addEventListener('resize', adjustLayout);
+adjustLayout();
+</script>
+</body>
+</html>
