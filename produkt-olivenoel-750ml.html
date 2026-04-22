@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sızma Zeytinyağı 750ml – Keby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+img{max-width:100%;display:block}
+:root{
+  --cream:#f7f4ee;--white:#fdfcf9;--olive:#3d6b2a;--olive-dark:#2a4a1a;
+  --gold:#c4a24a;--text:#2a2a22;--muted:#6b6b5a;--border:rgba(61,107,42,0.15);
+}
+body{font-family:'Jost',sans-serif;font-weight:300;color:var(--text);background:var(--white);overflow-x:hidden}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(253,252,249,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:0.5rem;text-decoration:none}
+.nav-logo img{width:38px;height:38px;object-fit:contain}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:0.76rem;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s}
+.nav-links a:hover{color:var(--olive)}
+.nav-right{display:flex;align-items:center;gap:0.6rem}
+.lang-switcher{display:flex;gap:0.25rem}
+.lang-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:0.25rem 0.6rem;font-size:0.7rem;cursor:pointer;font-family:'Jost',sans-serif;color:var(--muted);transition:all 0.2s}
+.lang-btn.active{background:var(--olive-dark);color:white;border-color:var(--olive-dark)}
+.nav-cart{display:flex;align-items:center;gap:0.4rem;background:var(--olive-dark);color:white;border:none;padding:0.45rem 0.9rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.nav-cart:hover{background:var(--olive)}
+.cart-count{background:var(--gold);color:var(--olive-dark);border-radius:50%;width:17px;height:17px;font-size:0.62rem;display:flex;align-items:center;justify-content:center;font-weight:500}
+
+/* PRODUCT DETAIL LAYOUT */
+.prod-page{margin-top:60px;padding:2.5rem 4rem 4rem}
+.back-link{display:inline-flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.74rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2rem;transition:color 0.2s}
+.back-link:hover{color:var(--olive)}
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+
+/* GALLERY */
+.gallery{position:sticky;top:75px}
+.gallery-main { width:100%; height:420px; object-fit:cover; object-position:center; border-radius:4px; display:block; }
+.gallery-thumbs{display:flex;gap:0.65rem}
+.gallery-thumb { width:72px; height:72px; object-fit:cover; object-position:center; border-radius:3px; cursor:pointer; opacity:0.7; transition:opacity 0.2s; border:2px solid transparent; }
+.gallery-thumb:hover,.gallery-thumb.active{border-color:var(--olive);opacity:1}
+
+/* PRODUCT INFO */
+.prod-info{padding-top:0.25rem}
+.prod-stars{display:flex;gap:2px;margin-bottom:0.75rem}
+.star{color:var(--gold);font-size:1rem}
+.prod-badge{display:inline-block;background:var(--olive-dark);color:white;font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.18rem 0.55rem;border-radius:2px;margin-bottom:0.85rem}
+.prod-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark);line-height:1.2;margin-bottom:1rem}
+.prod-tagline{font-size:0.95rem;line-height:1.85;color:var(--muted);font-style:italic;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+.delivery-row{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem}
+.dot-green{width:7px;height:7px;background:#4caf50;border-radius:50%;flex-shrink:0}
+.price-block{margin-bottom:1.5rem}
+.price-main{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;color:var(--olive-dark);line-height:1}
+.price-main span{font-size:1.1rem;font-weight:300;color:var(--muted);font-family:'Jost',sans-serif}
+.price-sub{font-size:0.72rem;color:var(--muted);margin-top:4px}
+.qty-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.1rem}
+.qty-label{font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.qty-ctrl{display:flex;align-items:center;border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.qty-btn{width:38px;height:38px;border:none;background:var(--cream);cursor:pointer;font-size:1rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background 0.15s}
+.qty-btn:hover{background:var(--border)}
+.qty-num{width:48px;height:38px;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'Jost',sans-serif;font-size:0.88rem;background:white}
+.btn-add{width:100%;background:var(--olive-dark);color:white;border:none;padding:1rem;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background 0.2s;margin-bottom:0.65rem;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.btn-add:hover{background:var(--olive)}
+.btn-pp{width:100%;background:#ffc439;border:none;padding:0.8rem;cursor:pointer;border-radius:3px;font-size:0.85rem;font-weight:700;color:#003087}
+.prod-attrs{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.attr{font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--olive);background:rgba(61,107,42,0.07);padding:0.2rem 0.55rem;border-radius:2px;border:1px solid rgba(61,107,42,0.14)}
+
+/* DESCRIPTION SECTION */
+.desc-section{padding:0 4rem 5rem}
+.desc-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.desc-tab{padding:0.8rem 1.5rem;cursor:pointer;font-size:0.74rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.desc-tab.active{color:var(--olive-dark);border-bottom-color:var(--olive-dark)}
+.desc-content{display:none}
+.desc-content.active{display:block}
+
+/* RICH DESCRIPTION */
+.desc-lead{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:300;color:var(--olive-dark);line-height:1.6;margin-bottom:1.5rem;font-style:italic}
+.desc-body{font-size:0.92rem;line-height:1.95;color:var(--muted);margin-bottom:1.25rem}
+.desc-h3{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--olive-dark);margin:1.75rem 0 0.6rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border)}
+.desc-list{list-style:none;display:flex;flex-direction:column;gap:0.45rem;margin:0.5rem 0 1.25rem}
+.desc-list li{display:flex;align-items:flex-start;gap:0.65rem;font-size:0.88rem;color:var(--muted);line-height:1.6}
+.desc-list li::before{content:'';width:5px;height:5px;background:var(--gold);border-radius:50%;flex-shrink:0;margin-top:0.5rem}
+.desc-highlight{background:var(--cream);border-left:3px solid var(--gold);padding:1rem 1.25rem;border-radius:0 3px 3px 0;font-size:0.88rem;color:var(--muted);line-height:1.75;margin:1.25rem 0}
+
+/* REVIEW */
+.review-card{background:var(--cream);border-radius:4px;padding:1.5rem}
+.review-stars{display:flex;gap:2px;margin-bottom:0.5rem}
+.review-text{font-size:0.9rem;color:var(--muted);line-height:1.8;font-style:italic;margin-bottom:0.5rem}
+.review-author{font-size:0.72rem;color:var(--muted);letter-spacing:0.06em}
+
+/* FOOTER */
+footer{background:var(--olive-dark);color:rgba(255,255,255,0.5);padding:2rem 4rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.footer-logo{width:38px;height:38px;object-fit:contain;filter:brightness(0) invert(1);opacity:0.6}
+.footer-copy{font-size:0.68rem;letter-spacing:0.04em;flex:1;text-align:center}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s}
+.footer-links a:hover{color:#e8d49a}
+
+/* CART */
+.cart-overlay{position:fixed;inset:0;background:rgba(42,42,34,0.5);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.cart-overlay.open{opacity:1;pointer-events:all}
+.cart-panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--white);z-index:201;transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
+.cart-panel.open{transform:translateX(0)}
+.cart-ph{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border)}
+.cart-ptitle{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--olive-dark)}
+.cart-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.2rem}
+.cart-items{flex:1;overflow-y:auto;padding:1.1rem 1.4rem}
+.cart-empty{text-align:center;padding:2.5rem 0;color:var(--muted);font-size:0.82rem}
+.cart-item{display:grid;grid-template-columns:50px 1fr auto;gap:0.7rem;align-items:center;padding:0.7rem 0;border-bottom:1px solid var(--border)}
+.cart-item-img{width:50px;height:50px;object-fit:cover;border-radius:2px}
+.cart-item-name{font-size:0.78rem;color:var(--olive-dark);margin-bottom:0.2rem}
+.cart-item-qty{display:flex;align-items:center;gap:0.3rem}
+.qty-btn-s{width:20px;height:20px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.75rem}
+.qty-num-s{font-size:0.78rem;min-width:16px;text-align:center}
+.cart-item-price{font-family:'Cormorant Garamond',serif;font-size:0.98rem;color:var(--olive-dark);font-weight:600}
+.cart-foot{padding:1.1rem 1.4rem;border-top:1px solid var(--border)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.85rem}
+.cart-total-lbl{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.cart-total-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--olive-dark)}
+.btn-checkout-s{width:100%;background:var(--olive-dark);color:white;border:none;padding:0.9rem;font-family:'Jost',sans-serif;font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border-radius:3px;margin-bottom:0.5rem;transition:background 0.2s}
+.btn-checkout-s:hover{background:var(--olive)}
+.btn-pp-s{width:100%;background:#ffc439;border:none;padding:0.65rem;cursor:pointer;border-radius:3px;font-size:0.82rem;font-weight:700;color:#003087;margin-bottom:0.5rem}
+.cart-note-s{font-size:0.66rem;text-align:center;color:var(--muted)}
+
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--olive-dark);color:white;padding:0.7rem 1.5rem;border-radius:3px;font-size:0.76rem;z-index:500;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.demo-badge{position:fixed;bottom:0.75rem;right:0.75rem;background:rgba(42,42,34,0.8);color:rgba(255,255,255,0.5);font-size:0.58rem;padding:0.25rem 0.55rem;border-radius:2px;z-index:500}
+
+/* MOBILE */
+
+
+@media(max-width:860px){
+  html,body{overflow-x:hidden!important;}
+  *{min-width:0;box-sizing:border-box;}
+  img{max-width:100%!important;}
+  nav{padding:0 0.75rem!important;}
+  .nav-links{display:none!important;}
+  .prod-page{flex-direction:column!important;padding:1rem 0.75rem!important;gap:1.5rem!important;}
+  .prod-gallery{width:100%!important;max-width:100%!important;}
+  .gallery-main{height:280px!important;}
+  .gallery-thumbs{display:flex!important;flex-direction:row!important;}
+  .gallery-thumb{width:60px!important;height:60px!important;}
+  .prod-info{width:100%!important;padding:0!important;}
+  .prod-page-title{font-size:1.6rem!important;}
+  .prod-price-big{font-size:2rem!important;}
+  .prod-tags{flex-wrap:wrap!important;}
+  .btn-add{width:100%!important;padding:0.9rem!important;}
+  .qty-row{margin-bottom:0.75rem!important;}
+  .faq-list{padding:0!important;}
+  .page-wrap{padding:2rem 0.75rem!important;}
+  .grid{grid-template-columns:1fr!important;}
+}
+
+
+/* ── KONTRAST İYİLEŞTİRME ── */
+:root {
+  --text: #1a1a14 !important;
+  --muted: #4a4a3a !important;
+  --olive-dark: #1e3a12 !important;
+  --olive: #2d5a1e !important;
+}
+body { color: #1a1a14; }
+.prod-name { color: #1e3a12 !important; font-weight: 400 !important; }
+.prod-desc { color: #4a4a3a !important; }
+.sss-q span { color: #1e3a12 !important; }
+.feat-title { color: #e8d49a !important; }
+.section-title { color: #1e3a12 !important; }
+.s-title, .vs-title { color: #1e3a12 !important; }
+
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby"></a>
+  <ul class="nav-links">
+    <li><a href="index.html#produkte" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a></li>
+    <li><a href="vision.html" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a></li>
+    <li><a href="ueber-uns.html" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a></li>
+    <li><a href="ueber-uns.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="tr" onclick="setLang('tr')">🇹🇷 TR</button>
+      <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
+    </div>
+    <button class="nav-cart" onclick="toggleCart()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span data-tr="Sepet" data-de="Warenkorb">Sepet</span>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<div class="prod-page">
+  <a href="index.html" class="back-link">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <span data-tr="← Mağazaya Dön" data-de="← Zurück zum Shop">← Mağazaya Dön</span>
+  </a>
+
+  <div class="prod-grid">
+    <!-- GALLERY -->
+    <div class="gallery">
+      <img id="mainImg" class="gallery-main" src="https://keby-api.hguencavdi.workers.dev/img/06ebf84b-99d7-4e2a-9301-2883e2106c97.jpeg" alt="Sızma Zeytinyağı 750ml">
+      <div class="gallery-thumbs">
+        <img class="gallery-thumb active" src="https://keby-api.hguencavdi.workers.dev/img/06ebf84b-99d7-4e2a-9301-2883e2106c97.jpeg" onclick="setImg(this,'https://keby-api.hguencavdi.workers.dev/img/06ebf84b-99d7-4e2a-9301-2883e2106c97.jpeg')">
+        <img class="gallery-thumb" src="https://keby-api.hguencavdi.workers.dev/img/70833786-440e-4884-83c7-e09f88e63e66.jpeg" onclick="setImg(this,'https://keby-api.hguencavdi.workers.dev/img/70833786-440e-4884-83c7-e09f88e63e66.jpeg')">
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="prod-info">
+      <div class="prod-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <span class="prod-badge" data-tr="Çok Satan" data-de="Bestseller">Çok Satan</span>
+      <h1 class="prod-title" data-tr="Sızma Zeytinyağı 750 ml" data-de="Natives Olivenöl Extra 750 ml">Sızma Zeytinyağı 750 ml</h1>
+      <p class="prod-tagline" data-tr="Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde sıkılır. Bademsi aroması ve kadifemsi dokusuyla sofranıza Türkiye'nin özünü taşır." data-de="Aus sonnengereifte Oliven, innerhalb von 24 Stunden nach der Ernte gepresst. Mandeliges Aroma und samtige Textur.">
+        Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde sıkılır. Bademsi aroması ve kadifemsi dokusuyla sofranıza Türkiye'nin özünü taşır.
+      </p>
+      <div class="delivery-row">
+        <div class="dot-green"></div>
+        <span data-tr="Teslimat: 1–3 iş günü" data-de="Lieferzeit: ca. 1–3 Tage">Teslimat: 1–3 iş günü</span>
+      </div>
+      <div class="price-block">
+        <div class="price-main">14,99 <span>EUR</span></div>
+        <div class="price-sub">
+          <span data-tr="KDV (%7) dahil · + kargo" data-de="inkl. 7% MwSt. · zzgl. Versand">KDV (%7) dahil · + kargo</span>
+        </div>
+      </div>
+      <div class="qty-row">
+        <span class="qty-label" data-tr="Adet" data-de="Menge">Adet</span>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <input type="number" class="qty-num" id="qty" value="1" min="1">
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addFromPage('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/img/06ebf84b-99d7-4e2a-9301-2883e2106c97.jpeg')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span data-tr="Sepete Ekle" data-de="In den Warenkorb">Sepete Ekle</span>
+      </button>
+      <button class="btn-pp" onclick="paypalDirect(14.99)">
+        <span data-tr="PayPal ile Hemen Öde" data-de="Jetzt mit PayPal zahlen">PayPal ile Hemen Öde</span>
+      </button>
+      <div class="prod-attrs">
+        <span class="attr" data-tr="Soğuk Sıkım" data-de="Kalt gepresst">Soğuk Sıkım</span>
+        <span class="attr" data-tr="Sızma" data-de="Extra vergine">Sızma</span>
+        <span class="attr" data-tr="%7 KDV" data-de="7% MwSt.">%7 KDV</span>
+        <span class="attr" data-tr="750ml Cam Şişe" data-de="750ml Glasflasche">750ml Cam Şişe</span>
+        <span class="attr" data-tr="Asit %0,8 altı" data-de="Säure &lt; 0,8%">Asit %0,8 altı</span>
+        <span class="attr" data-tr="Mudanya/Bursa" data-de="Mudanya/Bursa">Mudanya/Bursa</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="desc-section">
+  <div class="desc-tabs">
+    <div class="desc-tab active" onclick="showTab('desc',this)" data-tr="Ürün Hikâyesi" data-de="Beschreibung">Ürün Hikâyesi</div>
+    <div class="desc-tab" onclick="showTab('rev',this)" data-tr="Değerlendirmeler (1)" data-de="Kundenrezensionen (1)">Değerlendirmeler (1)</div>
+  </div>
+
+  <div id="desc" class="desc-content active">
+    <div id="desc-tr">
+      <p class="desc-lead">"Bir şişe zeytinyağı sadece bir şişe zeytinyağı değildir. İçinde mevsimler, eller ve sabır vardır."</p>
+      <p class="desc-body">Keby'nin 750ml şişesi, günlük sofranızın vazgeçilmezi için tasarlanmıştır. Mudanya'nın Marmara kıyılarında yetişen zeytinler, mevsim geldiğinde elle toplanır — makinenin sert dokunuşu değil, insan elinin hassasiyetiyle. Bu fark, ilk damladaki bademsi aromaya yansır.</p>
+      
+      <div class="desc-highlight">Hasattan 24 saat içinde, 27°C'yi aşmayan sıcaklıkta soğuk sıkım. Asitlik oranı %0,8'in altında — sızma zeytinyağının en saf hali.</div>
+
+      <div class="desc-h3" data-tr="Kalite Özellikleri" data-de="Qualitätsmerkmale">Kalite Özellikleri</div>
+      <ul class="desc-list">
+        <li>Sızma zeytinyağı — Avrupa Birliği'nin tanıdığı en yüksek kalite sınıfı</li>
+        <li>27°C altında soğuk sıkım — ısı, zeytinyağının kimyasını bozmaz</li>
+        <li>Asitlik oranı %0,8'in altında — ekstra virjin standardının çok ötesinde</li>
+        <li>Polifenol ve E vitamini açısından zengin — doğal antioksidan kaynağı</li>
+        <li>Renk katkısı, koku maddesi, koruyucu — hiçbiri yok</li>
+        <li>Cam şişe ambalaj — ışık geçirmez, lezzetini korur</li>
+      </ul>
+
+      <div class="desc-h3" data-tr="Nasıl Kullanılır?" data-de="Verwendung">Nasıl Kullanılır?</div>
+      <p class="desc-body">Sızma zeytinyağı her mutfakta kendine yer bulur. Salatalarınıza dökülen ince bir şerit, meze tabaklarınızı taçlandıran son dokunuş, taze ekmekle nefis bir dip — ya da sabahın ilk öğününde kaşık kaşık. Izgara ve kavurmada da rahatlıkla kullanabilirsiniz; yüksek duman noktası sayesinde besleyici değerini yitirmez.</p>
+
+      <div class="desc-h3" data-tr="Köken Hikâyesi" data-de="Herkunft">Köken Hikâyesi</div>
+      <p class="desc-body">Mudanya, Bursa'ya bağlı küçük bir kıyı ilçesidir. Marmara'nın deniz rüzgarı ile güneyin sıcaklığı burada buluşur. Bu iklim dengesi, zeytine eşsiz bir tat profili kazandırır. Buradaki bahçeler kuşaktan kuşağa aktarılan emanetlerdir. Keby, bu emanete ortak olarak o lezzeti doğrudan sofranıza taşır.</p>
+    </div>
+    <div id="desc-de" style="display:none">
+      <p class="desc-lead">"Ein Flasche Olivenöl ist nicht nur Olivenöl. Sie enthält Jahreszeiten, Hände und Geduld."</p>
+      <p class="desc-body">Natives Olivenöl extra in der praktischen 750ml Flasche ist ideal für Haushalte, die höchste Qualität schätzen. Die Oliven aus Mudanya werden von Hand geerntet und innerhalb von 24 Stunden kaltgepresst.</p>
+      <div class="desc-highlight">Kaltgepresst bei unter 27°C. Säuregehalt unter 0,8%. Extra vergine — die höchste Güteklasse.</div>
+      <div class="desc-h3">Qualitätsmerkmale</div>
+      <ul class="desc-list">
+        <li>Natives Olivenöl extra – höchste Güteklasse</li>
+        <li>Kaltgepresst bei unter 27°C</li>
+        <li>Säuregehalt unter 0,8%</li>
+        <li>Reich an Polyphenolen und Vitamin E</li>
+        <li>100% naturrein ohne Zusätze</li>
+        <li>Lichtgeschützte Glasflasche</li>
+      </ul>
+      <div class="desc-h3">Verwendung</div>
+      <p class="desc-body">Für Salate, zum Braten und Kochen, für Dips und Marinaden oder einfach pur auf frischem Brot. Das fruchtige, mandelartige Aroma bereichert jedes Gericht.</p>
+    </div>
+  </div>
+
+  <div id="rev" class="desc-content">
+    <div class="review-card">
+      <div class="review-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <div id="rev-tr">
+        <p class="review-text">"Annemin zeytinyağısından farksız. Almanya'da bu kaliteyi bulmak zor — artık sadece Keby alıyorum. Salatada, ekmeğin üzerinde, her yerde mükemmel."</p>
+        <p class="review-author">— Fatma K., Münih · Doğrulanmış alıcı</p>
+      </div>
+      <div id="rev-de" style="display:none">
+        <p class="review-text">"Schmeckt genauso wie das Olivenöl meiner Mutter. In Deutschland ist diese Qualität schwer zu finden. Nur noch Keby für mich."</p>
+        <p class="review-author">— Fatma K., München · Verifizierter Käufer</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-ph">
+    <div class="cart-ptitle" data-tr="Sepetim" data-de="Warenkorb">Sepetim</div>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"><div class="cart-empty">Sepetiniz boş.</div></div>
+  <div class="cart-foot">
+    <div class="cart-total-row">
+      <span class="cart-total-lbl" data-tr="Toplam" data-de="Gesamtsumme">Toplam</span>
+      <span class="cart-total-price" id="cartTotal">0,00 €</span>
+    </div>
+    <button class="btn-checkout-s" onclick="paypalCart()" data-tr="Ödemeye Geç →" data-de="Zur Kasse gehen →">Ödemeye Geç →</button>
+    <button class="btn-pp-s" onclick="paypalCart()">PayPal</button>
+    <p class="cart-note-s" data-tr="120 € üzeri kargo bedava" data-de="Versandkostenfrei ab 120 €">120 € üzeri kargo bedava</p>
+  </div>
+</div>
+<footer>
+  <img class="footer-logo" src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+  <div class="footer-copy"><span data-tr="© 2025 Keby – Türkiye'den Premium Zeytinyağı" data-de="© 2025 Keby – Hochwertiges Olivenöl aus der Türkei">© 2025 Keby – Türkiye'den Premium Zeytinyağı</span></div>
+  <div class="footer-links">
+    <a href="impressum.html" data-tr="Künye" data-de="Impressum">Künye</a>
+    <a href="#" data-tr="Gizlilik" data-de="Datenschutz">Gizlilik</a>
+    <a href="index.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a>
+  </div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+
+var _lang = localStorage.getItem('keby_lang') || (navigator.language.startsWith('tr') ? 'tr' : 'de');
+function setLang(l) {
+  _lang = l;
+  localStorage.setItem('keby_lang', l);
+  document.querySelectorAll('[data-tr][data-de]').forEach(function(el) {
+    el.textContent = l === 'tr' ? el.dataset.tr : el.dataset.de;
+  });
+  document.querySelectorAll('[data-tr-html][data-de-html]').forEach(function(el) {
+    el.innerHTML = l === 'tr' ? el.dataset.trHtml : el.dataset.deHtml;
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.lang === l);
+  });
+  document.documentElement.lang = l;
+  // swap description blocks
+  var dTR = document.getElementById('desc-tr');
+  var dDE = document.getElementById('desc-de');
+  if(dTR && dDE){ dTR.style.display = l==='tr'?'block':'none'; dDE.style.display = l==='de'?'block':'none'; }
+  var rTR = document.getElementById('rev-tr');
+  var rDE = document.getElementById('rev-de');
+  if(rTR && rDE){ rTR.style.display = l==='tr'?'block':'none'; rDE.style.display = l==='de'?'block':'none'; }
+}
+
+
+var cart = JSON.parse(localStorage.getItem('keby_cart') || '[]');
+function saveCart() { localStorage.setItem('keby_cart', JSON.stringify(cart)); }
+function addFromPage(name, price, img) {
+  var qty = parseInt(document.getElementById('qty').value || 1);
+  for(var i=0;i<qty;i++) {
+    var ex = cart.find(function(x){return x.name===name;});
+    if(ex) ex.qty++; else cart.push({name:name,price:price,img:img,qty:1});
+  }
+  saveCart(); updateCartUI();
+  showToast('✓ ' + name + ' ' + (_lang==='tr'?'eklendi':'hinzugefügt'));
+  openCart();
+}
+function updateQty(name, d) {
+  var item = cart.find(function(x){return x.name===name;});
+  if(!item) return; item.qty+=d;
+  if(item.qty<=0) cart=cart.filter(function(x){return x.name!==name;});
+  saveCart(); updateCartUI();
+}
+function updateCartUI() {
+  var count = cart.reduce(function(s,i){return s+i.qty;},0);
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  document.querySelectorAll('#cartCount').forEach(function(el){el.textContent=count;});
+  var tp = document.getElementById('cartTotal');
+  if(tp) tp.textContent = total.toFixed(2).replace('.',',')+' €';
+  var c = document.getElementById('cartItems');
+  if(!c) return;
+  if(!cart.length) { c.innerHTML='<div class="cart-empty">'+(_lang==='tr'?'Sepetiniz boş.':'Ihr Warenkorb ist leer.')+'</div>'; return; }
+  c.innerHTML = cart.map(function(i) {
+    return '<div class="cart-item"><img class="cart-item-img" src="'+i.img+'" alt="'+i.name+'"><div><div class="cart-item-name">'+i.name+'</div><div class="cart-item-qty"><button class="qty-btn-s" onclick="updateQty(\'' + i.name + '\',-1)">−</button><span class="qty-num-s">'+i.qty+'</span><button class="qty-btn-s" onclick="updateQty(\'' + i.name + '\',1)">+</button></div></div><div class="cart-item-price">'+(i.qty*i.price).toFixed(2).replace('.',',')+'\u00a0€</div></div>';
+  }).join('');
+}
+function toggleCart() { document.getElementById('cartPanel').classList.toggle('open'); document.getElementById('cartOverlay').classList.toggle('open'); }
+function openCart() { document.getElementById('cartPanel').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
+function paypalDirect(price) {
+  var qty = parseInt(document.getElementById('qty').value||1);
+  var total = (price*qty).toFixed(2);
+  showToast(_lang==='tr'?"PayPal'a yönlendiriliyor...":'Weiterleitung zu PayPal...');
+  setTimeout(function(){window.open('https://paypal.me/kebyshop/'+total+'EUR','_blank');},600);
+}
+function paypalCart() {
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0).toFixed(2);
+  showToast(_lang==='tr'?"PayPal'a yönlendiriliyor...":'Weiterleitung zu PayPal...');
+  setTimeout(function(){window.open('https://paypal.me/kebyshop/'+total+'EUR','_blank');},600);
+}
+function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2500); }
+function changeQty(d) { var el=document.getElementById('qty'); if(el) el.value=Math.max(1,parseInt(el.value||1)+d); }
+
+function setImg(el,src){document.getElementById('mainImg').src=src;document.querySelectorAll('.gallery-thumb').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}
+function showTab(id,el){document.querySelectorAll('.desc-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.desc-tab').forEach(function(t){t.classList.remove('active');});document.getElementById(id).classList.add('active');el.classList.add('active');if(id==='desc'){var dTR=document.getElementById('desc-tr');var dDE=document.getElementById('desc-de');if(dTR&&dDE){dTR.style.display=_lang==='tr'?'block':'none';dDE.style.display=_lang==='de'?'block':'none';}}if(id==='rev'){var rTR=document.getElementById('rev-tr');var rDE=document.getElementById('rev-de');if(rTR&&rDE){rTR.style.display=_lang==='tr'?'block':'none';rDE.style.display=_lang==='de'?'block':'none';}}}
+document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateCartUI(); });
+</script>
+</body>
+</html>

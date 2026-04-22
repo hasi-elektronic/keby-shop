@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Über uns – Keby</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--cream:#f7f4ee;--white:#fdfcf9;--olive:#3d6b2a;--olive-dark:#2a4a1a;--gold:#c4a24a;--text:#2a2a22;--muted:#6b6b5a;--border:rgba(61,107,42,0.15);}
+html,body{overflow-x:hidden;}
+body{font-family:'Jost',sans-serif;font-weight:300;color:var(--text);background:var(--white);}
+
+nav{position:fixed;top:0;left:0;right:0;height:60px;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;background:rgba(253,252,249,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:100;}
+.nav-logo img{width:36px;height:36px;object-fit:contain;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--olive-dark);}
+.lang-row{display:flex;gap:0.3rem;}
+.lbtn{border:1px solid var(--border);border-radius:20px;padding:0.25rem 0.6rem;font-size:0.7rem;cursor:pointer;font-family:'Jost',sans-serif;color:var(--muted);background:none;transition:all 0.2s;}
+.lbtn.active{background:var(--olive-dark);color:white;border-color:var(--olive-dark);}
+
+/* HERO */
+.hero{margin-top:60px;height:60svh;min-height:420px;position:relative;overflow:hidden;display:flex;align-items:flex-end;background:linear-gradient(135deg,#1e3a12 0%,#2a4a1a 40%,#3d6b2a 100%);}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+.hero-img-wrap{position:absolute;inset:0;overflow:hidden;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,28,10,0.92) 0%,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0.1) 100%);}
+.hero-content{position:relative;z-index:2;padding:3rem 4rem;width:100%;}
+.hero-tag{font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,5vw,4rem);font-weight:300;color:white;line-height:1.1;}
+.hero-title em{font-style:italic;color:#e8d49a;}
+
+/* SECTIONS */
+.section{padding:5rem 4rem;}
+.section-alt{background:var(--cream);}
+.inner{max-width:1100px;margin:0 auto;}
+.s-tag{font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem;}
+.s-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:300;color:var(--olive-dark);line-height:1.2;margin-bottom:1.5rem;}
+.s-title em{font-style:italic;}
+.s-text{font-size:0.92rem;line-height:1.95;color:var(--muted);}
+.s-text+.s-text{margin-top:0.85rem;}
+
+/* KADER PROFİL */
+.profile{display:grid;grid-template-columns:1fr 2fr;gap:4rem;align-items:start;}
+.profile-img{position:relative;}
+.profile-img-inner{
+  width:100%;aspect-ratio:3/4;background:var(--cream);
+  border-radius:8px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.profile-initials{
+  font-family:'Cormorant Garamond',serif;font-size:6rem;font-weight:300;
+  color:var(--olive);opacity:0.3;
+}
+.profile-badge{
+  position:absolute;bottom:-1rem;right:-1rem;
+  background:var(--olive-dark);color:white;
+  padding:0.75rem 1.25rem;border-radius:6px;
+  font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-style:italic;
+  box-shadow:0 8px 24px rgba(42,74,26,0.3);
+}
+.profile-name{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark);margin-bottom:0.25rem;}
+.profile-role{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;}
+.profile-quote{
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;
+  color:var(--olive-dark);line-height:1.6;
+  padding-left:1.5rem;border-left:3px solid var(--gold);
+  margin-bottom:1.5rem;
+}
+
+/* KONTAKT */
+.kontakt-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem;}
+.kontakt-card{background:white;border:1px solid var(--border);border-radius:8px;padding:2rem;transition:box-shadow 0.2s;}
+.kontakt-card:hover{box-shadow:0 8px 32px rgba(42,74,26,0.1);}
+.kontakt-card-icon{font-size:1.5rem;margin-bottom:0.75rem;}
+.kontakt-card-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--olive-dark);margin-bottom:0.75rem;}
+.kontakt-row{display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.5rem;font-size:0.86rem;color:var(--muted);}
+.kontakt-row a{color:var(--olive);text-decoration:none;}
+.kontakt-row a:hover{text-decoration:underline;}
+.kontakt-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);min-width:80px;margin-top:1px;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-group{display:flex;flex-direction:column;gap:0.4rem;}
+.form-group label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);}
+.form-group input,
+.form-group textarea{border:1px solid var(--border);border-radius:4px;padding:0.7rem 0.9rem;font-family:'Jost',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;background:white;}
+.form-group input:focus,
+.form-group textarea:focus{border-color:var(--olive);}
+.form-group textarea{resize:vertical;min-height:120px;}
+.form-full{grid-column:1/-1;}
+.form-btn{display:inline-flex;align-items:center;gap:0.5rem;background:var(--olive-dark);color:white;border:none;padding:0.85rem 2rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;margin-top:0.5rem;}
+.form-btn:hover{background:var(--olive);transform:translateY(-2px);box-shadow:0 6px 18px rgba(42,74,26,0.3);}
+#form-success{display:none;padding:1rem;background:rgba(61,107,42,0.08);border:1px solid var(--border);border-radius:4px;font-size:0.86rem;color:var(--olive-dark);margin-top:1rem;}
+
+/* MAP PLACEHOLDER */
+.map-placeholder{
+  height:280px;background:var(--cream);border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;
+  border:1px solid var(--border);
+}
+.map-placeholder svg{opacity:0.3;}
+.map-placeholder p{font-size:0.82rem;color:var(--muted);}
+
+footer{background:var(--olive-dark);color:rgba(255,255,255,0.45);padding:2rem;text-align:center;font-size:0.72rem;}
+footer a{color:rgba(255,255,255,0.4);text-decoration:none;margin:0 0.75rem;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.fade-in.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:860px){
+  nav{padding:0 1rem;}
+  .nav-links{display:none;}
+  .hero-content{padding:2rem 1.25rem;}
+  .section{padding:2.5rem 1.25rem;}
+  .profile{grid-template-columns:1fr;gap:2rem;}
+  .profile-img-inner{aspect-ratio:2/1;}
+  .kontakt-grid{grid-template-columns:1fr;gap:1.25rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-full{grid-column:1;}
+}
+
+/* ── KONTRAST İYİLEŞTİRME ── */
+:root {
+  --text: #1a1a14 !important;
+  --muted: #4a4a3a !important;
+  --olive-dark: #1e3a12 !important;
+  --olive: #2d5a1e !important;
+}
+body { color: #1a1a14; }
+.prod-name { color: #1e3a12 !important; font-weight: 400 !important; }
+.prod-desc { color: #4a4a3a !important; }
+.sss-q span { color: #1e3a12 !important; }
+.feat-title { color: #e8d49a !important; }
+.section-title { color: #1e3a12 !important; }
+.s-title, .vs-title { color: #1e3a12 !important; }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby"></a>
+  <ul class="nav-links">
+    <li><a href="index.html#produkte" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a></li>
+    <li><a href="vision.html" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a></li>
+    <li><a href="ueber-uns.html" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a></li>
+    <li><a href="ueber-uns.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
+  </ul>
+  <div class="lang-row">
+    <button class="lbtn active" id="btn-tr" onclick="setLang('tr')">🇹🇷 TR</button>
+    <button class="lbtn" id="btn-de" onclick="setLang('de')">🇩🇪 DE</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-img-wrap">
+    <img class="hero-img" loading="lazy" onerror="this.style.display='none'" src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="Keby">
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag" data-tr="Biz Kimiz" data-de="Wer wir sind">Biz Kimiz</div>
+    <h1 class="hero-title">
+      <span data-tr="Keby —" data-de="Keby —">Keby —</span><br>
+      <em data-tr="Bir Aile Hikayesi" data-de="Eine Familiengeschichte">Bir Aile Hikayesi</em>
+    </h1>
+  </div>
+</div>
+
+<!-- PROFİL -->
+<section class="section">
+  <div class="inner">
+    <div class="profile">
+      <div class="fade-in profile-img">
+        <div class="profile-img-inner">
+          <span class="profile-initials">KK</span>
+        </div>
+        <div class="profile-badge" data-tr="Kurucu & Sahip" data-de="Gründerin & Inhaberin">Kurucu & Sahip</div>
+      </div>
+      <div class="fade-in">
+        <div class="s-tag" data-tr="Keby'nin Arkasındaki İnsan" data-de="Der Mensch hinter Keby">Keby'nin Arkasındaki İnsan</div>
+        <div class="profile-name">Kader Kayihan</div>
+        <div class="profile-role" data-tr="Kurucu & İşletme Sahibi" data-de="Gründerin & Inhaberin">Kurucu & İşletme Sahibi</div>
+        <div class="profile-quote" data-tr="Annemin sofrasındaki o zeytinyağı tadını Almanya'da da bulmak istedim. Bulamayınca kendim getirmeye karar verdim." data-de="Ich wollte den Geschmack des Olivenöls vom Tisch meiner Mutter auch in Deutschland finden. Als ich ihn nicht fand, entschied ich mich, ihn selbst herzubringen.">
+          "Annemin sofrasındaki o zeytinyağı tadını Almanya'da da bulmak istedim. Bulamayınca kendim getirmeye karar verdim."
+        </div>
+        <p class="s-text" data-tr="Vaihingen an der Enz'de yaşayan Kader Kayihan, Keby'yi 2023 yılında kurdu. Mudanya'nın zeytin bahçeleriyle büyüyen bir aile bağı, saf sevgi ve tutku sonuçta bir işletmeye dönüştü." data-de="Kader Kayihan, die in Vaihingen an der Enz lebt, gründete Keby im Jahr 2023. Eine familiäre Verbindung zu den Olivenhainen Mudanyas, pure Liebe und Leidenschaft wurden schließlich zu einem Unternehmen.">
+          Vaihingen an der Enz'de yaşayan Kader Kayihan, Keby'yi 2023 yılında kurdu. Mudanya'nın zeytin bahçeleriyle büyüyen bir aile bağı, saf sevgi ve tutku sonuçta bir işletmeye dönüştü.
+        </p>
+        <p class="s-text" data-tr="Keby, Almanya'daki Türklerin ve kaliteyi seven herkesin sofrasına Mudanya'nın en iyi ürünlerini taşımayı hedefliyor. Her ürün bizzat Kader tarafından seçilip test ediliyor." data-de="Keby hat das Ziel, die besten Produkte aus Mudanya auf die Tische der Türken in Deutschland und aller Qualitätsliebhaber zu bringen. Jedes Produkt wird persönlich von Kader ausgewählt und getestet.">
+          Keby, Almanya'daki Türklerin ve kaliteyi seven herkesin sofrasına Mudanya'nın en iyi ürünlerini taşımayı hedefliyor.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KONTAKT -->
+<section class="section section-alt">
+  <div class="inner">
+    <div class="s-tag" data-tr="İletişim" data-de="Kontakt">İletişim</div>
+    <h2 class="s-title" data-tr="Bize Ulaşın" data-de="Nehmen Sie Kontakt auf">Bize Ulaşın</h2>
+    <div class="kontakt-grid fade-in">
+
+      <!-- Sol: İletişim Bilgileri -->
+      <div>
+        <div class="kontakt-card">
+          <div class="kontakt-card-icon">📍</div>
+          <div class="kontakt-card-title" data-tr="Adres & İletişim" data-de="Adresse & Kontakt">Adres & İletişim</div>
+          <div class="kontakt-row">
+            <span class="kontakt-label" data-tr="Firma" data-de="Firma">Firma</span>
+            <span>Keby</span>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label" data-tr="Sahip" data-de="Inhaberin">Sahip</span>
+            <span>Kader Kayihan</span>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label" data-tr="Adres" data-de="Adresse">Adres</span>
+            <span>Stuttgarter Str. 65<br>71665 Vaihingen an der Enz<br>Deutschland</span>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label" data-tr="Telefon" data-de="Telefon">Telefon</span>
+            <a href="tel:+4915750363918">015750363918</a>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label">E-Mail</span>
+            <a href="mailto:info@keby.shop">info@keby.shop</a>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label">Web</span>
+            <a href="https://keby.shop">www.keby.shop</a>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label">WhatsApp</span>
+            <a href="https://wa.me/4915906342354" target="_blank">+49 159 06342354</a>
+          </div>
+        </div>
+
+        <div class="kontakt-card" style="margin-top:1rem;">
+          <div class="kontakt-card-icon">🏦</div>
+          <div class="kontakt-card-title" data-tr="Banka Bilgileri" data-de="Bankverbindung">Banka Bilgileri</div>
+          <div class="kontakt-row">
+            <span class="kontakt-label">IBAN</span>
+            <span style="font-family:monospace;font-size:0.82rem;">DE91 6045 0050 0030 2309 81</span>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label">BIC</span>
+            <span>SOLADES1LBG</span>
+          </div>
+          <div class="kontakt-row">
+            <span class="kontakt-label" data-tr="Sahip" data-de="Kontoinhaber">Sahip</span>
+            <span>Kader Kayihan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sağ: Form -->
+      <div class="kontakt-card fade-in">
+        <div class="kontakt-card-icon">✉️</div>
+        <div class="kontakt-card-title" data-tr="Mesaj Gönderin" data-de="Nachricht senden">Mesaj Gönderin</div>
+        <div class="form-grid" id="contactForm">
+          <div class="form-group">
+            <label data-tr="Ad Soyad" data-de="Name">Ad Soyad</label>
+            <input type="text" id="cf-name" placeholder="Max Mustermann">
+          </div>
+          <div class="form-group">
+            <label>E-Mail</label>
+            <input type="email" id="cf-email" placeholder="max@email.de">
+          </div>
+          <div class="form-group form-full">
+            <label data-tr="Konu" data-de="Betreff">Konu</label>
+            <input type="text" id="cf-subject" placeholder="Sipariş hakkında / Über meine Bestellung">
+          </div>
+          <div class="form-group form-full">
+            <label data-tr="Mesajınız" data-de="Ihre Nachricht">Mesajınız</label>
+            <textarea id="cf-message" placeholder="Merhaba, / Hallo,"></textarea>
+          </div>
+          <div class="form-full">
+            <button class="form-btn" onclick="sendContactForm()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span data-tr="Gönder →" data-de="Senden →">Gönder →</span>
+            </button>
+          </div>
+        </div>
+        <div id="form-success" data-tr="✓ Mesajınız iletildi! En kısa sürede yanıt vereceğiz." data-de="✓ Ihre Nachricht wurde gesendet! Wir antworten so schnell wie möglich.">
+          ✓ Mesajınız iletildi!
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" data-tr="Mağaza" data-de="Shop">Mağaza</a>
+  <a href="vision.html" data-tr="Vizyon" data-de="Vision">Vizyon</a>
+  <a href="kargo.html" data-tr="Kargo & İade" data-de="Versand">Kargo</a>
+  <a href="impressum.html" data-tr="Künye" data-de="Impressum">Künye</a>
+  <div style="margin-top:0.75rem">© 2025 Keby – Kader Kayihan | Stuttgarter Str. 65, 71665 Vaihingen an der Enz</div>
+</footer>
+
+<script>
+var _lang = localStorage.getItem('keby_lang') || (navigator.language.startsWith('tr') ? 'tr' : 'de');
+
+function setLang(l) {
+  _lang = l;
+  localStorage.setItem('keby_lang', l);
+  document.querySelectorAll('[data-tr][data-de]').forEach(function(el) {
+    el.textContent = l === 'tr' ? el.dataset.tr : el.dataset.de;
+  });
+  document.getElementById('btn-tr').className = 'lbtn' + (l==='tr' ? ' active' : '');
+  document.getElementById('btn-de').className = 'lbtn' + (l==='de' ? ' active' : '');
+  document.title = l === 'tr' ? 'Hakkımızda & İletişim – Keby' : 'Über uns & Kontakt – Keby';
+}
+
+async function sendContactForm() {
+  var name = document.getElementById('cf-name').value.trim();
+  var email = document.getElementById('cf-email').value.trim();
+  var subject = document.getElementById('cf-subject').value.trim();
+  var message = document.getElementById('cf-message').value.trim();
+  
+  if (!name || !email || !message) {
+    alert(_lang === 'tr' ? 'Lütfen tüm alanları doldurun.' : 'Bitte alle Felder ausfüllen.');
+    return;
+  }
+  
+  // Web3Forms ile gönder
+  try {
+    await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        access_key: '6ad11651-712c-402b-ae53-bbc4dfafe66d',
+        subject: 'Keby İletişim: ' + subject,
+        from_name: name,
+        email: email,
+        message: message,
+        to: 'info@keby.shop',
+      })
+    });
+  } catch(e) {}
+  
+  document.getElementById('contactForm').style.display = 'none';
+  var success = document.getElementById('form-success');
+  success.style.display = 'block';
+  success.textContent = _lang === 'tr'
+    ? '✓ Mesajınız iletildi! En kısa sürede yanıt vereceğiz.'
+    : '✓ Ihre Nachricht wurde gesendet! Wir antworten so schnell wie möglich.';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setLang(_lang);
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(function(el) { io.observe(el); });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keby – Türkiye'den Premium Zeytinyağı</title>
+<meta name="description" content="Keby – Mudanya'dan sızma zeytinyağı ve yağlı siyah zeytin. Türkiye'den Almanya'ya doğrudan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+img { max-width: 100%; display: block; }
+
+/* ── VARIABLES ── */
+:root {
+  --cream: #f7f4ee;
+  --white: #fdfcf9;
+  --olive: #3d6b2a;
+  --olive-dark: #2a4a1a;
+  --gold: #c4a24a;
+  --text: #2a2a22;
+  --muted: #6b6b5a;
+  --border: rgba(61,107,42,0.15);
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  color: var(--text);
+  background: var(--white);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: 64px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(253,252,249,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+.nav-logo img { width: 40px; height: 40px; object-fit: contain; }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a { text-decoration: none; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+.nav-links a:hover { color: var(--olive); }
+.nav-right { display: flex; align-items: center; gap: 0.6rem; }
+.lang-switcher { display: flex; gap: 0.25rem; }
+.lang-btn { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 0.28rem 0.65rem; font-size: 0.72rem; cursor: pointer; font-family: 'Jost', sans-serif; color: var(--muted); transition: all 0.2s; }
+.lang-btn.active { background: var(--olive-dark); color: white; border-color: var(--olive-dark); }
+.nav-cart { display: flex; align-items: center; gap: 0.4rem; background: var(--olive-dark); color: white; border: none; padding: 0.5rem 1rem; border-radius: 3px; font-family: 'Jost', sans-serif; font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+.nav-cart:hover { background: var(--olive); }
+.cart-count { background: var(--gold); color: var(--olive-dark); border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; font-weight: 500; }
+
+/* ── HERO ── */
+.hero {
+  margin-top: 64px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 64px);
+}
+
+
+.hero-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.hero-tag::before { content: ''; width: 24px; height: 1px; background: var(--gold); }
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 4vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--olive-dark);
+  margin-bottom: 1.25rem;
+}
+.hero-title em { font-style: italic; color: var(--olive); }
+.hero-desc {
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--muted);
+  max-width: 420px;
+  margin-bottom: 2rem;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--olive-dark);
+  color: white;
+  text-decoration: none;
+  padding: 0.9rem 2rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+.hero-cta:hover { background: var(--olive); }
+.hero-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 600; color: var(--olive-dark); line-height: 1; }
+.stat-label { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 0.15rem; }
+
+
+
+
+ }
+ }
+
+/* ── SECTIONS ── */
+section { padding: 5rem 4rem; }
+.section-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 300;
+  color: var(--olive-dark);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+/* ── PRODUCTS ── */
+#produkte { background: var(--cream); padding: 4rem 1.5rem; }
+.products-header { text-align: center; margin-bottom: 3rem; }
+
+
+.product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(42,74,26,0.13); }
+.product-card, .product-card *, .product-card *:hover { text-decoration: none !important; }
+
+.prod-body { padding:0.85rem 0.85rem 0; flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+.prod-badge { display: inline-block; background: var(--olive-dark); color: white; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.18rem 0.5rem; border-radius: 2px; margin-bottom: 0.6rem;   text-decoration: none;
+}
+.prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+.prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.prod-attrs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.attr-tag { font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--olive); background: rgba(61,107,42,0.07); padding: 0.2rem 0.5rem; border-radius: 2px; border: 1px solid rgba(61,107,42,0.14); }
+
+
+
+.product-card:hover 
+
+
+
+.prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
+.prod-price-sub { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+
+.product-card:hover 
+
+/* ── FEATURES ── */
+#vorteile { background: var(--olive-dark); }
+#vorteile .section-tag { color: var(--gold); }
+#vorteile .section-title { color: #e8d49a; }
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2.5rem; margin-top: 2.5rem; }
+
+.feat-icon { width: 40px; height: 40px; margin-bottom: 1rem; }
+.feat-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--olive-dark); margin-bottom: 0.4rem; }
+.feat-text { font-size: 0.92rem; line-height: 1.8; color: var(--muted); }
+
+/* ── ORIGIN ── */
+#herkunft {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.origin-img { border-radius: 4px; overflow: hidden; }
+.origin-img img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.origin-text { font-size: 1rem; line-height: 1.9; color: var(--muted); margin-top: 1rem; }
+.origin-list { list-style: none; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.origin-list li { display: flex; align-items: center; gap: 0.65rem; font-size: 0.84rem; color: var(--muted); }
+.origin-list li::before { content: ''; width: 5px; height: 5px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+
+/* ── CONTACT ── */
+#kontakt { background: var(--cream); text-align: center; }
+.kontakt-inner { max-width: 520px; margin: 0 auto; }
+.kontakt-inner p { font-size: 1rem; color: var(--muted); line-height: 1.8; margin-top: 0.75rem; margin-bottom: 1.75rem; }
+.kontakt-links { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; }
+.kontakt-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--olive-dark); text-decoration: none; font-size: 0.84rem; border-bottom: 1px solid var(--border); padding-bottom: 2px; transition: all 0.2s; }
+.kontakt-link:hover { color: var(--olive); border-color: var(--olive); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--olive-dark);
+  color: rgba(255,255,255,0.5);
+  padding: 2.5rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.footer-logo { width: 40px; height: 40px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.6; }
+.footer-copy { font-size: 0.7rem; letter-spacing: 0.05em; text-align: center; flex: 1; }
+.footer-links { display: flex; gap: 1.75rem; }
+.footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+.footer-links a:hover { color: #e8d49a; }
+
+/* ── CART PANEL ── */
+.cart-overlay { position: fixed; inset: 0; background: rgba(42,42,34,0.5); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.cart-overlay.open { opacity: 1; pointer-events: all; }
+.cart-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); max-width: 100vw; overflow-x: hidden; background: var(--white); z-index: 201; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+.cart-panel.open { transform: translateX(0); }
+.cart-ph { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+.cart-ptitle { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; color: var(--olive-dark); }
+.cart-close { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1.25rem; }
+.cart-items { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem;   overflow-x: hidden;
+  min-width: 0;
+}
+.cart-empty { text-align: center; padding: 2.5rem 0; color: var(--muted); font-size: 0.84rem; }
+.cart-item { display: grid; grid-template-columns: 52px 1fr auto; gap: 0.75rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.cart-item-img { width: 52px; height: 52px; object-fit: cover; border-radius: 2px; }
+.cart-item-name { font-size: 0.8rem; color: var(--olive-dark); margin-bottom: 0.2rem; }
+.cart-item-qty { display: flex; align-items: center; gap: 0.3rem; }
+.qty-btn { width: 20px; height: 20px; border: 1px solid var(--border); background: none; cursor: pointer; border-radius: 2px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; }
+.qty-num { font-size: 0.8rem; min-width: 16px; text-align: center; }
+.cart-item-price { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--olive-dark); font-weight: 600; }
+.cart-foot { padding: 1.25rem 1.5rem; border-top: 1px solid var(--border);   overflow-x: hidden;
+  min-width: 0;
+}
+.cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.cart-total-lbl { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.cart-total-price { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600; color: var(--olive-dark); }
+.btn-checkout { width: 100%; background: var(--olive-dark); color: white; border: none; padding: 0.95rem; font-family: 'Jost', sans-serif; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: background 0.2s; margin-bottom: 0.5rem; }
+.btn-checkout:hover { background: var(--olive); }
+.btn-paypal { width: 100%; background: #ffc439; border: none; padding: 0.7rem; cursor: pointer; border-radius: 3px; font-size: 0.85rem; font-weight: 700; color: #003087; margin-bottom: 0.5rem; }
+.cart-note { font-size: 0.68rem; text-align: center; color: var(--muted); }
+
+/* ── PAYMENT MODAL ── */
+.pm-overlay { position: fixed; inset: 0; background: rgba(42,42,34,0.6); z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.pm-overlay.open { opacity: 1; pointer-events: all; }
+.pm-box { background: var(--white); border-radius: 4px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s; }
+.pm-overlay.open .pm-box { transform: translateY(0); }
+.pm-head { background: var(--olive-dark); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.pm-head h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; }
+.pm-xbtn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; opacity: 0.7; }
+.pm-body { padding: 1.5rem; }
+.pm-summary { background: var(--cream); border-radius: 3px; padding: 0.9rem 1.1rem; margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--muted); line-height: 1.7; }
+.pm-summary strong { color: var(--olive-dark); font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; }
+.pm-method { border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 0.6rem; }
+.pm-mhead { padding: 0.9rem 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 0.65rem; font-size: 0.83rem; color: var(--olive-dark); transition: background 0.2s; user-select: none; }
+.pm-mhead:hover, .pm-method.open .pm-mhead { background: var(--cream); }
+.pm-mbody { display: none; padding: 1rem 1.1rem; border-top: 1px solid var(--border); background: var(--cream); font-size: 0.8rem; color: var(--muted); line-height: 1.8; }
+.pm-method.open .pm-mbody { display: block; }
+.iban-box { font-family: monospace; font-size: 0.88rem; color: var(--olive-dark); background: white; border: 1px solid var(--border); padding: 0.5rem 0.85rem; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; margin: 0.5rem 0; letter-spacing: 0.04em; }
+.copy-btn { background: var(--olive-dark); color: white; border: none; padding: 0.25rem 0.65rem; border-radius: 2px; font-size: 0.7rem; cursor: pointer; }
+.btn-pp-modal { width: 100%; background: #ffc439; border: none; padding: 0.8rem; cursor: pointer; border-radius: 3px; font-size: 0.85rem; font-weight: 700; color: #003087; margin-top: 0.65rem; }
+.pm-warn { font-size: 0.76rem; background: rgba(196,162,74,0.1); border: 1px solid rgba(196,162,74,0.25); padding: 0.55rem 0.8rem; border-radius: 3px; color: #7a6020; margin-top: 0.5rem; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--olive-dark); color: white; padding: 0.75rem 1.75rem; border-radius: 3px; font-size: 0.78rem; z-index: 500; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.demo-badge { position: fixed; bottom: 0.75rem; right: 0.75rem; background: rgba(42,42,34,0.8); color: rgba(255,255,255,0.5); font-size: 0.6rem; padding: 0.28rem 0.6rem; border-radius: 2px; z-index: 500; }
+
+/* ── SCROLL ANIM ── */
+.fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ════════════════════════════
+   MOBILE — tek blok, clean
+   ════════════════════════════ */
+@media (max-width: 860px) {
+  /* NAV */
+  .nav-links { display: none; }
+  nav { padding: 0 1rem; height: 60px; }
+  .nav-logo img { width: 36px; height: 36px; }
+  .lang-btn { padding: 0.22rem 0.5rem; font-size: 0.66rem; }
+  .nav-cart { padding: 0.4rem 0.75rem; font-size: 0.7rem; }
+
+  /* HERO */
+  .hero {
+    grid-template-columns: 1fr;
+    margin-top: 60px;
+    min-height: auto;
+  }
+  
+  
+  
+  .hero-title { font-size: 2.1rem; }
+  .hero-desc { font-size: 0.88rem; max-width: 100%; }
+  .hero-stats { gap: 1.25rem; margin-top: 1.75rem; padding-top: 1.5rem; }
+  .stat-num { font-size: 1.5rem; }
+
+  /* PRODUCTS */
+  #produkte { padding: 2.5rem 1.25rem; }
+  
+  
+
+  /* FEATURES */
+  #vorteile { padding: 2.5rem 1.25rem; }
+  .features-grid { grid-template-columns: 1fr; gap: 1.75rem; }
+
+  /* ORIGIN */
+  #herkunft {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 1.25rem;
+    gap: 1.75rem;
+  }
+
+  /* CONTACT + other sections */
+  #kontakt { padding: 2.5rem 1.25rem; }
+
+  /* FOOTER */
+  footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.25rem;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .footer-links { justify-content: center; flex-wrap: wrap; gap: 1.25rem; }
+}
+
+.product-card:hover 
+.product-card:hover .prod-img-hover { opacity: 1 !important; }
+
+
+.sss-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--border); }
+.sss-item { border-bottom: 1px solid var(--border); }
+.sss-q { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 0; cursor: pointer; font-size: 0.92rem; color: var(--olive-dark); font-weight: 400; gap: 1rem; transition: color 0.2s; }
+.sss-q:hover { color: var(--olive); }
+.sss-arrow { font-size: 1rem; color: var(--gold); flex-shrink: 0; transition: transform 0.3s; }
+.sss-item.open .sss-arrow { transform: rotate(180deg); }
+.sss-a { display: none; padding-bottom: 1.1rem; }
+.sss-item.open .sss-a { display: block; }
+.sss-a p { font-size: 0.88rem; line-height: 1.85; color: var(--muted); }
+
+
+
+
+
+
+
+
+/* ── ÜRÜN KART BUTONLARI ── */
+.prod-footer-btns { display:flex; gap:0.4rem; align-items:center; }
+.btn-detail, .btn-cart-quick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 30px;
+  padding: 0 0.75rem;
+  border-radius: 2px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  white-space: nowrap;
+}
+.btn-detail {
+  color: var(--olive);
+  border: 1px solid var(--olive);
+  background: transparent;
+}
+.btn-cart-quick {
+  background: var(--olive-dark);
+  color: white;
+  border: 1px solid var(--olive-dark);
+}
+.btn-detail:hover {
+  background: var(--olive);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(61,107,42,0.22);
+}
+.btn-cart-quick:hover {
+  background: var(--olive);
+  border-color: var(--olive);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(42,74,26,0.28);
+}
+.btn-detail:active, .btn-cart-quick:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+
+
+
+/* ── GLOBAL OVERFLOW FIX ── */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+* { box-sizing: border-box; }
+
+/* ── MOBILE GENEL ── */
+
+
+
+
+
+
+@media(max-width:860px){
+  html,body{overflow-x:hidden!important;max-width:100%!important;}
+  *{max-width:100%;}
+  img,video{max-width:100%!important;height:auto;}
+  
+  /* Nav */
+  nav{padding:0 0.75rem!important;}
+  .nav-links{display:none!important;}
+  
+  /* Hero */
+  #hero-section{width:100%!important;max-width:100vw!important;}
+  .hero-slide{width:100%!important;}
+  .hero-slide img{width:100%!important;height:100%!important;object-fit:cover!important;}
+  
+  /* Kargo bandı */
+  #kargo-band, div[style*="letter-spacing:0.06em"]{
+    flex-wrap:wrap!important;
+    gap:0.4rem!important;
+    padding:0.5rem!important;
+    font-size:0.62rem!important;
+  }
+  
+  /* Kalite şeridi */
+  .kalite-serit-inner{grid-template-columns:repeat(3,1fr)!important;}
+  
+  /* Ürünler section */
+  #urunler{padding:2rem 0.75rem!important;}
+  .products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: min(1100px, 100%);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+  .product-card {
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow: 0 2px 20px rgba(42,74,26,0.07);
+}
+  .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
+  
+  /* Ürün footer butonlar */
+  .prod-footer { display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
+  .prod-footer-btns{width:100%!important;}
+  .btn-detail,.btn-cart-quick{flex:1!important;justify-content:center!important;height:40px!important;}
+  .prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
+  
+  /* Features */
+  #vorteile{padding:2.5rem 0.75rem!important;}
+  .features-grid{grid-template-columns:1fr!important;gap:1.5rem!important;}
+  
+  /* SSS */
+  #sss{padding:2.5rem 0.75rem!important;}
+  
+  /* Yorumlar */
+  #yorumlar{padding:2.5rem 0.75rem!important;}
+  #reviewsGrid{grid-template-columns:1fr!important;}
+  
+  /* Video section */
+  #video{padding:2rem 0.75rem!important;}
+  
+  /* Tüm section padding'ler */
+  section[style*="padding:5rem"]{padding:2.5rem 0.75rem!important;}
+  section[style*="padding:4rem"]{padding:2rem 0.75rem!important;}
+  section[style*="padding:3rem"]{padding:1.75rem 0.75rem!important;}
+  
+  /* Modallar */
+  .pm-box{width:96vw!important;max-height:90vh!important;overflow-y:auto!important;}
+  #cartPanel{width:100vw!important;}
+  
+  /* Bülten */
+  #newsletterForm{flex-direction:column!important;}
+  #newsletterForm input{border-radius:3px 3px 0 0!important;}
+  #newsletterForm button{border-radius:0 0 3px 3px!important;}
+}
+
+
+/* ═══════════════════════════════════════
+   KEBY MOBILE CSS — Tamamen yeniden yazıldı
+   ═══════════════════════════════════════ */
+
+/* Global */
+html { overflow-x: hidden; }
+body { overflow-x: hidden; max-width: 100vw; }
+* { box-sizing: border-box; min-width: 0; }
+img, video { max-width: 100%; height: auto; }
+
+@media (max-width: 860px) {
+
+  /* ── NAV ── */
+  nav { padding: 0 0.75rem !important; gap: 0.5rem; }
+  .nav-links { display: none !important; }
+  .nav-logo img { width: 32px !important; height: 32px !important; }
+  #cartBtn { padding: 0.4rem 0.7rem !important; font-size: 0.7rem !important; }
+
+  /* ── KARGO BANDI ── */
+  #kargo-band > div,
+  div[style*="letter-spacing:0.06em"],
+  div[style*="letter-spacing:0.04em"] {
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
+    padding: 0.5rem 0.5rem !important;
+    font-size: 0.6rem !important;
+    justify-content: center !important;
+  }
+
+  /* ── HERO ── */
+  #hero-section {
+    height: 70svh !important;
+    min-height: 400px !important;
+    max-width: 100vw !important;
+    overflow: hidden !important;
+  }
+  .hero-slide, .hero-slide img {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  .hero-content, div[style*="position:absolute;inset:0"] {
+    padding: 1.5rem 1.25rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .hero-title { font-size: clamp(2rem,8vw,3rem) !important; }
+  .hero-subtitle { font-size: 0.82rem !important; }
+  
+  /* Hero stats */
+  div[style*="display:flex;gap:2.5rem"] {
+    gap: 1rem !important;
+    flex-wrap: wrap !important;
+  }
+  
+  /* Hero rozetler */
+  div[style*="flex-wrap:wrap;gap:0.6rem"] {
+    gap: 0.35rem !important;
+  }
+  div[style*="flex-wrap:wrap;gap:0.6rem"] > div {
+    font-size: 0.6rem !important;
+    padding: 0.3rem 0.6rem !important;
+  }
+
+  /* ── KALİTE ŞERİDİ ── */
+  .kalite-serit-inner,
+  div[style*="grid-template-columns:repeat(6,1fr)"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+    max-width: 100% !important;
+  }
+  section[style*="padding:1.75rem 4rem"] {
+    padding: 1.25rem 0.5rem !important;
+  }
+
+  /* ── ÜRÜNLER ── */
+  #produkte { padding: 2rem 0.75rem !important; }
+  .products-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .product-card { width: 100% !important; max-width: 100% !important; }
+  .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
+  .prod-body { padding:0.85rem 0.85rem 0; flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+  .prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+  .prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .prod-footer { display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
+  .prod-footer > div:first-child { width: 100% !important; }
+  .prod-footer-btns { width: 100% !important; }
+  .btn-detail, .btn-cart-quick {
+    flex: 1 !important;
+    height: 40px !important;
+    font-size: 0.68rem !important;
+    justify-content: center !important;
+  }
+  .prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
+
+  /* ── VIDEO ── */
+  #video { padding: 2rem 0.75rem !important; }
+  video { width: 100% !important; border-radius: 4px !important; }
+
+  /* ── FEATURES (NEDEN KEBY) ── */
+  #vorteile { padding: 2.5rem 0.75rem !important; }
+  .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .feat-icon { width: 40px !important; height: 40px !important; }
+  .feat-title { font-size: 1.1rem !important; }
+
+  /* ── SSS ── */
+  #sss { padding: 2.5rem 0.75rem !important; }
+  .sss-item { padding: 0.85rem 0 !important; }
+  .sss-q { font-size: 0.88rem !important; }
+  .sss-a p { font-size: 0.82rem !important; }
+
+  /* ── MÜŞTERİ YORUMLARI ── */
+  #yorumlar { padding: 2.5rem 0.75rem !important; }
+  #reviewsGrid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+
+  /* ── BÜLTEN ── */
+  section[style*="background:var(--olive-dark)"] { padding: 2.5rem 1rem !important; }
+  #newsletterForm { flex-direction: column !important; }
+  #newsletterForm input { border-radius: 3px 3px 0 0 !important; }
+  #newsletterForm button { border-radius: 0 0 3px 3px !important; }
+
+  /* ── İLETİŞİM ── */
+  .kontakt-inner { padding: 0 !important; max-width: 100% !important; }
+
+  /* ── SEPET PANELİ ── */
+  #cartPanel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  .cart-ph, .cart-items, .cart-foot, .cart-total-row {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  #couponRow { flex-direction: column !important; }
+  #couponRow input { border-radius: 3px !important; }
+  #couponRow button { border-radius: 3px !important; width: 100% !important; }
+
+  /* ── MODALLAR ── */
+  .pm-overlay { padding: 0.5rem !important; }
+  .pm-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+  }
+  .pm-body { padding: 1rem !important; }
+
+  /* ── STRIPE FORM ── */
+  #stripeModal .pm-box { width: 100% !important; }
+  div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  div[style*="grid-template-columns:1fr 2fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── FOOTER ── */
+  footer { padding: 2rem 1rem !important; }
+  .footer-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+
+  /* ── TÜM SECTION PADDING'LER ── */
+  section { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  
+  /* ── GENEL METİNLER ── */
+  .section-title { font-size: clamp(1.4rem,5vw,2rem) !important; }
+  .section-tag { font-size: 0.6rem !important; }
+}
+
+/* Çok küçük ekranlar */
+@media (max-width: 380px) {
+  nav { padding: 0 0.5rem !important; }
+  .kalite-serit-inner,
+  div[style*="grid-template-columns:repeat(6,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .hero-title { font-size: 1.8rem !important; }
+  .btn-detail, .btn-cart-quick { font-size: 0.62rem !important; padding: 0 0.6rem !important; }
+}
+
+
+/* ═══════════════════════════════════════════
+   KEBY MOBILE — Estetik & Animasyonlar
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 860px) {
+
+  /* ── GENEL FADE-IN ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── NAV ── */
+  nav {
+    padding: 0 1rem !important;
+    height: 56px !important;
+    background: rgba(253,252,249,0.96) !important;
+    backdrop-filter: blur(16px) saturate(1.8) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(61,107,42,0.1) !important;
+  }
+  .nav-logo img {
+    width: 34px !important; height: 34px !important;
+    transition: transform 0.3s ease !important;
+  }
+  .nav-logo:active img { transform: scale(0.92) !important; }
+  #cartBtn {
+    background: var(--olive-dark) !important;
+    border-radius: 20px !important;
+    padding: 0.4rem 0.9rem !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.08em !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }
+  #cartBtn:active { transform: scale(0.95) !important; }
+
+  /* ── HERO ── */
+  #hero-section {
+    height: 75svh !important;
+    min-height: 480px !important;
+  }
+  /* Hero gradient overlay daha dramatik */
+  .hero-overlay, div[style*="position:absolute;inset:0;background:linear-gradient"] {
+    background: linear-gradient(
+      160deg,
+      rgba(15,30,10,0.72) 0%,
+      rgba(42,74,26,0.35) 50%,
+      rgba(0,0,0,0.15) 100%
+    ) !important;
+  }
+  .hero-title {
+    font-size: clamp(2.2rem,9vw,3.2rem) !important;
+    line-height: 1.05 !important;
+    animation: fadeUp 0.9s cubic-bezier(0.22,1,0.36,1) both !important;
+  }
+  .hero-subtitle {
+    font-size: 0.86rem !important;
+    line-height: 1.7 !important;
+    animation: fadeUp 0.9s 0.15s cubic-bezier(0.22,1,0.36,1) both !important;
+  }
+  .hero-cta {
+    animation: fadeUp 0.9s 0.3s cubic-bezier(0.22,1,0.36,1) both !important;
+  }
+  /* Hero rozetler animasyon */
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div {
+    animation: scaleIn 0.5s ease both !important;
+    background: rgba(255,255,255,0.12) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    border-radius: 20px !important;
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.1em !important;
+  }
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div:nth-child(1) { animation-delay: 0.4s !important; }
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div:nth-child(2) { animation-delay: 0.5s !important; }
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div:nth-child(3) { animation-delay: 0.6s !important; }
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div:nth-child(4) { animation-delay: 0.7s !important; }
+  div[style*="flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem"] > div:nth-child(5) { animation-delay: 0.8s !important; }
+
+  /* Hero slider okları */
+  .slider-btn {
+    width: 36px !important; height: 36px !important;
+    background: rgba(255,255,255,0.18) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    border-radius: 50% !important;
+    transition: background 0.2s, transform 0.2s !important;
+  }
+  .slider-btn:active { transform: scale(0.88) !important; background: rgba(255,255,255,0.3) !important; }
+
+  /* ── KALİTE ŞERİDİ ── */
+  .kalite-serit-inner,
+  div[style*="grid-template-columns:repeat(6,1fr)"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .kalite-serit-inner > div,
+  div[style*="grid-template-columns:repeat(6,1fr)"] > div {
+    padding: 1rem 0.5rem !important;
+    transition: background 0.2s !important;
+  }
+  .kalite-serit-inner > div:active,
+  div[style*="grid-template-columns:repeat(6,1fr)"] > div:active {
+    background: var(--cream) !important;
+  }
+  /* İkon dairesi */
+  div[style*="width:44px;height:44px;border-radius:50%"] {
+    width: 40px !important; height: 40px !important;
+    transition: transform 0.3s !important;
+  }
+
+  /* ── ÜRÜN KARTLARI ── */
+  #produkte { padding: 2.5rem 0.875rem !important; }
+  .products-grid { gap: 1.25rem !important; }
+  
+  .product-card {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 16px rgba(42,74,26,0.09), 0 1px 4px rgba(0,0,0,0.04) !important;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s !important;
+    animation: fadeUp 0.6s ease both !important;
+  }
+  .product-card:nth-child(1) { animation-delay: 0.1s !important; }
+  .product-card:nth-child(2) { animation-delay: 0.2s !important; }
+  .product-card:nth-child(3) { animation-delay: 0.3s !important; }
+  .product-card:active {
+    transform: scale(0.98) !important;
+    box-shadow: 0 1px 8px rgba(42,74,26,0.08) !important;
+  }
+  
+  .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
+  .product-card:active .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
+  
+  .prod-badge {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.14em !important;
+    padding: 0.2rem 0.55rem !important;
+    border-radius: 3px !important;
+  }
+  .prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+  .prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
+
+  /* Butonlar */
+  .btn-detail {
+    border-radius: 4px !important;
+    transition: all 0.2s !important;
+    font-size: 0.68rem !important;
+  }
+  .btn-detail:active { background: var(--olive) !important; color: white !important; }
+  
+  .btn-cart-quick {
+    border-radius: 4px !important;
+    font-size: 0.68rem !important;
+    transition: all 0.2s !important;
+    box-shadow: 0 2px 8px rgba(42,74,26,0.25) !important;
+  }
+  .btn-cart-quick:active {
+    transform: scale(0.95) !important;
+    box-shadow: none !important;
+  }
+
+  /* ── FEATURES ── */
+  #vorteile {
+    padding: 3rem 1rem !important;
+  }
+  .features-grid { gap: 0 !important; }
+  .features-grid > div {
+    padding: 1.5rem 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    animation: slideRight 0.6s ease both !important;
+  }
+  .features-grid > div:nth-child(1) { animation-delay: 0.1s !important; }
+  .features-grid > div:nth-child(2) { animation-delay: 0.2s !important; }
+  .features-grid > div:nth-child(3) { animation-delay: 0.3s !important; }
+  .features-grid > div:last-child { border-bottom: none !important; }
+  .feat-icon {
+    width: 36px !important; height: 36px !important;
+    flex-shrink: 0 !important;
+    margin-top: 4px !important;
+  }
+  .feat-title { font-size: 1rem !important; margin-bottom: 0.25rem !important; }
+  .feat-text { font-size: 0.82rem !important; line-height: 1.7 !important; }
+
+  /* ── SSS ── */
+  #sss { padding: 2.5rem 1rem !important; }
+  .sss-item {
+    border-radius: 6px !important;
+    padding: 0 !important;
+    margin-bottom: 0.5rem !important;
+    background: white !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden !important;
+    transition: box-shadow 0.2s !important;
+  }
+  .sss-q {
+    padding: 1rem 1.1rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 400 !important;
+  }
+  .sss-a {
+    padding: 0 1.1rem 1rem !important;
+    border-top: 1px solid var(--border) !important;
+  }
+  .sss-a p { font-size: 0.82rem !important; line-height: 1.75 !important; padding-top: 0.75rem !important; }
+  .sss-item.open { box-shadow: 0 4px 20px rgba(42,74,26,0.1) !important; }
+
+  /* ── MÜŞTERİ YORUMLARI ── */
+  #yorumlar { padding: 2.5rem 1rem !important; }
+  #reviewsGrid > div {
+    border-radius: 8px !important;
+    padding: 1.25rem !important;
+    animation: fadeUp 0.6s ease both !important;
+    box-shadow: 0 2px 16px rgba(42,74,26,0.07) !important;
+  }
+
+  /* ── SEPET PANELİ ── */
+  #cartPanel {
+    width: 100vw !important;
+    border-radius: 16px 16px 0 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    max-height: 90svh !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.4s cubic-bezier(0.32,0.72,0,1) !important;
+  }
+  #cartPanel.open {
+    transform: translateY(0) !important;
+  }
+  /* Drag handle */
+  #cartPanel::before {
+    content: '' !important;
+    display: block !important;
+    width: 36px !important;
+    height: 4px !important;
+    background: rgba(0,0,0,0.12) !important;
+    border-radius: 2px !important;
+    margin: 10px auto 0 !important;
+  }
+  .cart-ph {
+    padding-top: 0.5rem !important;
+    border-radius: 0 !important;
+  }
+
+  /* ── MODALLAR ── */
+  .pm-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .pm-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92svh !important;
+    overflow-y: auto !important;
+    animation: slideUp 0.35s cubic-bezier(0.32,0.72,0,1) both !important;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .pm-head { border-radius: 0 !important; }
+
+  /* ── BÜLTEN ── */
+  section[style*="background:var(--olive-dark)"] { padding: 2.5rem 1rem !important; }
+  #newsletterForm { flex-direction: column !important; gap: 0 !important; }
+  #newsletterForm input {
+    border-radius: 6px 6px 0 0 !important;
+    padding: 0.85rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+  #newsletterForm button {
+    border-radius: 0 0 6px 6px !important;
+    padding: 0.85rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* ── BTN GENEL ── */
+  .btn-checkout {
+    border-radius: 6px !important;
+    height: 48px !important;
+    font-size: 0.8rem !important;
+    box-shadow: 0 4px 16px rgba(42,74,26,0.3) !important;
+    transition: all 0.2s !important;
+  }
+  .btn-checkout:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 2px 8px rgba(42,74,26,0.2) !important;
+  }
+  .btn-paypal {
+    border-radius: 6px !important;
+    height: 44px !important;
+  }
+
+  /* ── WHATSAPP BUTONU ── */
+  #waBtn {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    width: 52px !important;
+    height: 52px !important;
+    box-shadow: 0 4px 18px rgba(37,211,102,0.4) !important;
+  }
+
+  /* ── SCROLL ANIMASYONU ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── TOUCH RİPPLE ── */
+@media (max-width: 860px) {
+  .btn-cart-quick, .btn-detail, .btn-checkout, .btn-paypal, #cartBtn {
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none !important;
+  }
+}
+
+
+/* ── KONTRAST İYİLEŞTİRME ── */
+:root {
+  --text: #1a1a14 !important;
+  --muted: #4a4a3a !important;
+  --olive-dark: #1e3a12 !important;
+  --olive: #2d5a1e !important;
+}
+body { color: #1a1a14; }
+.prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+.prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.sss-q span { color: #1e3a12 !important; }
+.feat-title { color: #e8d49a !important; }
+.section-title { color: #1e3a12 !important; }
+.s-title, .vs-title { color: #1e3a12 !important; }
+
+
+@media(max-width:860px){
+  div[style*="grid-template-columns:repeat(3,1fr);grid-template-rows:auto"] {
+    grid-template-columns: repeat(2,1fr) !important;
+  }
+  div[style*="grid-column:span 2"] {
+    grid-column: span 2 !important;
+  }
+  div[style*="grid-row:span 2"] {
+    grid-row: span 1 !important;
+  }
+  div[style*="grid-row:span 2"] img {
+    min-height: 200px !important;
+    height: 200px !important;
+  }
+  div[style*="height:185px"] img,
+  div[style*="height:185px"] {
+    height: 160px !important;
+  }
+}
+
+
+@media(max-width:860px){
+  #produkte { padding: 2rem 0.875rem !important; }
+  #produkte div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+  }
+  #vorteile { padding: 1.5rem 0.875rem !important; }
+  #vorteile div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  #sss { padding: 1.75rem 0.875rem !important; }
+}
+
+
+@media(max-width:860px){
+  /* Galeri video bölümü */
+  section[style*="grid-template-columns:1fr 1fr 1fr 0.8fr"] > div {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: 180px !important;
+  }
+  /* Ürünler */
+  #produkte div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+@media(max-width:860px){
+  /* Galeri üst satır */
+  div[style*="grid-template-columns:1.2fr 1fr 1fr 0.9fr"] {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: auto !important;
+  }
+  div[style*="grid-template-columns:1.2fr 1fr 1fr 0.9fr"] > div {
+    height: 130px !important;
+  }
+  /* Galeri alt satır */
+  div[style*="grid-template-columns:2fr 1fr 1fr"] {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: auto !important;
+  }
+  div[style*="grid-template-columns:2fr 1fr 1fr"] > div {
+    height: 120px !important;
+  }
+  section[style*="padding:1.75rem 3rem 2rem"] {
+    padding: 1rem 0.875rem 1.25rem !important;
+  }
+}
+
+
+@media(max-width:860px){
+  /* Kargo bandı */
+  div[style*="position:fixed;top:64px"] {
+    font-size:0.6rem !important;
+    gap:0.75rem !important;
+    padding:0 0.5rem !important;
+    flex-wrap:nowrap !important;
+    overflow:hidden !important;
+  }
+  
+  /* Hero section */
+  #hero-section {
+    height: calc(100svh - 100px) !important;
+    margin-top: 100px !important;
+    min-height: 420px !important;
+  }
+  
+  /* Hero içerik — sol alt */
+  .hero-content {
+    padding: 1.25rem !important;
+    justify-content: flex-end !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  /* Hero başlık */
+  .hero-title {
+    font-size: clamp(1.9rem, 7.5vw, 2.8rem) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Hero subtitle */
+  .hero-subtitle, div[class*="hero-sub"] {
+    font-size: 0.8rem !important;
+    line-height: 1.6 !important;
+    max-width: 80% !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Hero CTA butonu */
+  .hero-cta, a[href="#produkte"] {
+    padding: 0.7rem 1.5rem !important;
+    font-size: 0.72rem !important;
+  }
+  
+  /* İstatistikler — hero alt */
+  div[style*="display:flex;gap:2.5rem"],
+  div[style*="display:flex;gap:2rem"] {
+    gap: 1.25rem !important;
+  }
+  
+  /* Slider dots — azalt */
+  .slider-dots { bottom: 0.75rem !important; }
+  .slider-dot { width: 5px !important; height: 5px !important; }
+}
+
+@media(max-width:860px){
+  /* Galeri üst satır */
+  div[style*="grid-template-columns:1.2fr 1fr 1fr 0.9fr"] {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: auto !important;
+    gap: 0.4rem !important;
+  }
+  div[style*="grid-template-columns:1.2fr 1fr 1fr 0.9fr"] > div {
+    height: 120px !important;
+    border-radius: 6px !important;
+  }
+  /* Galeri alt satır */
+  div[style*="grid-template-columns:2fr 1fr 1fr"] {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: auto !important;
+    gap: 0.4rem !important;
+  }
+  div[style*="grid-template-columns:2fr 1fr 1fr"] > div {
+    height: 110px !important;
+    border-radius: 6px !important;
+  }
+  /* Galeri bölüm padding */
+  section[style*="padding:1.75rem 3rem 2rem"] {
+    padding: 0.75rem 0.875rem !important;
+  }
+}
+
+
+@media(max-width:860px){
+  /* Galeri tüm satırlar */
+  section[style*="padding:1.75rem 3rem 2rem"] {
+    padding: 0.75rem 0.875rem !important;
+  }
+  section[style*="padding:1.75rem 3rem 2rem"] > div > div[style*="display:grid"] {
+    grid-template-columns: repeat(2,1fr) !important;
+    height: auto !important;
+    gap: 0.4rem !important;
+  }
+  section[style*="padding:1.75rem 3rem 2rem"] > div > div[style*="display:grid"] > div {
+    height: 115px !important;
+    border-radius: 6px !important;
+  }
+  section[style*="padding:1.75rem 3rem 2rem"] > div {
+    gap: 0.4rem !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#produkte" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a></li>
+    <li><a href="vision.html" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a></li>
+    <li><a href="ueber-uns.html" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a></li>
+    <li><a href="ueber-uns.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="tr" onclick="setLang('tr')">🇹🇷 TR</button>
+      <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
+    </div>
+    <button class="nav-cart" onclick="toggleCart()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span data-tr="Sepet" data-de="Warenkorb">Sepet</span>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- KARGO BANNER -->
+<div style="background:var(--olive-dark);color:white;padding:0;text-align:center;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:1.5rem;height:36px;position:fixed;top:64px;left:0;right:0;z-index:99;overflow:hidden">
+  <span>🚚</span>
+  <span data-tr="120 € üzeri siparişlerde ücretsiz kargo — tüm Avrupa'ya" data-de="Kostenloser Versand ab 120 € — europaweit">120 € üzeri siparişlerde ücretsiz kargo — tüm Avrupa'ya</span>
+  <span style="color:var(--gold)">✦</span>
+  <span data-tr="1–3 iş gününde teslimat" data-de="Lieferung in 1–3 Werktagen">1–3 iş gününde teslimat</span>
+  <span style="color:var(--gold)">✦</span>
+  <span data-tr="Güvenli PayPal ödemesi" data-de="Sichere PayPal-Zahlung">Güvenli PayPal ödemesi</span>
+</div>
+
+<!-- HERO -->
+<section id="hero-section" style="position:relative;height:calc(100svh - 100px);width:100%;max-width:100vw;min-height:520px;overflow:hidden;margin-top:100px;display:block">
+
+  <!-- SLIDES -->
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="eager"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+
+  <!-- OVERLAY -->
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(42,74,26,0.78) 0%,rgba(42,74,26,0.4) 60%,rgba(0,0,0,0.1) 100%);z-index:1;pointer-events:none"></div>
+
+  <!-- DOTS -->
+  <div id="kdots" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);display:flex;gap:0.5rem;z-index:5"></div>
+
+  <!-- ARROWS -->
+  <button onclick="kSlideMove(-1)" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);z-index:5;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center">&#8249;</button>
+  <button onclick="kSlideMove(1)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:5;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center">&#8250;</button>
+
+  <!-- CONTENT -->
+  <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;padding:3rem 2rem 3rem 4rem;max-width:min(580px,50%)">
+    <div style="font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:#e8d49a;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem">
+      <span style="display:block;width:24px;height:1px;background:#c4a24a"></span>
+      <span data-tr="Türkiye'den Doğrudan Kapınıza" data-de="Natives Olivenöl Extra">Türkiye'den Doğrudan Kapınıza</span>
+    </div>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2.8rem,6vw,5.5rem);font-weight:300;line-height:1.05;color:white;margin-bottom:1.25rem;text-shadow:0 2px 20px rgba(0,0,0,0.3)">
+      <span data-tr="Toprağın Özü," data-de="Türkisches Gold,">Toprağın Özü,</span><br>
+      <em style="font-style:italic;color:#e8d49a" data-tr="Sofranızın" data-de="direkt aus der">Sofranızın</em><br>
+      <span data-tr="Baş Tacı" data-de="Natur">Baş Tacı</span>
+    </h1>
+    <p style="font-size:1.05rem;line-height:1.85;color:rgba(255,255,255,0.88);max-width:460px;margin-bottom:2rem;text-shadow:0 1px 8px rgba(0,0,0,0.2)" data-tr="Mudanya'nın bereketli bahçelerinden, nesiller boyu süregelen bir özenle hasat edilen zeytinler. Katkısız, soğuk sıkım, özüyle bütün." data-de="Handverlesene Produkte aus sonnenverwöhnten Hainen der Türkei. Kalt gepresst, ungefiltert.">
+      Mudanya'nın bereketli bahçelerinden, nesiller boyu süregelen bir özenle hasat edilen zeytinler. Katkısız, soğuk sıkım, özüyle bütün.
+    </p>
+    <a href="#produkte" style="display:inline-flex;align-items:center;gap:0.65rem;background:#c4a24a;color:#2a4a1a;text-decoration:none;padding:0.95rem 2.25rem;font-size:0.82rem;letter-spacing:0.14em;text-transform:uppercase;border-radius:2px;font-weight:500;align-self:flex-start;transition:background 0.2s">
+      <span data-tr="Ürünleri İncele" data-de="Jetzt entdecken">Ürünleri İncele</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <div style="display:flex;gap:2.5rem;margin-top:2.5rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,0.2)">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:white;line-height:1">%100</div><div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.2rem" data-tr="Doğal" data-de="Natürlich">Doğal</div></div>
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:white;line-height:1" data-tr="Soğuk" data-de="Kalt">Soğuk</div><div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.2rem" data-tr="Sıkım" data-de="Gepresst">Sıkım</div></div>
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:white;line-height:1">3</div><div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:0.2rem" data-tr="Ürün" data-de="Produkte">Ürün</div></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var slides = document.querySelectorAll('.kslide');
+  var cur = 0;
+  var total = slides.length;
+  var timer;
+
+  // Show first slide immediately
+  slides[0].style.opacity = '1';
+  slides[0].style.zIndex = '1';
+
+  // Build dots
+  var dotsEl = document.getElementById('kdots');
+  for(var i=0;i<total;i++){
+    var d = document.createElement('div');
+    d.style.cssText = 'width:8px;height:8px;border-radius:50%;cursor:pointer;transition:all 0.3s;background:'+(i===0?'#c4a24a':'rgba(255,255,255,0.4)');
+    d.setAttribute('data-i',i);
+    (function(idx){ d.onclick = function(){ kGo(idx); }; })(i);
+    dotsEl.appendChild(d);
+  }
+
+  window.kGo = function(n) {
+    slides[cur].style.opacity = '0';
+    slides[cur].style.zIndex = '0';
+    dotsEl.children[cur].style.background = 'rgba(255,255,255,0.4)';
+    dotsEl.children[cur].style.transform = 'scale(1)';
+    cur = ((n % total) + total) % total;
+    slides[cur].style.opacity = '1';
+    slides[cur].style.zIndex = '1';
+    dotsEl.children[cur].style.background = '#c4a24a';
+    dotsEl.children[cur].style.transform = 'scale(1.3)';
+    clearInterval(timer);
+    timer = setInterval(function(){ kGo(cur+1); }, 4500);
+  };
+
+  window.kSlideMove = function(dir){ kGo(cur+dir); };
+
+  // Auto play
+  timer = setInterval(function(){ kGo(cur+1); }, 4500);
+
+  // Touch swipe
+  var tx=0;
+  var sec = document.getElementById('hero-section');
+  sec.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+  sec.addEventListener('touchend',function(e){
+    var diff=tx-e.changedTouches[0].clientX;
+    if(Math.abs(diff)>50) kGo(cur+(diff>0?1:-1));
+  },{passive:true});
+})();
+
+// ── STRIPE ──
+var stripe = null;
+var stripeElements = null;
+var stripeCardElement = null;
+var stripeClientSecret = null;
+
+async function loadStripe() {
+  if (stripe) return;
+  // Stripe.js yükle
+  await new Promise(function(resolve) {
+    var s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = resolve;
+    document.head.appendChild(s);
+  });
+  // Config'den publishable key al
+  var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/config');
+  var d = await r.json();
+  stripe = Stripe(d.publishableKey);
+}
+
+async function openStripeModal() {
+  if (!cart.length) return;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount === 'function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+
+  // Summary güncelle
+  var items = cart.map(function(i){return i.qty+'x '+i.name;}).join(', ');
+  document.getElementById('stripe-summary').innerHTML =
+    '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.3rem">'+items+'</div>'+
+    '<div><span data-tr="Toplam" data-de="Gesamt" style="font-size:0.8rem;color:var(--muted)">Toplam</span>: <strong style="font-size:1.1rem;color:var(--olive-dark)">'+finalTotal.toFixed(2).replace('.',',')+'&nbsp;€</strong></div>';
+
+  document.getElementById('stripeModal').classList.add('open');
+  document.getElementById('stripe-form').style.display = 'block';
+  document.getElementById('stripe-success').style.display = 'none';
+  document.getElementById('stripe-error').style.display = 'none';
+
+  await loadStripe();
+
+  // Payment Intent oluştur
+  var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/create-payment-intent', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      amount: finalTotal,
+      currency: 'eur',
+      items: cart.map(function(i){return {productId:i.name,qty:i.qty,price:i.price};}),
+    })
+  });
+  var d = await r.json();
+  if (!d.success) { showToast('Stripe hatası: '+d.error, 'err'); return; }
+  stripeClientSecret = d.clientSecret;
+
+  // Card element mount
+  stripeElements = stripe.elements();
+  stripeCardElement = stripeElements.create('card', {
+    style: {
+      base: { fontFamily: "'Jost', sans-serif", fontSize: '15px', color: '#2a2a22', '::placeholder': { color: '#9e9e8e' } },
+      invalid: { color: '#c0392b' }
+    }
+  });
+  document.getElementById('stripe-placeholder').style.display = 'none';
+  stripeCardElement.mount('#stripe-card-element');
+  stripeCardElement.on('change', function(e) {
+    var errEl = document.getElementById('stripe-error');
+    if (e.error) { errEl.style.display='block'; errEl.textContent=e.error.message; }
+    else errEl.style.display='none';
+  });
+}
+
+function closeStripeModal() {
+  document.getElementById('stripeModal').classList.remove('open');
+  if (stripeCardElement) { stripeCardElement.unmount(); stripeCardElement=null; stripeElements=null; }
+}
+
+async function confirmStripePayment() {
+  if (!stripe || !stripeCardElement || !stripeClientSecret) return;
+  
+  // Zorunlu alan kontrolü
+  var fname = document.getElementById('stripe-fname').value.trim();
+  var lname = document.getElementById('stripe-lname').value.trim();
+  var email = document.getElementById('stripe-email').value.trim();
+  var address = document.getElementById('stripe-address').value.trim();
+  var plz = document.getElementById('stripe-plz').value.trim();
+  var city = document.getElementById('stripe-city').value.trim();
+  
+  var errEl = document.getElementById('stripe-error');
+  if (!fname || !lname || !email || !address || !plz || !city) {
+    errEl.style.display = 'block';
+    errEl.textContent = _lang==='tr' ? 'Lütfen tüm alanları doldurun.' : 'Bitte alle Felder ausfüllen.';
+    return;
+  }
+  if (!email.includes('@')) {
+    errEl.style.display = 'block';
+    errEl.textContent = _lang==='tr' ? 'Geçerli bir e-posta girin.' : 'Bitte gültige E-Mail eingeben.';
+    return;
+  }
+  
+  var btn = document.getElementById('stripe-pay-btn');
+  btn.disabled = true;
+  btn.textContent = _lang==='tr' ? 'İşleniyor...' : 'Wird verarbeitet...';
+  errEl.style.display = 'none';
+
+  var fullName = fname + ' ' + lname;
+  var result = await stripe.confirmCardPayment(stripeClientSecret, {
+    payment_method: {
+      card: stripeCardElement,
+      billing_details: {
+        name: fullName,
+        email: email,
+        address: {
+          line1: address,
+          postal_code: plz,
+          city: city,
+          country: 'DE',
+        }
+      },
+    }
+  });
+
+  if (result.error) {
+    document.getElementById('stripe-error').style.display = 'block';
+    document.getElementById('stripe-error').textContent = result.error.message;
+    btn.disabled = false;
+    btn.textContent = _lang==='tr' ? 'Ödemeyi Tamamla' : 'Zahlung abschließen';
+  } else if (result.paymentIntent.status === 'succeeded') {
+    // Siparişi Worker'a kaydet
+    var orderData = {
+      id: 'ord_stripe_' + result.paymentIntent.id,
+      ref: 'KEBY-' + result.paymentIntent.id.slice(-6).toUpperCase(),
+      name: fullName,
+      email: email,
+      address: address + ', ' + plz + ' ' + city,
+      phone: '',
+      payment: 'stripe',
+      stripePaymentId: result.paymentIntent.id,
+      status: 'onaylandi',
+      items: cart.map(function(i){ return {productId: i.name, qty: i.qty, price: i.price}; }),
+      total: cart.reduce(function(s,i){ return s+i.qty*i.price; }, 0),
+      date: new Date().toISOString(),
+    };
+    
+    try {
+      var ordersRes = await fetch('https://keby-api.hguencavdi.workers.dev/api/orders');
+      var ordersData = await ordersRes.json();
+      var orders = ordersData.orders || [];
+      if (!orders.find(function(o){ return o.stripePaymentId === result.paymentIntent.id; })) {
+        orders.unshift(orderData);
+        await fetch('https://keby-api.hguencavdi.workers.dev/api/admin/orders', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','Authorization':'Bearer S2VieTIwMjUh'},
+          body: JSON.stringify({orders: orders})
+        });
+      }
+    } catch(e) {}
+    
+    document.getElementById('stripe-form').style.display = 'none';
+    document.getElementById('stripe-success').style.display = 'block';
+    
+    // Başarı mesajını kişiselleştir
+    var successDiv = document.getElementById('stripe-success');
+    successDiv.querySelector('p').textContent = (
+      _lang==='tr'
+        ? fullName + ', siparişiniz alındı! Kısa süre içinde kargoya verilecektir.'
+        : 'Vielen Dank, ' + fullName + '! Ihre Bestellung wird bald versendet.'
+    );
+    
+    cart = []; saveCart(); updateCartUI();
+    setTimeout(function(){ closeStripeModal(); }, 5000);
+  }
+}
+
+
+function quickAdd(name, price, img) {
+  var ex = cart.find(function(x){ return x.name === name; });
+  if (ex) ex.qty++;
+  else cart.push({ name: name, price: price, img: img, qty: 1 });
+  saveCart(); updateCartUI();
+  showToast('✓ ' + name + ' ' + (_lang==='tr'?'eklendi':'hinzugefügt'));
+  openCart();
+}
+
+
+function openUeberweisung() {
+  if (!cart.length) return;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount==='function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+  var ref = 'KEBY-' + Date.now().toString().slice(-6);
+  
+  document.getElementById('uw-items').textContent = cart.map(function(i){return i.qty+'x '+i.name;}).join(', ');
+  document.getElementById('uw-total').textContent = finalTotal.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('uw-ref').textContent = ref;
+  
+  document.getElementById('ueberweisungModal').classList.add('open');
+  setLang(_lang);
+}
+
+function closeUeberweisung() {
+  document.getElementById('ueberweisungModal').classList.remove('open');
+}
+
+async function confirmUeberweisung() {
+  var ref = document.getElementById('uw-ref').textContent;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount==='function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+  var items = cart.map(function(i){return {productId:i.name,qty:i.qty,price:i.price};});
+  
+  // Siparişi kaydet
+  try {
+    var ordersR = await fetch('https://keby-api.hguencavdi.workers.dev/api/orders');
+    var ordersD = await ordersR.json();
+    var orders = ordersD.orders || [];
+    orders.unshift({
+      id: 'ord_uw_' + Date.now(),
+      ref: ref,
+      name: '',
+      email: '',
+      payment: 'havale',
+      status: 'bekliyor',
+      items: items,
+      total: finalTotal,
+      date: new Date().toISOString(),
+      source: 'uberweisung',
+    });
+    await fetch('https://keby-api.hguencavdi.workers.dev/api/admin/orders', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+'S2VieTIwMjUh'},
+      body: JSON.stringify({orders:orders})
+    });
+  } catch(e) {}
+  
+  cart = []; saveCart(); updateCartUI();
+  closeUeberweisung();
+  showToast(_lang==='tr' ? 'Sipariş alındı! Havale bilgileri gönderildi.' : 'Bestellung bestätigt!');
+}
+
+
+// ── MOBILE SCROLL ANİMASYON ──
+if (window.innerWidth <= 860) {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  
+  document.querySelectorAll('.product-card, .sss-item, #reviewsGrid > div, .features-grid > div').forEach(function(el) {
+    el.classList.add('fade-in');
+    io.observe(el);
+  });
+}
+
+
+// ── ÜRÜN CAROUSEL ──
+var carouselIdx = { pc1:0, pc2:0, pc3:0 };
+var carouselMax = { pc1:3, pc2:3, pc3:3 };
+
+function carousel(id, dir) {
+  var max = carouselMax[id];
+  carouselIdx[id] = (carouselIdx[id] + dir + max) % max;
+  var track = document.getElementById(id + '-track');
+  if (track) track.style.transform = 'translateX(-' + (carouselIdx[id] * 100) + '%)';
+  // Dots güncelle
+  var dots = document.getElementById(id + '-dots');
+  if (dots) {
+    var spans = dots.querySelectorAll('span');
+    spans.forEach(function(s, i) {
+      s.style.opacity = i === carouselIdx[id] ? '1' : '0.5';
+    });
+  }
+}
+
+// Touch/swipe desteği
+document.querySelectorAll('[id^="pc"]').forEach(function(el) {
+  if (!el.id.match(/^pc\d$/)) return;
+  var startX = 0;
+  el.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, {passive:true});
+  el.addEventListener('touchend', function(e) {
+    var diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) carousel(el.id, diff > 0 ? 1 : -1);
+  }, {passive:true});
+});
+
+</script>
+
+<!-- PRODUCTS -->
+
+<!-- VIDEO SECTION -->
+
+
+
+
+
+
+<!-- HERO ALTI GALERİ + VİDEO -->
+<section style="background:white;padding:1.75rem 3rem 2rem">
+  <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:0.6rem">
+
+    <!-- Satır 1: 4 eleman -->
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:0.6rem;height:200px">
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-tr="Kahvaltı Sofrası" data-de="Frühstückstisch">Kahvaltı Sofrası</p></div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-tr="750ml Şişe" data-de="750ml Flasche">750ml Şişe</p></div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-tr="Siyah Zeytin" data-de="Schwarze Oliven">Siyah Zeytin</p></div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block">
+          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-video-urunler.mp4" type="video/mp4">
+        </video>
+        <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
+          <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          <span style="color:white;font-size:0.5rem">VIDEO</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satır 2: 4 eleman -->
+    <div style="display:grid;grid-template-columns:1fr 1.3fr 1fr 1fr;gap:0.6rem;height:165px">
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center 55%;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-tr="Mudanya'dan" data-de="Aus Mudanya">Mudanya'dan</p></div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block">
+          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-video-bahce.mp4" type="video/mp4">
+        </video>
+        <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
+          <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          <span style="color:white;font-size:0.5rem">VIDEO</span>
+        </div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      </div>
+    </div>
+
+    <!-- Satır 3: 4 eleman -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.3fr 1fr;gap:0.6rem;height:165px">
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block">
+          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-video-kisa.mp4" type="video/mp4">
+        </video>
+        <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
+          <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          <span style="color:white;font-size:0.5rem">VIDEO</span>
+        </div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-tr="Keby Ailesi" data-de="Die Keby-Familie">Keby Ailesi</p></div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;position:relative">
+        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="produkte" style="background:var(--cream);padding:2.5rem 3rem">
+  <div style="max-width:1000px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:1.75rem">
+      <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem" data-tr="Ürünlerimiz" data-de="Unsere Produkte">Ürünlerimiz</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark)" data-tr="Özenle Seçilmiş Lezzetler" data-de="Ausgewählte Feinkost">Özenle Seçilmiş Lezzetler</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
+
+      <!-- ÜRÜN 1: 750ml -->
+      <a href="produkt-olivenoel-750ml.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+        <!-- Carousel -->
+        <div style="position:relative;overflow:hidden;height:220px" id="pc1">
+          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc1-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
+          </div>
+          <button onclick="event.preventDefault();carousel('pc1',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
+          <button onclick="event.preventDefault();carousel('pc1',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
+          <span style="position:absolute;top:0.6rem;left:0.6rem;background:var(--olive-dark);color:white;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px" data-tr="ÇOK SATAN" data-de="BESTSELLER">ÇOK SATAN</span>
+          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc1-dots">
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+          </div>
+        </div>
+        <div style="padding:1rem 1rem 0;flex:1">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Sızma Zeytinyağı 750ml" data-de="Natives Olivenöl Extra 750ml">Sızma Zeytinyağı 750ml</div>
+          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla." data-de="Aus den fruchtbaren Hainen Mudanyas, innerhalb von 24h nach der Ernte kaltgepresst. Ungefiltert — mit natürlichem Bodensatz.">Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla.</p>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Soğuk Sıkım" data-de="Kaltgepresst">Soğuk Sıkım</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Filtresiz" data-de="Ungefiltert">Filtresiz</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%7 MwSt.</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">14,99 €</div>
+            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+          </div>
+          <div style="display:flex;gap:0.35rem">
+            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- ÜRÜN 2: 5L -->
+      <a href="produkt-kanister-5l.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+        <div style="position:relative;overflow:hidden;height:220px" id="pc2">
+          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc2-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 60%;flex-shrink:0" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
+          </div>
+          <button onclick="event.preventDefault();carousel('pc2',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
+          <button onclick="event.preventDefault();carousel('pc2',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
+          <span style="position:absolute;top:0.6rem;left:0.6rem;background:var(--gold);color:var(--olive-dark);font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px;font-weight:600" data-tr="AİLE BOY" data-de="FAMILIENPACK">AİLE BOY</span>
+          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc2-dots">
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+          </div>
+        </div>
+        <div style="padding:1rem 1rem 0;flex:1">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Sızma Zeytinyağı 5L Bidon" data-de="Natives Olivenöl Extra 5L">Sızma Zeytinyağı 5L Bidon</div>
+          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif. Mudanya'dan direkt bidon." data-de="Wirtschaftliche Wahl für große Familien. Gleiche Kaltpressqualität, längerer Genuss. Direkt aus Mudanya im Kanister.">Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif. Mudanya'dan direkt bidon.</p>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="5 Litre" data-de="5 Liter">5 Litre</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Ekonomik" data-de="Wirtschaftlich">Ekonomik</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%7 MwSt.</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">59,90 €</div>
+            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+          </div>
+          <div style="display:flex;gap:0.35rem">
+            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+          </div>
+        </div>
+      </a>
+
+      <!-- ÜRÜN 3: Zeytin -->
+      <a href="produkt-oliven-schwarz.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+        <div style="position:relative;overflow:hidden;height:220px" id="pc3">
+          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc3-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 30%;flex-shrink:0" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
+          </div>
+          <button onclick="event.preventDefault();carousel('pc3',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
+          <button onclick="event.preventDefault();carousel('pc3',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
+          <span style="position:absolute;top:0.6rem;left:0.6rem;background:rgba(42,74,26,0.85);color:white;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px" data-tr="GELENEKSEL" data-de="TRADITIONELL">GELENEKSEL</span>
+          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc3-dots">
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+          </div>
+        </div>
+        <div style="padding:1rem 1rem 0;flex:1">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Yağlı Siyah Zeytin 900g" data-de="Ölige schwarze Oliven 900g">Yağlı Siyah Zeytin 900g</div>
+          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler. Kahvaltı sofrasının baş tacı." data-de="Mit Steinsalz traditionell zubereitet, natürlich fermentierte schwarze Oliven. Die Krönung des Frühstückstisches.">Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler. Kahvaltı sofrasının baş tacı.</p>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="900g Kavanoz" data-de="900g Glas">900g Kavanoz</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Doğal Fermente" data-de="Natürlich fermentiert">Doğal Fermente</span>
+            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%19 MwSt.</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">14,99 €</div>
+            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+          </div>
+          <div style="display:flex;gap:0.35rem">
+            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="vorteile" style="background:var(--olive-dark);padding:2rem 3rem">
+  <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem">
+    <div style="text-align:center;padding:1rem">
+      <svg class="feat-icon" viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 8C18 16 16 20 18 28C20 24 23 22 24 8Z" fill="#6a9b52"/><path d="M24 8C30 16 32 20 30 28C28 24 25 22 24 8Z" fill="#3d6b2a" opacity=".7"/><circle cx="24" cy="32" r="4" fill="#c4a24a"/></svg>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Doğrudan İthalat" data-de="Direktimport">Doğrudan İthalat</div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Mudanya'dan direkt — aracısız" data-de="Direkt aus Mudanya — ohne Zwischenhändler">Mudanya'dan direkt — aracısız</p>
+    </div>
+    <div style="text-align:center;padding:1rem">
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M16 24h16M24 16v16" stroke="#6a9b52" stroke-width="2"/></svg>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Soğuk Sıkım" data-de="Kaltpressung">Soğuk Sıkım</div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="27°C altı — tam koruma" data-de="Unter 27°C — voller Schutz">27°C altı — tam koruma</p>
+    </div>
+    <div style="text-align:center;padding:1rem">
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 14l2.5 7.5H34l-6.5 4.5 2.5 7.5L24 29l-6 4.5 2.5-7.5L14 21.5h7.5z" fill="#c4a24a" opacity=".7"/></svg>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Katkısız" data-de="Ohne Zusätze">Katkısız</div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Hiçbir katkı maddesi yok" data-de="Keinerlei Zusatzstoffe">Hiçbir katkı maddesi yok</p>
+    </div>
+  </div>
+</section>
+
+<!-- ORIGIN -->
+
+
+<!-- CONTACT -->
+
+<!-- SSS -->
+<section id="sss" style="background:var(--white);padding:3rem 3rem">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;text-align:center" data-tr="Merak Edilenler" data-de="Häufige Fragen">Merak Edilenler</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,2.5vw,2rem);font-weight:300;color:var(--olive-dark);text-align:center;margin-bottom:1.5rem" data-tr="Sık Sorulan Sorular" data-de="Häufig gestellte Fragen">Sık Sorulan Sorular</h2>
+    
+    <div class="sss-list">
+
+      <div class="sss-item">
+        <div class="sss-q" onclick="toggleSSS(this)">
+          <span data-tr="Ürünleriniz gerçekten katkısız ve doğal mı?" data-de="Sind Ihre Produkte wirklich natürlich und ohne Zusätze?">Ürünleriniz gerçekten katkısız ve doğal mı?</span>
+          <span class="sss-arrow">▾</span>
+        </div>
+        <div class="sss-a">
+          <p data-tr="Evet. Zeytinyağımız yalnızca soğuk sıkım, zeytinlerimiz yalnızca kaya tuzu ile hazırlanır. Hiçbir ürünümüzde yapay katkı maddesi, koruyucu veya renklendirici bulunmaz. İçindekiler listesi her zaman sade ve okunabilir." data-de="Ja. Unser Olivenöl ist nur kaltgepresst, unsere Oliven nur mit Steinsalz zubereitet. Keine künstlichen Zusatzstoffe, Konservierungsmittel oder Farbstoffe.">Evet. Zeytinyağımız yalnızca soğuk sıkım, zeytinlerimiz yalnızca kaya tuzu ile hazırlanır. Hiçbir ürünümüzde yapay katkı maddesi, koruyucu veya renklendirici bulunmaz. İçindekiler listesi her zaman sade ve okunabilir.</p>
+        </div>
+      </div>
+
+      <div class="sss-item">
+        <div class="sss-q" onclick="toggleSSS(this)">
+          <span data-tr="Ürünler nereden geliyor?" data-de="Woher kommen die Produkte?">Ürünler nereden geliyor?</span>
+          <span class="sss-arrow">▾</span>
+        </div>
+        <div class="sss-a">
+          <p data-tr="Tüm ürünlerimiz Bursa'nın Mudanya ilçesinden geliyor. Marmara'nın serinliği ile güneyin sıcaklığının buluştuğu bu topraklar, zeytine eşsiz bir tat profili kazandırır. Aynı bahçeler, aynı çiftçiler, yıllardır." data-de="Alle unsere Produkte kommen aus Mudanya, Bursa. Diese Böden an der Grenze zwischen Marmara und Südklima verleihen den Oliven ein einzigartiges Aromaprofil.">Tüm ürünlerimiz Bursa'nın Mudanya ilçesinden geliyor. Marmara'nın serinliği ile güneyin sıcaklığının buluştuğu bu topraklar, zeytine eşsiz bir tat profili kazandırır. Aynı bahçeler, aynı çiftçiler, yıllardır.</p>
+        </div>
+      </div>
+
+      <div class="sss-item">
+        <div class="sss-q" onclick="toggleSSS(this)">
+          <span data-tr="Kargo ne zaman gelir?" data-de="Wann kommt meine Bestellung?">Kargo ne zaman gelir?</span>
+          <span class="sss-arrow">▾</span>
+        </div>
+        <div class="sss-a">
+          <p data-tr="Siparişiniz 1–3 iş günü içinde tüm Avrupa'ya teslim edilir. 120 € üzeri siparişlerde kargo ücretsizdir. Her sipariş dikkatli paketlenir — şişeniz kırılmaz, yağınız dökülmez." data-de="Ihre Bestellung wird innerhalb von 1–3 Werktagen europaweit geliefert. Kostenloser Versand ab 120 €. Jede Bestellung wird sorgfältig verpackt.">Siparişiniz 1–3 iş günü içinde tüm Avrupa'ya teslim edilir. 120 € üzeri siparişlerde kargo ücretsizdir. Her sipariş dikkatli paketlenir — şişeniz kırılmaz, yağınız dökülmez.</p>
+        </div>
+      </div>
+
+      <div class="sss-item">
+        <div class="sss-q" onclick="toggleSSS(this)">
+          <span data-tr="Hangi ürünü ilk sipariş etmeliyim?" data-de="Welches Produkt soll ich zuerst bestellen?">Hangi ürünü ilk sipariş etmeliyim?</span>
+          <span class="sss-arrow">▾</span>
+        </div>
+        <div class="sss-a">
+          <p data-tr="Eğer zeytinyağını günlük kullanıyorsanız 750ml şişeyle başlayın — farkı ilk kullanımda hissedeceksiniz. Türk kahvaltısını sevenler için siyah zeytin ilk tercih olmalı. Büyük aile veya profesyonel mutfak için 5L bidon en ekonomik seçim." data-de="Wenn Sie Olivenöl täglich verwenden, beginnen Sie mit der 750ml Flasche. Für türkisches Frühstück empfehlen wir die schwarzen Oliven. Für Großfamilien ist der 5L-Kanister die wirtschaftlichste Wahl.">Eğer zeytinyağını günlük kullanıyorsanız 750ml şişeyle başlayın — farkı ilk kullanımda hissedeceksiniz. Türk kahvaltısını sevenler için siyah zeytin ilk tercih olmalı. Büyük aile veya profesyonel mutfak için 5L bidon en ekonomik seçim.</p>
+        </div>
+      </div>
+
+      
+
+      
+
+      
+  </div>
+        <div class="sss-a">
+          <p data-tr="Kesinlikle. Keby ürünleri özellikle aile ziyaretleri, özel günler ve Türk özlemi çekenlere yapılan hediyeler için mükemmel bir seçimdir. Lezzeti güçlü, kökeni belli, anlamlı bir hediye." data-de="Absolut. Keby-Produkte sind ideal als Geschenk für Familienbesuche, besondere Anlässe und Menschen mit Sehnsucht nach türkischen Aromen.">Kesinlikle. Keby ürünleri özellikle aile ziyaretleri, özel günler ve Türk özlemi çekenlere yapılan hediyeler için mükemmel bir seçimdir. Lezzeti güçlü, kökeni belli, anlamlı bir hediye.</p>
+        </div>
+      </div>
+
+      
+
+    </div>
+  </div>
+</section>
+
+<section id="kontakt">
+  <div class="kontakt-inner">
+    <div class="section-tag" style="justify-content:center" data-tr="İletişim" data-de="Kontakt">İletişim</div>
+    <h2 class="section-title" data-tr="Yanınızdayız" data-de="Wir sind für Sie da">Yanınızdayız</h2>
+    <p data-tr="Aklınıza takılan her soru, karşılıksız kalmaz. Ürünlerimiz, siparişiniz ya da teslimat hakkında bize yazın — her zaman buradayız." data-de="Fragen zu Produkten oder Lieferung? Schreiben Sie uns.">Aklınıza takılan her soru, karşılıksız kalmaz. Ürünlerimiz, siparişiniz ya da teslimat hakkında bize yazın — her zaman buradayız.</p>
+    <div class="kontakt-links">
+      <a href="mailto:kebyshop" class="kontakt-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        kebyshop
+      </a>
+      <a href="https://keby.shop" target="_blank" class="kontakt-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        keby.shop
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img class="footer-logo" src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+  <div class="footer-copy">
+    <span data-tr="© 2025 Keby – Türkiye'den Premium Zeytinyağı" data-de="© 2025 Keby – Hochwertiges Olivenöl aus der Türkei">© 2025 Keby – Türkiye'den Premium Zeytinyağı</span>
+  </div>
+  <div class="footer-links">
+    <a href="impressum.html" data-tr="Künye" data-de="Impressum">Künye</a>
+    <a href="#" data-tr="Gizlilik" data-de="Datenschutz">Gizlilik</a>
+    <a href="#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a>
+  </div>
+</footer>
+
+<!-- CART -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-ph">
+    <div class="cart-ptitle" data-tr="Sepetim" data-de="Warenkorb">Sepetim</div>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty" data-tr="Sepetiniz boş." data-de="Ihr Warenkorb ist leer.">Sepetiniz boş.</div>
+  </div>
+  <div class="cart-foot">
+    <div class="cart-total-row">
+      <span class="cart-total-lbl" data-tr="Toplam" data-de="Gesamtsumme">Toplam</span>
+      <span class="cart-total-price" id="cartTotal">0,00 €</span>
+    </div>
+    
+    <button class="btn-checkout" onclick="checkout()" data-tr="Ödemeye Geç →" data-de="Zur Kasse gehen →">Ödemeye Geç →</button>
+    <button class="btn-paypal" onclick="checkout()">PayPal</button>
+    <p class="cart-note" data-tr="120 € üzeri kargo bedava · Güvenli ödeme" data-de="Versandkostenfrei ab 120 € · Sicher bezahlen">120 € üzeri kargo bedava · Güvenli ödeme</p>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="pm-overlay" id="paymentModal" onclick="if(event.target===this)closeModal()">
+  <div class="pm-box">
+    <div class="pm-head">
+      <h3 data-tr="Ödeme Yöntemi" data-de="Zahlungsmethode wählen">Ödeme Yöntemi</h3>
+      <button class="pm-xbtn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-summary">
+        <div id="pm-items" style="margin-bottom:0.3rem"></div>
+        <div><span data-tr="Toplam" data-de="Gesamtsumme">Toplam</span>: <strong id="pm-total"></strong></div>
+        <div><span data-tr="Sipariş No" data-de="Bestellnummer">Sipariş No</span>: <strong id="pm-ref"></strong></div>
+      </div>
+      <div class="pm-method" id="method-stripe" style="margin-bottom:0.6rem">
+        <div class="pm-mhead" onclick="toggleMethod('stripe')" style="background:var(--cream)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="3" fill="#635bff"/><text x="4" y="16" font-family="Arial" font-weight="bold" font-size="9" fill="white">STRIPE</text></svg>
+          <span data-tr="Kredi / Banka Kartı" data-de="Kredit- / Debitkarte">Kredi / Banka Kartı</span>
+          <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">Visa · Mastercard · Amex</span>
+        </div>
+        <div class="pm-mbody">
+          <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.65rem" data-tr="Güvenli kart ödemesi — Stripe ile şifreli." data-de="Sichere Kartenzahlung — verschlüsselt via Stripe.">Güvenli kart ödemesi — Stripe ile şifreli.</p>
+          <button onclick="closeModal();openStripeModal()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Kart ile Öde →" data-de="Mit Karte bezahlen →">Kart ile Öde →</button>
+        </div>
+      </div>
+      <div class="pm-method" id="method-paypal">
+        <div class="pm-mhead" onclick="toggleMethod('paypal')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="#ffc439"/><text x="3" y="17" font-family="Arial" font-weight="bold" font-size="9" fill="#003087">Pay</text><text x="11" y="17" font-family="Arial" font-weight="bold" font-size="9" fill="#009cde">Pal</text></svg>
+          PayPal
+          <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)" data-tr="Hemen & güvenli" data-de="Sofort & sicher">Hemen & güvenli</span>
+        </div>
+        <div class="pm-mbody">
+          <p data-tr="PayPal'a yönlendirileceksiniz." data-de="Sie werden zu PayPal weitergeleitet.">PayPal'a yönlendirileceksiniz.</p>
+          <button class="btn-pp-modal" onclick="payWithPaypal()" data-tr="PayPal ile Öde" data-de="Jetzt mit PayPal zahlen">PayPal ile Öde</button>
+        </div>
+      </div>
+      <div class="pm-method" id="method-iban">
+        <div class="pm-mhead" onclick="toggleMethod('iban')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--olive-dark)" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <span data-tr="Havale (IBAN)" data-de="Überweisung (IBAN)">Havale (IBAN)</span>
+          <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)" data-tr="Komisyon yok" data-de="0% Gebühren">Komisyon yok</span>
+        </div>
+        <div class="pm-mbody">
+          <div style="margin-bottom:0.6rem">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.2rem" data-tr="Hesap Sahibi" data-de="Kontoinhaber">Hesap Sahibi</div>
+            <div style="font-size:0.86rem;color:var(--olive-dark)">Kader Kayihan</div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.2rem">IBAN</div>
+            <div class="iban-box">
+              DE91 6045 0050 0030 2309 81
+              <button class="copy-btn" onclick="copyIban()" data-tr="Kopyala" data-de="Kopieren">Kopyala</button>
+            </div>
+          </div>
+          <div style="margin-top:0.6rem">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.2rem" data-tr="Sipariş No (açıklama)" data-de="Verwendungszweck">Sipariş No (açıklama)</div>
+            <div class="iban-box" id="pm-ref2" style="font-family:monospace;justify-content:flex-start"></div>
+          </div>
+          <div class="pm-warn" data-tr="⚠️ Havale açıklamasına sipariş numaranızı yazmayı unutmayın. Ödeme alındıktan sonra 1–2 iş günü içinde kargo." data-de="⚠️ Bitte geben Sie den Verwendungszweck an. Versand nach Zahlungseingang (1–2 Werktage).">
+            ⚠️ Havale açıklamasına sipariş numaranızı yazmayı unutmayın. Ödeme alındıktan sonra 1–2 iş günü içinde kargo.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ── LANG ──
+var _lang = localStorage.getItem('keby_lang') || (navigator.language.startsWith('tr') ? 'tr' : 'de');
+function setLang(l) {
+  _lang = l;
+  localStorage.setItem('keby_lang', l);
+  document.querySelectorAll('[data-tr][data-de]').forEach(el => {
+    el.textContent = l === 'tr' ? el.dataset.tr : el.dataset.de;
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === l);
+  });
+  document.documentElement.lang = l;
+}
+
+// ── CART ──
+var cart = JSON.parse(localStorage.getItem('keby_cart') || '[]');
+function saveCart() { localStorage.setItem('keby_cart', JSON.stringify(cart)); }
+function addToCart(name, price, img) {
+  var ex = cart.find(i => i.name === name);
+  if (ex) ex.qty++; else cart.push({name, price, img, qty: 1});
+  saveCart(); updateCartUI();
+  showToast('✓ ' + name + ' ' + (_lang === 'tr' ? 'eklendi' : 'hinzugefügt'));
+  openCart();
+}
+function updateQty(name, d) {
+  var item = cart.find(i => i.name === name);
+  if (!item) return;
+  item.qty += d;
+  if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+  saveCart(); updateCartUI();
+}
+function updateCartUI() {
+  var count = cart.reduce((s, i) => s + i.qty, 0);
+  var total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+  document.querySelectorAll('#cartCount').forEach(el => el.textContent = count);
+  var tp = document.getElementById('cartTotal');
+  if (tp) tp.textContent = total.toFixed(2).replace('.', ',') + ' €';
+  var c = document.getElementById('cartItems');
+  if (!c) return;
+  if (!cart.length) {
+    c.innerHTML = '<div class="cart-empty">' + (_lang === 'tr' ? 'Sepetiniz boş.' : 'Ihr Warenkorb ist leer.') + '</div>';
+    return;
+  }
+  c.innerHTML = cart.map(i => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${i.img}" alt="${i.name}">
+      <div>
+        <div class="cart-item-name">${i.name}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="updateQty('${i.name}',-1)">−</button>
+          <span class="qty-num">${i.qty}</span>
+          <button class="qty-btn" onclick="updateQty('${i.name}',1)">+</button>
+        </div>
+      </div>
+      <div class="cart-item-price">${(i.qty * i.price).toFixed(2).replace('.', ',')} €</div>
+    </div>
+  `).join('');
+}
+function toggleCart() {
+  document.getElementById('cartPanel').classList.toggle('open');
+  document.getElementById('cartOverlay').classList.toggle('open');
+}
+function openCart() {
+  document.getElementById('cartPanel').classList.add('open');
+  document.getElementById('cartOverlay').classList.add('open');
+}
+
+// ── CHECKOUT ──
+function checkout() {
+  if (!cart.length) return;
+  var total = cart.reduce((s, i) => s + i.qty * i.price, 0).toFixed(2);
+  var items = cart.map(i => i.qty + 'x ' + i.name).join(', ');
+  document.getElementById('pm-items').textContent = items;
+  var ref = 'KEBY-' + Date.now().toString().slice(-6);
+  document.getElementById('pm-ref').textContent = ref;
+  document.getElementById('pm-ref2').textContent = ref;
+  document.getElementById('pm-total').textContent = total.replace('.', ',') + ' €';
+  document.getElementById('paymentModal').classList.add('open');
+  setLang(_lang);
+}
+function closeModal() { document.getElementById('paymentModal').classList.remove('open'); }
+function payWithPaypal() {
+  var total = cart.reduce((s, i) => s + i.qty * i.price, 0).toFixed(2);
+  closeModal();
+  showToast(_lang === 'tr' ? "PayPal'a yönlendiriliyor..." : 'Weiterleitung zu PayPal...');
+  setTimeout(() => window.open('https://paypal.me/kebyshop/' + total + 'EUR', '_blank'), 600);
+}
+function toggleMethod(id) {
+  var el = document.getElementById('method-' + id);
+  var wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.pm-method').forEach(m => m.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+function copyIban() {
+  navigator.clipboard.writeText('DE91604500500030230981')
+    .then(() => showToast(_lang === 'tr' ? 'IBAN kopyalandı ✓' : 'IBAN kopiert ✓'));
+}
+
+// ── KUPON & GETDİSCOUNT ──
+var activeCoupon = null;
+var COUPONS = {
+  'KEBY10': { type:'percent', value:10, label:'%10 indirim' },
+  'KEBY15': { type:'percent', value:15, label:'%15 indirim' },
+  'HOSGELDIN': { type:'percent', value:10, label:'%10 hoş geldin' },
+  'MUDANYA': { type:'fixed', value:5, label:'5€ indirim' },
+};
+function getDiscount(total) {
+  if (!activeCoupon) return 0;
+  if (activeCoupon.type === 'percent') return Math.round(total * activeCoupon.value) / 100;
+  if (activeCoupon.type === 'fixed') return Math.min(activeCoupon.value, total);
+  return 0;
+}
+function applyCoupon() {
+  var code = (document.getElementById('couponInput').value||'').trim().toUpperCase();
+  var msgEl = document.getElementById('couponMsg');
+  if (!code) return;
+  if (COUPONS[code]) {
+    activeCoupon = { code:code, ...COUPONS[code] };
+    msgEl.style.display='block'; msgEl.style.color='#27ae60';
+    msgEl.textContent = '✓ ' + COUPONS[code].label + ' uygulandı';
+    document.getElementById('couponInput').disabled = true;
+    updateCartUI();
+  } else {
+    msgEl.style.display='block'; msgEl.style.color='#c0392b';
+    msgEl.textContent = '✗ Geçersiz kod';
+    activeCoupon = null;
+  }
+}
+function addFromPage(name, price, img) {
+  var qty = parseInt((document.getElementById('qty')||{value:1}).value||1);
+  var giftCb = document.getElementById('giftWrap');
+  for(var i=0;i<qty;i++){
+    var ex = cart.find(function(x){return x.name===name;});
+    if(ex) ex.qty++; else cart.push({name:name,price:price,img:img,qty:1});
+  }
+  if(giftCb && giftCb.checked){
+    var gn=name+' 🎁 Hediye';
+    var eg=cart.find(function(x){return x.name===gn;});
+    if(eg) eg.qty++; else cart.push({name:gn,price:2.90,img:img,qty:1});
+  }
+  saveCart(); updateCartUI();
+  showToast('✓ '+name+' '+(_lang==='tr'?'eklendi':'hinzugefügt'));
+  openCart();
+}
+// ── TOAST ──
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── SCROLL ANIM ──
+document.addEventListener('DOMContentLoaded', function() {
+  setLang(_lang);
+  updateCartUI();
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e, i) {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 100);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+});
+
+function toggleSSS(el) {
+  var item = el.parentElement;
+  var isOpen = item.classList.contains('open');
+  document.querySelectorAll('.sss-item').forEach(function(i){ i.classList.remove('open'); });
+  if(!isOpen) item.classList.add('open');
+}
+
+
+// ── STRIPE ──
+var stripe = null;
+var stripeElements = null;
+var stripeCardElement = null;
+var stripeClientSecret = null;
+
+async function loadStripe() {
+  if (stripe) return;
+  // Stripe.js yükle
+  await new Promise(function(resolve) {
+    var s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = resolve;
+    document.head.appendChild(s);
+  });
+  // Config'den publishable key al
+  var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/config');
+  var d = await r.json();
+  stripe = Stripe(d.publishableKey);
+}
+
+async function openStripeModal() {
+  if (!cart.length) return;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount === 'function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+
+  // Summary güncelle
+  var items = cart.map(function(i){return i.qty+'x '+i.name;}).join(', ');
+  document.getElementById('stripe-summary').innerHTML =
+    '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.3rem">'+items+'</div>'+
+    '<div><span data-tr="Toplam" data-de="Gesamt" style="font-size:0.8rem;color:var(--muted)">Toplam</span>: <strong style="font-size:1.1rem;color:var(--olive-dark)">'+finalTotal.toFixed(2).replace('.',',')+'&nbsp;€</strong></div>';
+
+  document.getElementById('stripeModal').classList.add('open');
+  document.getElementById('stripe-form').style.display = 'block';
+  document.getElementById('stripe-success').style.display = 'none';
+  document.getElementById('stripe-error').style.display = 'none';
+
+  await loadStripe();
+
+  // Payment Intent oluştur
+  var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/create-payment-intent', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      amount: finalTotal,
+      currency: 'eur',
+      items: cart.map(function(i){return {productId:i.name,qty:i.qty,price:i.price};}),
+    })
+  });
+  var d = await r.json();
+  if (!d.success) { showToast('Stripe hatası: '+d.error, 'err'); return; }
+  stripeClientSecret = d.clientSecret;
+
+  // Card element mount
+  stripeElements = stripe.elements();
+  stripeCardElement = stripeElements.create('card', {
+    style: {
+      base: { fontFamily: "'Jost', sans-serif", fontSize: '15px', color: '#2a2a22', '::placeholder': { color: '#9e9e8e' } },
+      invalid: { color: '#c0392b' }
+    }
+  });
+  document.getElementById('stripe-placeholder').style.display = 'none';
+  stripeCardElement.mount('#stripe-card-element');
+  stripeCardElement.on('change', function(e) {
+    var errEl = document.getElementById('stripe-error');
+    if (e.error) { errEl.style.display='block'; errEl.textContent=e.error.message; }
+    else errEl.style.display='none';
+  });
+}
+
+function closeStripeModal() {
+  document.getElementById('stripeModal').classList.remove('open');
+  if (stripeCardElement) { stripeCardElement.unmount(); stripeCardElement=null; stripeElements=null; }
+}
+
+async function confirmStripePayment() {
+  if (!stripe || !stripeCardElement || !stripeClientSecret) return;
+  
+  // Zorunlu alan kontrolü
+  var fname = document.getElementById('stripe-fname').value.trim();
+  var lname = document.getElementById('stripe-lname').value.trim();
+  var email = document.getElementById('stripe-email').value.trim();
+  var address = document.getElementById('stripe-address').value.trim();
+  var plz = document.getElementById('stripe-plz').value.trim();
+  var city = document.getElementById('stripe-city').value.trim();
+  
+  var errEl = document.getElementById('stripe-error');
+  if (!fname || !lname || !email || !address || !plz || !city) {
+    errEl.style.display = 'block';
+    errEl.textContent = _lang==='tr' ? 'Lütfen tüm alanları doldurun.' : 'Bitte alle Felder ausfüllen.';
+    return;
+  }
+  if (!email.includes('@')) {
+    errEl.style.display = 'block';
+    errEl.textContent = _lang==='tr' ? 'Geçerli bir e-posta girin.' : 'Bitte gültige E-Mail eingeben.';
+    return;
+  }
+  
+  var btn = document.getElementById('stripe-pay-btn');
+  btn.disabled = true;
+  btn.textContent = _lang==='tr' ? 'İşleniyor...' : 'Wird verarbeitet...';
+  errEl.style.display = 'none';
+
+  var fullName = fname + ' ' + lname;
+  var result = await stripe.confirmCardPayment(stripeClientSecret, {
+    payment_method: {
+      card: stripeCardElement,
+      billing_details: {
+        name: fullName,
+        email: email,
+        address: {
+          line1: address,
+          postal_code: plz,
+          city: city,
+          country: 'DE',
+        }
+      },
+    }
+  });
+
+  if (result.error) {
+    document.getElementById('stripe-error').style.display = 'block';
+    document.getElementById('stripe-error').textContent = result.error.message;
+    btn.disabled = false;
+    btn.textContent = _lang==='tr' ? 'Ödemeyi Tamamla' : 'Zahlung abschließen';
+  } else if (result.paymentIntent.status === 'succeeded') {
+    // Siparişi Worker'a kaydet
+    var orderData = {
+      id: 'ord_stripe_' + result.paymentIntent.id,
+      ref: 'KEBY-' + result.paymentIntent.id.slice(-6).toUpperCase(),
+      name: fullName,
+      email: email,
+      address: address + ', ' + plz + ' ' + city,
+      phone: '',
+      payment: 'stripe',
+      stripePaymentId: result.paymentIntent.id,
+      status: 'onaylandi',
+      items: cart.map(function(i){ return {productId: i.name, qty: i.qty, price: i.price}; }),
+      total: cart.reduce(function(s,i){ return s+i.qty*i.price; }, 0),
+      date: new Date().toISOString(),
+    };
+    
+    try {
+      var ordersRes = await fetch('https://keby-api.hguencavdi.workers.dev/api/orders');
+      var ordersData = await ordersRes.json();
+      var orders = ordersData.orders || [];
+      if (!orders.find(function(o){ return o.stripePaymentId === result.paymentIntent.id; })) {
+        orders.unshift(orderData);
+        await fetch('https://keby-api.hguencavdi.workers.dev/api/admin/orders', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','Authorization':'Bearer S2VieTIwMjUh'},
+          body: JSON.stringify({orders: orders})
+        });
+      }
+    } catch(e) {}
+    
+    document.getElementById('stripe-form').style.display = 'none';
+    document.getElementById('stripe-success').style.display = 'block';
+    
+    // Başarı mesajını kişiselleştir
+    var successDiv = document.getElementById('stripe-success');
+    successDiv.querySelector('p').textContent = (
+      _lang==='tr'
+        ? fullName + ', siparişiniz alındı! Kısa süre içinde kargoya verilecektir.'
+        : 'Vielen Dank, ' + fullName + '! Ihre Bestellung wird bald versendet.'
+    );
+    
+    cart = []; saveCart(); updateCartUI();
+    setTimeout(function(){ closeStripeModal(); }, 5000);
+  }
+}
+
+
+function quickAdd(name, price, img) {
+  var ex = cart.find(function(x){ return x.name === name; });
+  if (ex) ex.qty++;
+  else cart.push({ name: name, price: price, img: img, qty: 1 });
+  saveCart(); updateCartUI();
+  showToast('✓ ' + name + ' ' + (_lang==='tr'?'eklendi':'hinzugefügt'));
+  openCart();
+}
+
+
+function openUeberweisung() {
+  if (!cart.length) return;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount==='function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+  var ref = 'KEBY-' + Date.now().toString().slice(-6);
+  
+  document.getElementById('uw-items').textContent = cart.map(function(i){return i.qty+'x '+i.name;}).join(', ');
+  document.getElementById('uw-total').textContent = finalTotal.toFixed(2).replace('.',',') + ' €';
+  document.getElementById('uw-ref').textContent = ref;
+  
+  document.getElementById('ueberweisungModal').classList.add('open');
+  setLang(_lang);
+}
+
+function closeUeberweisung() {
+  document.getElementById('ueberweisungModal').classList.remove('open');
+}
+
+async function confirmUeberweisung() {
+  var ref = document.getElementById('uw-ref').textContent;
+  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var discount = typeof getDiscount==='function' ? getDiscount(total) : 0;
+  var finalTotal = Math.max(0, total - discount);
+  var items = cart.map(function(i){return {productId:i.name,qty:i.qty,price:i.price};});
+  
+  // Siparişi kaydet
+  try {
+    var ordersR = await fetch('https://keby-api.hguencavdi.workers.dev/api/orders');
+    var ordersD = await ordersR.json();
+    var orders = ordersD.orders || [];
+    orders.unshift({
+      id: 'ord_uw_' + Date.now(),
+      ref: ref,
+      name: '',
+      email: '',
+      payment: 'havale',
+      status: 'bekliyor',
+      items: items,
+      total: finalTotal,
+      date: new Date().toISOString(),
+      source: 'uberweisung',
+    });
+    await fetch('https://keby-api.hguencavdi.workers.dev/api/admin/orders', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+'S2VieTIwMjUh'},
+      body: JSON.stringify({orders:orders})
+    });
+  } catch(e) {}
+  
+  cart = []; saveCart(); updateCartUI();
+  closeUeberweisung();
+  showToast(_lang==='tr' ? 'Sipariş alındı! Havale bilgileri gönderildi.' : 'Bestellung bestätigt!');
+}
+
+
+// ── MOBILE SCROLL ANİMASYON ──
+if (window.innerWidth <= 860) {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  
+  document.querySelectorAll('.product-card, .sss-item, #reviewsGrid > div, .features-grid > div').forEach(function(el) {
+    el.classList.add('fade-in');
+    io.observe(el);
+  });
+}
+
+
+// ── ÜRÜN CAROUSEL ──
+var carouselIdx = { pc1:0, pc2:0, pc3:0 };
+var carouselMax = { pc1:3, pc2:3, pc3:3 };
+
+function carousel(id, dir) {
+  var max = carouselMax[id];
+  carouselIdx[id] = (carouselIdx[id] + dir + max) % max;
+  var track = document.getElementById(id + '-track');
+  if (track) track.style.transform = 'translateX(-' + (carouselIdx[id] * 100) + '%)';
+  // Dots güncelle
+  var dots = document.getElementById(id + '-dots');
+  if (dots) {
+    var spans = dots.querySelectorAll('span');
+    spans.forEach(function(s, i) {
+      s.style.opacity = i === carouselIdx[id] ? '1' : '0.5';
+    });
+  }
+}
+
+// Touch/swipe desteği
+document.querySelectorAll('[id^="pc"]').forEach(function(el) {
+  if (!el.id.match(/^pc\d$/)) return;
+  var startX = 0;
+  el.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, {passive:true});
+  el.addEventListener('touchend', function(e) {
+    var diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) carousel(el.id, diff > 0 ? 1 : -1);
+  }, {passive:true});
+});
+
+</script>
+
+<!-- STRIPE MODAL -->
+<div class="pm-overlay" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
+  <div class="pm-box">
+    <div class="pm-head">
+      <h3 data-tr="Kart ile Öde" data-de="Mit Karte bezahlen">Kart ile Öde</h3>
+      <button class="pm-xbtn" onclick="closeStripeModal()">✕</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-summary" id="stripe-summary"></div>
+      <div id="stripe-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
+          <div>
+            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Ad" data-de="Vorname">Ad</label>
+            <input type="text" id="stripe-fname" placeholder="Kader" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+          </div>
+          <div>
+            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Soyad" data-de="Nachname">Soyad</label>
+            <input type="text" id="stripe-lname" placeholder="Kayihan" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+          </div>
+        </div>
+        <div style="margin-bottom:0.6rem">
+          <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="E-posta" data-de="E-Mail">E-posta</label>
+          <input type="email" id="stripe-email" placeholder="musteri@email.com" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+        </div>
+        <div style="margin-bottom:0.6rem">
+          <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Adres" data-de="Adresse">Adres</label>
+          <input type="text" id="stripe-address" placeholder="Musterstr. 1" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:0.6rem;margin-bottom:0.75rem">
+          <div>
+            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="PLZ" data-de="PLZ">PLZ</label>
+            <input type="text" id="stripe-plz" placeholder="71665" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+          </div>
+          <div>
+            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Şehir" data-de="Stadt">Şehir</label>
+            <input type="text" id="stripe-city" placeholder="Vaihingen an der Enz" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
+          </div>
+        </div>
+        <div id="stripe-card-element" style="background:var(--cream);border:1px solid var(--border);border-radius:3px;padding:0.85rem 0.9rem;margin-bottom:1rem">
+          <!-- Stripe Elements burada render edilecek -->
+          <div style="font-size:0.82rem;color:var(--muted)" id="stripe-placeholder" data-tr="Kart bilgileri yükleniyor..." data-de="Kartendaten werden geladen...">Kart bilgileri yükleniyor...</div>
+        </div>
+        <div id="stripe-error" style="color:#c0392b;font-size:0.78rem;margin-bottom:0.75rem;display:none"></div>
+        <button id="stripe-pay-btn" onclick="confirmStripePayment()" style="width:100%;background:var(--olive-dark);color:white;border:none;padding:0.95rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:background 0.2s" data-tr="Ödemeyi Tamamla" data-de="Zahlung abschließen">Ödemeyi Tamamla</button>
+        <p style="font-size:0.68rem;text-align:center;color:var(--muted);margin-top:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.3rem">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span data-tr="256-bit SSL ile güvenli ödeme" data-de="Sichere Zahlung mit 256-Bit SSL">256-bit SSL ile güvenli ödeme</span>
+        </p>
+      </div>
+      <div id="stripe-success" style="display:none;text-align:center;padding:2rem 0">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">✅</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--olive-dark);margin-bottom:0.4rem" data-tr="Ödeme Başarılı!" data-de="Zahlung erfolgreich!">Ödeme Başarılı!</div>
+        <p style="font-size:0.84rem;color:var(--muted)" data-tr="Siparişiniz alındı. Teşekkür ederiz!" data-de="Ihre Bestellung wurde aufgenommen. Vielen Dank!">Siparişiniz alındı. Teşekkür ederiz!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ÜBERWEISUNG MODAL -->
+<div class="pm-overlay" id="ueberweisungModal" onclick="if(event.target===this)closeUeberweisung()">
+  <div class="pm-box">
+    <div class="pm-head" style="background:var(--olive-dark)">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:white" data-tr="Havale ile Ödeme" data-de="Bezahlung per Überweisung">Havale ile Ödeme</h3>
+      <button onclick="closeUeberweisung()" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;opacity:0.7">✕</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-summary">
+        <div id="uw-items" style="margin-bottom:0.3rem;font-size:0.8rem;color:var(--muted)"></div>
+        <div style="display:flex;justify-content:space-between">
+          <span data-tr="Toplam" data-de="Gesamtbetrag" style="font-size:0.8rem;color:var(--muted)">Toplam</span>
+          <strong id="uw-total" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--olive-dark)"></strong>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">
+          <span data-tr="Sipariş No" data-de="Verwendungszweck">Sipariş No</span>: <strong id="uw-ref" style="color:var(--olive-dark)"></strong>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem" data-tr="Banka Bilgileri" data-de="Bankverbindung">Banka Bilgileri</div>
+        <div style="background:var(--cream);border-radius:4px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.5rem">
+          <div style="display:flex;justify-content:space-between;font-size:0.83rem">
+            <span style="color:var(--muted)" data-tr="Hesap Sahibi" data-de="Kontoinhaber">Hesap Sahibi</span>
+            <strong style="color:var(--olive-dark)">Kader Kayihan</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem">
+            <span style="color:var(--muted)">IBAN</span>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <span style="font-family:monospace;font-size:0.82rem;color:var(--olive-dark)" id="uw-iban">DE91 6045 0050 0030 2309 81</span>
+              <button onclick="navigator.clipboard.writeText('DE91604500500030230981').then(()=>showToast('IBAN kopyalandı ✓'))" style="background:var(--olive-dark);color:white;border:none;padding:0.2rem 0.5rem;border-radius:2px;font-size:0.65rem;cursor:pointer" data-tr="Kopyala" data-de="Kopieren">Kopyala</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.83rem">
+            <span style="color:var(--muted)">BIC</span>
+            <strong style="color:var(--olive-dark)">SOLADES1LBG</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(196,162,74,0.1);border:1px solid rgba(196,162,74,0.3);border-radius:4px;padding:0.75rem 1rem;font-size:0.78rem;color:#7a6020;margin-bottom:1rem" data-tr="⚠️ Havale açıklamasına sipariş numarasını yazmayı unutmayın. Ödeme alındıktan sonra 1–2 iş günü içinde kargo." data-de="⚠️ Bitte geben Sie den Verwendungszweck (Bestellnummer) an. Versand erfolgt nach Zahlungseingang innerhalb von 1–2 Werktagen.">
+        ⚠️ Havale açıklamasına sipariş numarasını yazmayı unutmayın. Ödeme alındıktan sonra 1–2 iş günü içinde kargo.
+      </div>
+
+      <button onclick="confirmUeberweisung()" style="width:100%;background:var(--olive-dark);color:white;border:none;padding:0.95rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer" data-tr="Siparişi Onayla →" data-de="Bestellung bestätigen →">Siparişi Onayla →</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+</body>
+</html>
