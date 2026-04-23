@@ -1458,7 +1458,7 @@ nav {
 .prod-carousel {
   position: relative;
   overflow: hidden;
-  height: 240px;
+  height: 200px;
   flex-shrink: 0;
 }
 .prod-track {
@@ -1470,6 +1470,7 @@ nav {
   min-width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   flex-shrink: 0;
 }
 .pc-prev, .pc-next {
@@ -2221,7 +2222,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 <section id="produkte" style="background:var(--cream);padding:2.5rem 2rem">
-  <div style="max-width:1200px;margin:0 auto">
+  <div style="max-width:1300px;margin:0 auto">
     <div style="text-align:center;margin-bottom:1.75rem">
       <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem" data-tr="Ürünlerimiz" data-de="Unsere Produkte">Ürünlerimiz</div>
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark)" data-tr="Özenle Seçilmiş Lezzetler" data-de="Ausgewählte Feinkost">Özenle Seçilmiş Lezzetler</h2>
@@ -2232,7 +2233,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="produkt-olivenoel-750ml.html" class="prod-card">
         <div class="prod-carousel" id="pc1">
           <div class="prod-track" id="pc1-track">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="750ml şişe" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="object-position:center center" alt="750ml şişe" loading="eager">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="Keby ürünler" loading="lazy">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="Keby tanıtım" loading="lazy">
           
@@ -2304,7 +2305,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="produkt-oliven-schwarz.html" class="prod-card">
         <div class="prod-carousel" id="pc3">
           <div class="prod-track" id="pc3-track">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="Zeytin kavanoz" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" style="object-position:center center" alt="Zeytin kavanoz" loading="eager">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="Kahvaltı zeytini" loading="lazy">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="Zeytin" loading="lazy">
           
