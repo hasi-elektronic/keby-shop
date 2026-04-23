@@ -1438,6 +1438,179 @@ nav {
   .nav-mobile-menu { display: none !important; }
 }
 
+
+/* ── ÜRÜN KARTLARI ── */
+.prod-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 16px rgba(42,74,26,0.09);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.prod-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(42,74,26,0.18);
+}
+.prod-carousel {
+  position: relative;
+  overflow: hidden;
+  height: 240px;
+  flex-shrink: 0;
+}
+.prod-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.4s ease;
+}
+.prod-track img {
+  min-width: 100%;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.pc-prev, .pc-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.88);
+  border: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background 0.2s;
+  z-index: 2;
+}
+.pc-prev { left: 0.4rem; }
+.pc-next { right: 0.4rem; }
+.pc-prev:hover, .pc-next:hover { background: white; }
+.prod-badge {
+  position: absolute;
+  top: 0.6rem; left: 0.6rem;
+  background: var(--olive-dark);
+  color: white;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  z-index: 2;
+}
+.prod-badge-gold {
+  background: var(--gold);
+  color: var(--olive-dark);
+  font-weight: 600;
+}
+.pc-dots {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+.pc-dots span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  display: block;
+  transition: background 0.2s;
+}
+.pc-dots span.active { background: white; }
+.prod-info {
+  padding: 1rem 1rem 0;
+  flex: 1;
+}
+.prod-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--olive-dark);
+  margin-bottom: 0.35rem;
+  line-height: 1.25;
+}
+.prod-desc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 0.6rem;
+}
+.prod-tags {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.prod-tags span {
+  font-size: 0.6rem;
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.45rem;
+  border-radius: 2px;
+  color: var(--muted);
+}
+.prod-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem 1rem;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  gap: 0.5rem;
+}
+.prod-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--olive-dark);
+  line-height: 1;
+}
+.prod-tax {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+.btn-detail {
+  font-size: 0.62rem;
+  color: var(--olive);
+  border: 1px solid var(--olive);
+  padding: 0.35rem 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-detail:hover { background: var(--olive); color: white; }
+.btn-addcart {
+  background: var(--olive-dark);
+  color: white;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 3px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.62rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.btn-addcart:hover { background: var(--olive); }
+
+@media (max-width: 860px) {
+  #produkte { padding: 2rem 0.875rem !important; }
+  #produkte div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  .prod-carousel { height: 220px; }
+}
+
 </style>
   <meta property="og:title" content="Keby – Premium Olivenöl & Oliven aus der Türkei">
   <meta property="og:description" content="Kaltgepresstes natives Olivenöl extra und schwarze Oliven aus Mudanya, Bursa. Direkt vom Erzeuger – ohne Zwischenhändler.">
@@ -2053,116 +2226,106 @@ document.addEventListener('DOMContentLoaded', function() {
       <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem" data-tr="Ürünlerimiz" data-de="Unsere Produkte">Ürünlerimiz</div>
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark)" data-tr="Özenle Seçilmiş Lezzetler" data-de="Ausgewählte Feinkost">Özenle Seçilmiş Lezzetler</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;align-items:start">
 
       <!-- ÜRÜN 1: 750ml -->
-      <a href="produkt-olivenoel-750ml.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
-        <!-- Carousel -->
-        <div style="position:relative;overflow:hidden;height:220px" id="pc1">
-          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc1-track" style="display:flex;height:100%;transition:transform 0.4s ease">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 40%;flex-shrink:0" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
-          <button onclick="event.preventDefault();carousel('pc1',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
-          <button onclick="event.preventDefault();carousel('pc1',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
-          <span style="position:absolute;top:0.6rem;left:0.6rem;background:var(--olive-dark);color:white;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px" data-tr="ÇOK SATAN" data-de="BESTSELLER">ÇOK SATAN</span>
-          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc1-dots">
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+      <a href="produkt-olivenoel-750ml.html" class="prod-card">
+        <div class="prod-carousel" id="pc1">
+          <div class="prod-track" id="pc1-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="750ml" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="750ml 2" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="750ml 3" loading="lazy">
+          </div>
+          <button class="pc-prev" onclick="event.preventDefault();event.stopPropagation();carousel('pc1',-1)">&#8249;</button>
+          <button class="pc-next" onclick="event.preventDefault();event.stopPropagation();carousel('pc1',1)">&#8250;</button>
+          <span class="prod-badge" data-tr="ÇOK SATAN" data-de="BESTSELLER">ÇOK SATAN</span>
+          <div class="pc-dots" id="pc1-dots"><span class="active"></span><span></span><span></span></div>
+        </div>
+        <div class="prod-info">
+          <div class="prod-title" data-tr="Sızma Zeytinyağı 750ml" data-de="Natives Olivenöl Extra 750ml">Sızma Zeytinyağı 750ml</div>
+          <p class="prod-desc" data-tr="Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla." data-de="Kaltgepresst, ungefiltert. Aus den fruchtbaren Hainen Mudanyas, innerhalb von 24h nach der Ernte.">Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla.</p>
+          <div class="prod-tags">
+            <span data-tr="Soğuk Sıkım" data-de="Kaltgepresst">Soğuk Sıkım</span>
+            <span data-tr="Filtresiz" data-de="Ungefiltert">Filtresiz</span>
+            <span>%7 MwSt.</span>
           </div>
         </div>
-        <div style="padding:1rem 1rem 0;flex:1">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Sızma Zeytinyağı 750ml" data-de="Natives Olivenöl Extra 750ml">Sızma Zeytinyağı 750ml</div>
-          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla." data-de="Aus den fruchtbaren Hainen Mudanyas, innerhalb von 24h nach der Ernte kaltgepresst. Ungefiltert — mit natürlichem Bodensatz.">Mudanya'nın bereketli bahçelerinden, hasattan 24 saat içinde soğuk sıkılır. Filtresiz — doğal tortusuyla.</p>
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Soğuk Sıkım" data-de="Kaltgepresst">Soğuk Sıkım</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Filtresiz" data-de="Ungefiltert">Filtresiz</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%7 MwSt.</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+        <div class="prod-footer">
           <div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">14,99 €</div>
-            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+            <div class="prod-price">14,99 €</div>
+            <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
           <div style="display:flex;gap:0.35rem">
-            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
 
       <!-- ÜRÜN 2: 5L -->
-      <a href="produkt-kanister-5l.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
-        <div style="position:relative;overflow:hidden;height:220px" id="pc2">
-          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc2-track" style="display:flex;height:100%;transition:transform 0.4s ease">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 60%;flex-shrink:0" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" style="min-width:100%;height:100%;object-fit:cover;flex-shrink:0" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
-          <button onclick="event.preventDefault();carousel('pc2',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
-          <button onclick="event.preventDefault();carousel('pc2',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
-          <span style="position:absolute;top:0.6rem;left:0.6rem;background:var(--gold);color:var(--olive-dark);font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px;font-weight:600" data-tr="AİLE BOY" data-de="FAMILIENPACK">AİLE BOY</span>
-          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc2-dots">
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+      <a href="produkt-kanister-5l.html" class="prod-card">
+        <div class="prod-carousel" id="pc2">
+          <div class="prod-track" id="pc2-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="5L" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="5L 2" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="5L 3" loading="lazy">
+          </div>
+          <button class="pc-prev" onclick="event.preventDefault();event.stopPropagation();carousel('pc2',-1)">&#8249;</button>
+          <button class="pc-next" onclick="event.preventDefault();event.stopPropagation();carousel('pc2',1)">&#8250;</button>
+          <span class="prod-badge prod-badge-gold" data-tr="AİLE BOY" data-de="FAMILIENPACK">AİLE BOY</span>
+          <div class="pc-dots" id="pc2-dots"><span class="active"></span><span></span><span></span></div>
+        </div>
+        <div class="prod-info">
+          <div class="prod-title" data-tr="Sızma Zeytinyağı 5L Bidon" data-de="Natives Olivenöl Extra 5L">Sızma Zeytinyağı 5L Bidon</div>
+          <p class="prod-desc" data-tr="Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif. Mudanya'dan direkt bidon." data-de="Wirtschaftliche Wahl für große Familien. Gleiche Kaltpressqualität. Direkt aus Mudanya im Kanister.">Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif.</p>
+          <div class="prod-tags">
+            <span data-tr="5 Litre" data-de="5 Liter">5 Litre</span>
+            <span data-tr="Ekonomik" data-de="Wirtschaftlich">Ekonomik</span>
+            <span>%7 MwSt.</span>
           </div>
         </div>
-        <div style="padding:1rem 1rem 0;flex:1">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Sızma Zeytinyağı 5L Bidon" data-de="Natives Olivenöl Extra 5L">Sızma Zeytinyağı 5L Bidon</div>
-          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif. Mudanya'dan direkt bidon." data-de="Wirtschaftliche Wahl für große Familien. Gleiche Kaltpressqualität, längerer Genuss. Direkt aus Mudanya im Kanister.">Büyük aileler için ekonomik seçim. Aynı soğuk sıkım kalitesi, daha uzun keyif. Mudanya'dan direkt bidon.</p>
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="5 Litre" data-de="5 Liter">5 Litre</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Ekonomik" data-de="Wirtschaftlich">Ekonomik</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%7 MwSt.</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+        <div class="prod-footer">
           <div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">59,90 €</div>
-            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+            <div class="prod-price">59,90 €</div>
+            <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
           <div style="display:flex;gap:0.35rem">
-            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
 
       <!-- ÜRÜN 3: Zeytin -->
-      <a href="produkt-oliven-schwarz.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
-        <div style="position:relative;overflow:hidden;height:220px" id="pc3">
-          <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc3-track" style="display:flex;height:100%;transition:transform 0.4s ease">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 30%;flex-shrink:0" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
-          <button onclick="event.preventDefault();carousel('pc3',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
-          <button onclick="event.preventDefault();carousel('pc3',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
-          <span style="position:absolute;top:0.6rem;left:0.6rem;background:rgba(42,74,26,0.85);color:white;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px" data-tr="GELENEKSEL" data-de="TRADITIONELL">GELENEKSEL</span>
-          <div style="position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px" id="pc3-dots">
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:1"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
-            <span style="width:5px;height:5px;border-radius:50%;background:white;opacity:0.5"></span>
+      <a href="produkt-oliven-schwarz.html" class="prod-card">
+        <div class="prod-carousel" id="pc3">
+          <div class="prod-track" id="pc3-track">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="Zeytin" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="Zeytin 2" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="Zeytin 3" loading="lazy">
+          </div>
+          <button class="pc-prev" onclick="event.preventDefault();event.stopPropagation();carousel('pc3',-1)">&#8249;</button>
+          <button class="pc-next" onclick="event.preventDefault();event.stopPropagation();carousel('pc3',1)">&#8250;</button>
+          <span class="prod-badge" data-tr="GELENEKSEL" data-de="TRADITIONELL">GELENEKSEL</span>
+          <div class="pc-dots" id="pc3-dots"><span class="active"></span><span></span><span></span></div>
+        </div>
+        <div class="prod-info">
+          <div class="prod-title" data-tr="Yağlı Siyah Zeytin 900g" data-de="Ölige schwarze Oliven 900g">Yağlı Siyah Zeytin 900g</div>
+          <p class="prod-desc" data-tr="Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler. Kahvaltı sofrasının baş tacı." data-de="Mit Steinsalz traditionell zubereitet, natürlich fermentierte schwarze Oliven.">Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler.</p>
+          <div class="prod-tags">
+            <span data-tr="900g Kavanoz" data-de="900g Glas">900g Kavanoz</span>
+            <span data-tr="Doğal Fermente" data-de="Natürlich fermentiert">Doğal Fermente</span>
+            <span>%19 MwSt.</span>
           </div>
         </div>
-        <div style="padding:1rem 1rem 0;flex:1">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--olive-dark);margin-bottom:0.35rem" data-tr="Yağlı Siyah Zeytin 900g" data-de="Ölige schwarze Oliven 900g">Yağlı Siyah Zeytin 900g</div>
-          <p style="font-size:0.78rem;color:var(--muted);line-height:1.65;margin-bottom:0.6rem" data-tr="Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler. Kahvaltı sofrasının baş tacı." data-de="Mit Steinsalz traditionell zubereitet, natürlich fermentierte schwarze Oliven. Die Krönung des Frühstückstisches.">Kaya tuzu ile geleneksel yöntemle hazırlanmış, doğal fermente siyah zeytinler. Kahvaltı sofrasının baş tacı.</p>
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="900g Kavanoz" data-de="900g Glas">900g Kavanoz</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)" data-tr="Doğal Fermente" data-de="Natürlich fermentiert">Doğal Fermente</span>
-            <span style="font-size:0.62rem;border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:2px;color:var(--muted)">%19 MwSt.</span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem 1rem;border-top:1px solid var(--border);margin-top:auto;gap:0.5rem">
+        <div class="prod-footer">
           <div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--olive-dark)">14,99 €</div>
-            <div style="font-size:0.6rem;color:var(--muted)" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
+            <div class="prod-price">14,99 €</div>
+            <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
           <div style="display:flex;gap:0.35rem">
-            <span style="font-size:0.65rem;color:var(--olive);border:1px solid var(--olive);padding:0.35rem 0.65rem;border-radius:3px" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg')" style="background:var(--olive-dark);color:white;border:none;padding:0.35rem 0.65rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.65rem;cursor:pointer;transition:background 0.2s" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
