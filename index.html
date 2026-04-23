@@ -1069,7 +1069,8 @@ body { color: #1a1a14; }
     grid-template-columns: 1fr !important;
     gap: 1rem !important;
   }
-  #vorteile { padding: 1.5rem 0.875rem !important; }
+  #vorteile { padding: 2rem 0.875rem !important; }
+  #vorteile div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: repeat(2,1fr) !important; gap: 0.75rem !important; }
   #vorteile div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; gap: 0.75rem !important; }
   #vorteile div[style*="grid-template-columns:repeat(3,1fr)"] {
     grid-template-columns: 1fr !important;
@@ -2336,23 +2337,33 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 <!-- FEATURES -->
-<section id="vorteile" style="background:var(--olive-dark);padding:2rem 2rem">
-  <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem">
+<section id="vorteile" style="background:var(--olive-dark);padding:2.5rem 3rem">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;align-items:start">
+
     <div style="text-align:center;padding:1rem">
-      <svg class="feat-icon" viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 8C18 16 16 20 18 28C20 24 23 22 24 8Z" fill="#6a9b52"/><path d="M24 8C30 16 32 20 30 28C28 24 25 22 24 8Z" fill="#3d6b2a" opacity=".7"/><circle cx="24" cy="32" r="4" fill="#c4a24a"/></svg>
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 8C18 16 16 20 18 28C20 24 23 22 24 8Z" fill="#6a9b52"/><path d="M24 8C30 16 32 20 30 28C28 24 25 22 24 8Z" fill="#3d6b2a" opacity=".7"/><circle cx="24" cy="32" r="4" fill="#c4a24a"/></svg>
       <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Doğrudan İthalat" data-de="Direktimport">Doğrudan İthalat</div>
       <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Mudanya'dan direkt — aracısız" data-de="Direkt aus Mudanya — ohne Zwischenhändler">Mudanya'dan direkt — aracısız</p>
     </div>
+
     <div style="text-align:center;padding:1rem">
       <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M16 24h16M24 16v16" stroke="#6a9b52" stroke-width="2"/></svg>
       <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Soğuk Sıkım" data-de="Kaltpressung">Soğuk Sıkım</div>
       <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="27°C altı — tam koruma" data-de="Unter 27°C — voller Schutz">27°C altı — tam koruma</p>
     </div>
+
     <div style="text-align:center;padding:1rem">
       <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 14l2.5 7.5H34l-6.5 4.5 2.5 7.5L24 29l-6 4.5 2.5-7.5L14 21.5h7.5z" fill="#c4a24a" opacity=".7"/></svg>
       <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Katkısız" data-de="Ohne Zusätze">Katkısız</div>
       <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Hiçbir katkı maddesi yok" data-de="Keinerlei Zusatzstoffe">Hiçbir katkı maddesi yok</p>
-    <div style="text-align:center;padding:1rem"><div style="width:36px;height:36px;margin:0 auto 0.6rem;border:1.5px solid #c4a24a;border-radius:50%;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4a24a" stroke-width="1.5"><path d="M12 2C8 8 8 12 12 22C16 12 16 8 12 2z"/><circle cx="12" cy="17" r="2" fill="#c4a24a"/></svg></div><div style="font-family:Cormorant Garamond,serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Tortulu = Gerçek" data-de="Trüb = Echt">Tortulu = Gerçek</div><p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Filtre yok, sağlık bozulmadan" data-de="Kein Filter, volle Nährstoffe">Filtre yok, sağlık bozulmadan</p></div></div>
+    </div>
+
+    <div style="text-align:center;padding:1rem">
+      <svg viewBox="0 0 48 48" fill="none" style="width:36px;height:36px;margin:0 auto 0.6rem"><circle cx="24" cy="24" r="22" stroke="#c4a24a" stroke-width="1.5"/><path d="M24 10c0 0-5 5-5 10s5 10 5 10s5-5 5-10s-5-10-5-10z" fill="#c4a24a" opacity="0.6"/><circle cx="24" cy="30" r="3" fill="#c4a24a"/></svg>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:white;margin-bottom:0.3rem" data-tr="Tortulu = Gerçek" data-de="Trüb = Echt">Tortulu = Gerçek</div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.6" data-tr="Filtre yok, sağlık bozulmadan" data-de="Kein Filter, volle Nährstoffe">Filtre yok, sağlık bozulmadan</p>
+    </div>
+
   </div>
 </section>
 
