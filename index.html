@@ -1369,9 +1369,10 @@ nav {
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .nav-mobile-menu.open {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
+  display: flex !important;
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: all !important;
 }
 .nav-mobile-menu a {
   display: block;
@@ -1434,7 +1435,7 @@ nav {
   nav { padding: 0 1rem; height: 56px; }
   .nav-links { display: none !important; }
   #navRight { display: none !important; }
-  #navMobileRight { display: flex !important; }
+  
   body { padding-top: 56px; }
   #hero-section { margin-top: 0 !important; }
 }
@@ -3217,6 +3218,33 @@ document.addEventListener('DOMContentLoaded', function() {
     <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
   </svg>
 </a>
+
+
+<!-- SABİT DİL DEĞİŞTİRİCİ — SADECE MOBİL -->
+<div id="langFooter" style="display:none;position:fixed;bottom:7rem;left:50%;transform:translateX(-50%);background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:0.4rem;z-index:998;gap:0.25rem">
+  <button onclick="setLang('tr')" id="lf-tr" style="border:none;border-radius:25px;padding:0.5rem 1.25rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:var(--olive-dark);color:white;transition:all 0.2s">🇹🇷 TR</button>
+  <button onclick="setLang('de')" id="lf-de" style="border:none;border-radius:25px;padding:0.5rem 1.25rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:none;color:var(--muted);transition:all 0.2s">🇩🇪 DE</button>
+</div>
+<script>
+// Mobil dil footer
+if (window.innerWidth <= 860) {
+  var lf = document.getElementById('langFooter');
+  if (lf) lf.style.display = 'flex';
+}
+window.addEventListener('resize', function() {
+  var lf = document.getElementById('langFooter');
+  if (lf) lf.style.display = window.innerWidth <= 860 ? 'flex' : 'none';
+});
+// setLang'ı genişlet — lf butonlarını da güncelle
+var _origSetLang = window.setLang;
+window.setLang = function(l) {
+  if (_origSetLang) _origSetLang(l);
+  var lfTr = document.getElementById('lf-tr');
+  var lfDe = document.getElementById('lf-de');
+  if (lfTr) { lfTr.style.background = l==='tr' ? 'var(--olive-dark)' : 'none'; lfTr.style.color = l==='tr' ? 'white' : 'var(--muted)'; }
+  if (lfDe) { lfDe.style.background = l==='de' ? 'var(--olive-dark)' : 'none'; lfDe.style.color = l==='de' ? 'white' : 'var(--muted)'; }
+};
+</script>
 
 </body>
 </html>
