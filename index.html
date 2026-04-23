@@ -1363,6 +1363,7 @@ nav {
   padding: 2rem 1.5rem;
   gap: 0;
   overflow-y: auto;
+  min-height: calc(100vh - 56px);
   transform: translateY(-10px);
   opacity: 0;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1385,11 +1386,13 @@ nav {
 }
 .nav-mobile-menu a:hover { color: var(--olive); padding-left: 0.5rem; }
 .nav-mobile-menu .nav-mobile-bottom {
-  margin-top: auto;
+  margin-top: 2rem;
   padding-top: 1.5rem;
+  padding-bottom: 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  border-top: 1px solid var(--border);
 }
 .nav-mobile-menu .nav-mobile-lang {
   display: flex; gap: 0.5rem;
@@ -1397,8 +1400,8 @@ nav {
 .nav-mobile-menu .nav-mobile-lang button {
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 0.4rem 1rem;
-  font-size: 0.8rem;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
   cursor: pointer;
   font-family: 'Jost', sans-serif;
   background: none;
@@ -1611,7 +1614,7 @@ nav {
     grid-template-columns: 1fr !important;
     gap: 1rem !important;
   }
-  .prod-carousel { height: 520px; }
+  .prod-carousel { height: 820px; }
 }
 
 </style>
