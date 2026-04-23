@@ -1677,8 +1677,8 @@ nav {
   </div>
   <div class="nav-mobile-bottom">
     <div class="nav-mobile-lang">
-      <button onclick="setLang('tr');closeMobileMenu()" id="mob-btn-tr" class="active">🇹🇷 Türkçe</button>
-      <button onclick="setLang('de');closeMobileMenu()" id="mob-btn-de">🇩🇪 Deutsch</button>
+      <button onclick="setLang('tr');closeMobileMenu()" id="mob-btn-tr" data-lang="tr" class="active">🇹🇷 Türkçe</button>
+      <button onclick="setLang('de');closeMobileMenu()" id="mob-btn-de" data-lang="de">🇩🇪 Deutsch</button>
     </div>
   </div>
 </div>
@@ -2586,6 +2586,11 @@ function setLang(l) {
     btn.classList.toggle('active', btn.dataset.lang === l);
   });
   document.documentElement.lang = l;
+  // Mobil dil butonları
+  var mbTr = document.getElementById('mob-btn-tr');
+  var mbDe = document.getElementById('mob-btn-de');
+  if (mbTr) mbTr.className = l === 'tr' ? 'active' : '';
+  if (mbDe) mbDe.className = l === 'de' ? 'active' : '';
 }
 
 // ── CART ──
