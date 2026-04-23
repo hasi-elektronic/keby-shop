@@ -2116,13 +2116,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Dil butonlarını senkronize et
   var origSetLang = window.setLang;
   if (origSetLang) {
-    window.setLang = function(l) {
-      origSetLang(l);
-      var btnTr = document.getElementById('mob-btn-tr');
-      var btnDe = document.getElementById('mob-btn-de');
-      if (btnTr) btnTr.className = l === 'tr' ? 'active' : '';
-      if (btnDe) btnDe.className = l === 'de' ? 'active' : '';
-    };
+    // setLang override kaldirildi
   }
 });
 
@@ -3082,13 +3076,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Dil butonlarını senkronize et
   var origSetLang = window.setLang;
   if (origSetLang) {
-    window.setLang = function(l) {
-      origSetLang(l);
-      var btnTr = document.getElementById('mob-btn-tr');
-      var btnDe = document.getElementById('mob-btn-de');
-      if (btnTr) btnTr.className = l === 'tr' ? 'active' : '';
-      if (btnDe) btnDe.className = l === 'de' ? 'active' : '';
-    };
+    // setLang override kaldirildi
   }
 });
 
