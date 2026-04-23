@@ -573,7 +573,7 @@ img, video { max-width: 100%; height: auto; }
   }
 
   /* ── ÜRÜNLER ── */
-  #produkte { padding: 2rem 0.75rem !important; }
+  #produkte { padding: 2rem 0.875rem !important; }
   .products-grid {
     grid-template-columns: 1fr !important;
     gap: 1rem !important;
@@ -811,7 +811,7 @@ img, video { max-width: 100%; height: auto; }
   }
 
   /* ── ÜRÜN KARTLARI ── */
-  #produkte { padding: 2.5rem 0.875rem !important; }
+  #produkte { padding: 2rem 0.875rem !important; }
   .products-grid { gap: 1.25rem !important; }
   
   .product-card {
@@ -1065,9 +1065,9 @@ body { color: #1a1a14; }
 
 @media(max-width:860px){
   #produkte { padding: 2rem 0.875rem !important; }
-  #produkte div[style*="grid-template-columns:repeat(3,1fr)"] {
+  #produkte div[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] {
     grid-template-columns: 1fr !important;
-    gap: 0.875rem !important;
+    gap: 1rem !important;
   }
   #vorteile { padding: 1.5rem 0.875rem !important; }
   #vorteile div[style*="grid-template-columns:repeat(3,1fr)"] {
@@ -1085,8 +1085,9 @@ body { color: #1a1a14; }
     height: 180px !important;
   }
   /* Ürünler */
-  #produkte div[style*="grid-template-columns:repeat(3,1fr)"] {
+  #produkte div[style*="grid-template-columns:repeat(3,minmax(0,1fr))"] {
     grid-template-columns: 1fr !important;
+    gap: 1rem !important;
   }
 }
 
@@ -2046,16 +2047,16 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </section>
 
-<section id="produkte" style="background:var(--cream);padding:2.5rem 3rem">
-  <div style="max-width:1000px;margin:0 auto">
+<section id="produkte" style="background:var(--cream);padding:2.5rem 2rem">
+  <div style="max-width:1200px;margin:0 auto">
     <div style="text-align:center;margin-bottom:1.75rem">
       <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem" data-tr="Ürünlerimiz" data-de="Unsere Produkte">Ürünlerimiz</div>
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark)" data-tr="Özenle Seçilmiş Lezzetler" data-de="Ausgewählte Feinkost">Özenle Seçilmiş Lezzetler</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem">
 
       <!-- ÜRÜN 1: 750ml -->
-      <a href="produkt-olivenoel-750ml.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+      <a href="produkt-olivenoel-750ml.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
         <!-- Carousel -->
         <div style="position:relative;overflow:hidden;height:220px" id="pc1">
           <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc1-track" style="display:flex;height:100%;transition:transform 0.4s ease">
@@ -2093,7 +2094,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </a>
 
       <!-- ÜRÜN 2: 5L -->
-      <a href="produkt-kanister-5l.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+      <a href="produkt-kanister-5l.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
         <div style="position:relative;overflow:hidden;height:220px" id="pc2">
           <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc2-track" style="display:flex;height:100%;transition:transform 0.4s ease">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 60%;flex-shrink:0" loading="eager">
@@ -2130,12 +2131,12 @@ document.addEventListener('DOMContentLoaded', function() {
       </a>
 
       <!-- ÜRÜN 3: Zeytin -->
-      <a href="produkt-oliven-schwarz.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
+      <a href="produkt-oliven-schwarz.html" style="background:white;border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;min-width:0;box-shadow:0 2px 16px rgba(42,74,26,0.09);transition:transform 0.3s,box-shadow 0.3s" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 36px rgba(42,74,26,0.18)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 16px rgba(42,74,26,0.09)'">
         <div style="position:relative;overflow:hidden;height:220px" id="pc3">
           <div style="display:flex;height:100%;transition:transform 0.4s ease" id="pc3-track" style="display:flex;height:100%;transition:transform 0.4s ease">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="eager">
             <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center 30%;flex-shrink:0" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-tanitim-v2.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" style="min-width:100%;height:100%;object-fit:cover;object-position:center top;flex-shrink:0" loading="lazy">
           <button onclick="event.preventDefault();carousel('pc3',-1)" style="position:absolute;left:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">‹</button>
           <button onclick="event.preventDefault();carousel('pc3',1)" style="position:absolute;right:0.4rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15)">›</button>
           <span style="position:absolute;top:0.6rem;left:0.6rem;background:rgba(42,74,26,0.85);color:white;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px" data-tr="GELENEKSEL" data-de="TRADITIONELL">GELENEKSEL</span>
