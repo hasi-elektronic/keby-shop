@@ -1618,6 +1618,16 @@ nav {
   .prod-carousel { height: 820px; }
 }
 
+
+.nav-desktop-only { display: flex; }
+.nav-mobile-only { display: none; }
+@media (max-width: 860px) {
+  .nav-desktop-only { display: none !important; }
+  .nav-mobile-only { display: flex !important; }
+  .nav-links { display: none !important; }
+  nav { padding: 0 1rem; height: 56px; }
+}
+
 </style>
   <meta property="og:title" content="Keby – Premium Olivenöl & Oliven aus der Türkei">
   <meta property="og:description" content="Kaltgepresstes natives Olivenöl extra und schwarze Oliven aus Mudanya, Bursa. Direkt vom Erzeuger – ohne Zwischenhändler.">
@@ -1634,56 +1644,40 @@ nav {
   <a href="index.html" class="nav-logo">
     <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby" width="36" height="36">
   </a>
-
-  <!-- Desktop linkler -->
   <ul class="nav-links">
     <li><a href="index.html#produkte" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a></li>
     <li><a href="vision.html" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a></li>
     <li><a href="ueber-uns.html" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a></li>
     <li><a href="ueber-uns.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
   </ul>
-
-  <!-- Desktop sağ taraf -->
-  <div class="nav-right" id="navRight">
-    <div class="lang-switcher">
+  <div style="display:flex;align-items:center;gap:0.5rem">
+    <!-- Desktop: dil + sepet -->
+    <div class="lang-switcher nav-desktop-only">
       <button class="lang-btn active" data-lang="tr" onclick="setLang('tr')">🇹🇷 TR</button>
       <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
     </div>
     <button class="nav-cart" onclick="toggleCart()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span data-tr="Sepet" data-de="Warenkorb">Sepet</span>
+      <span class="nav-desktop-only" data-tr="Sepet" data-de="Warenkorb">Sepet</span>
       <span class="cart-count" id="cartCount">0</span>
     </button>
-  </div>
-
-  <!-- Mobil: sepet + hamburger -->
-  <div style="display:none;align-items:center;gap:0.5rem" id="navMobileRight">
-    <button class="nav-cart" onclick="toggleCart()" style="padding:0.38rem 0.7rem">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span class="cart-count" id="cartCount2">0</span>
-    </button>
-    <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileMenu()">
+    <!-- Mobil: hamburger -->
+    <button id="navHamburger" class="nav-hamburger nav-mobile-only" onclick="toggleMobileMenu()" aria-label="Menü">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
-<!-- Mobil menü -->
-<div class="nav-mobile-menu" id="navMobileMenu">
+<!-- Mobil açılır menü -->
+<div id="navMobileMenu" class="nav-mobile-menu">
   <a href="index.html#produkte" onclick="closeMobileMenu()" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a>
-  <a href="vision.html" onclick="closeMobileMenu()" data-tr="Vizyon" data-de="Vision & Ziele">Vizyon</a>
+  <a href="vision.html" onclick="closeMobileMenu()" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a>
   <a href="ueber-uns.html" onclick="closeMobileMenu()" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a>
   <a href="ueber-uns.html#kontakt" onclick="closeMobileMenu()" data-tr="İletişim" data-de="Kontakt">İletişim</a>
-  <div class="nav-mobile-contact">
-    <a href="tel:+4915906342354"><span>📞</span> 015906342354</a>
-    <a href="https://wa.me/4915906342354" target="_blank"><span>💬</span> WhatsApp</a>
-    <a href="mailto:info@keby.shop"><span>✉️</span> info@keby.shop</a>
-  </div>
-  <div class="nav-mobile-bottom">
-    <div class="nav-mobile-lang">
-      <button onclick="setLang('tr')" id="mob-btn-tr" data-lang="tr" class="active">🇹🇷 Türkçe</button>
-      <button onclick="setLang('de')" id="mob-btn-de" data-lang="de">🇩🇪 Deutsch</button>
-    </div>
+  <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+    <a href="tel:+4915906342354" style="font-size:0.85rem!important;color:var(--muted)!important">📞 015906342354</a>
+    <a href="https://wa.me/4915906342354" target="_blank" style="font-size:0.85rem!important;color:var(--muted)!important">💬 WhatsApp</a>
+    <a href="mailto:info@keby.shop" style="font-size:0.85rem!important;color:var(--muted)!important">✉️ info@keby.shop</a>
   </div>
 </div>
 
@@ -3221,7 +3215,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <!-- SABİT DİL DEĞİŞTİRİCİ — SADECE MOBİL -->
-<div id="langFooter" style="display:none;position:fixed;bottom:7rem;left:50%;transform:translateX(-50%);background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:0.4rem;z-index:998;gap:0.25rem">
+<div id="langFooter" style="display:none;position:fixed;bottom:1.5rem;left:1.5rem;background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:0.4rem;z-index:998;gap:0.25rem">
   <button onclick="setLang('tr')" id="lf-tr" style="border:none;border-radius:25px;padding:0.5rem 1.25rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:var(--olive-dark);color:white;transition:all 0.2s">🇹🇷 TR</button>
   <button onclick="setLang('de')" id="lf-de" style="border:none;border-radius:25px;padding:0.5rem 1.25rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:none;color:var(--muted);transition:all 0.2s">🇩🇪 DE</button>
 </div>
