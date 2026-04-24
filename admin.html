@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- deploy: 1777020842 -->
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -285,11 +286,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="page-head">
           <div>
             <h1 class="page-title">Müşteriler</h1>
-            <div class="page-sub"><span id="custCount">—</span> müşteri</div>
+            <div class="page-sub"><span id="custCount">—</span> kayıt</div>
           </div>
-          <input class="finput" style="width:220px" placeholder="🔍 Ara…" id="custSearch" oninput="renderCustomers()">
+          <input class="finput" style="width:220px" placeholder="🔍 Ara…" id="custSearch" oninput="renderCustomersAll()">
         </div>
-        <div class="panel">
+
+        <!-- Tab switcher -->
+        <div class="cust-tabs" style="display:flex;gap:0;border-bottom:1px solid #e5e5e0;margin-bottom:1rem">
+          <button id="ctab-local" class="cust-tab active" onclick="switchCustTab('local')">📦 Sipariş Müşterileri</button>
+          <button id="ctab-stripe" class="cust-tab" onclick="switchCustTab('stripe')">💳 Stripe Ödeyenler</button>
+        </div>
+
+        <!-- Local customers (mevcut) -->
+        <div id="cust-pane-local" class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
               <th>İsim</th><th>E-posta</th><th>Şehir</th><th>Sipariş</th><th>Toplam</th><th>Son sipariş</th>
@@ -297,7 +306,29 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
             <tbody id="custTbody"></tbody></table>
           </div>
         </div>
+
+        <!-- Stripe customers -->
+        <div id="cust-pane-stripe" class="panel" style="display:none">
+          <div class="panel-body flush">
+            <div id="stripeStatus" style="padding:1rem;color:#888"></div>
+            <table class="tbl" id="stripeTable" style="display:none"><thead><tr>
+              <th>İsim</th><th>E-posta</th><th>Telefon</th><th>Adres</th><th>Ödeme</th><th>Toplam</th><th>Son</th><th></th>
+            </tr></thead>
+            <tbody id="stripeTbody"></tbody></table>
+            <div style="padding:1rem;text-align:center;border-top:1px solid #f0f0e8" id="stripeLoadMore"></div>
+          </div>
+        </div>
       </section>
+
+      <style>
+        .cust-tab{background:none;border:none;padding:0.7rem 1.2rem;cursor:pointer;color:#888;font-size:0.9rem;border-bottom:2px solid transparent;transition:all 0.15s}
+        .cust-tab:hover{color:#2a4a1a}
+        .cust-tab.active{color:#2a4a1a;border-bottom-color:#2a4a1a;font-weight:500}
+        #stripeTable td{vertical-align:top;padding:0.7rem 0.5rem}
+        .stripe-charges-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+        .stripe-charges-card{background:white;border-radius:10px;max-width:720px;width:100%;max-height:85vh;overflow:auto;padding:1.5rem}
+      </style>
+
 
       <!-- ===== IMAGES ===== -->
       <section id="page-images" class="page hidden">
@@ -959,6 +990,172 @@ function renderCustomers() {
     </tr>`;
   }).join('') || '<tr><td colspan="6" class="text-center text-muted" style="padding:2rem">Müşteri yok</td></tr>';
 }
+
+// ============================================================
+// STRIPE CUSTOMERS
+// ============================================================
+let stripeCustomers = [];
+let stripeLastId = null;
+let stripeHasMore = false;
+let activeCustTab = 'local';
+
+function switchCustTab(tab) {
+  activeCustTab = tab;
+  document.getElementById('ctab-local').classList.toggle('active', tab === 'local');
+  document.getElementById('ctab-stripe').classList.toggle('active', tab === 'stripe');
+  document.getElementById('cust-pane-local').style.display = tab === 'local' ? '' : 'none';
+  document.getElementById('cust-pane-stripe').style.display = tab === 'stripe' ? '' : 'none';
+  if (tab === 'stripe' && stripeCustomers.length === 0) {
+    loadStripeCustomers();
+  } else {
+    renderCustomersAll();
+  }
+}
+
+function renderCustomersAll() {
+  if (activeCustTab === 'local') renderCustomers();
+  else renderStripeCustomers();
+}
+
+async function loadStripeCustomers(append = false) {
+  const status = document.getElementById('stripeStatus');
+  const table = document.getElementById('stripeTable');
+  const loadMore = document.getElementById('stripeLoadMore');
+  status.textContent = 'Stripe verileri yükleniyor…';
+  if (!append) {
+    table.style.display = 'none';
+    loadMore.innerHTML = '';
+  }
+  try {
+    let url = '/api/admin/stripe/customers?limit=100';
+    if (append && stripeLastId) url += '&starting_after=' + stripeLastId;
+    const d = await api(url);
+    if (!d.success) {
+      status.textContent = '❌ Hata: ' + (d.error || 'bilinmeyen');
+      return;
+    }
+    if (append) {
+      // Mevcut listeye ekle (email'e göre merge)
+      const existing = new Map(stripeCustomers.map(c => [c.email.toLowerCase(), c]));
+      d.customers.forEach(c => {
+        const k = c.email.toLowerCase();
+        if (existing.has(k)) {
+          // Mevcuti güncelle (yeni charge'lar eklenmiş olabilir)
+          const ex = existing.get(k);
+          ex.charges = ex.charges.concat(c.charges);
+          ex.total_charges += c.total_charges;
+          ex.total_amount += c.total_amount;
+        } else {
+          stripeCustomers.push(c);
+        }
+      });
+    } else {
+      stripeCustomers = d.customers;
+    }
+    stripeLastId = d.last_id;
+    stripeHasMore = d.has_more;
+    status.textContent = `${stripeCustomers.length} benzersiz müşteri yüklendi`;
+    table.style.display = '';
+    renderStripeCustomers();
+    if (stripeHasMore) {
+      loadMore.innerHTML = '<button class="btn btn-secondary" onclick="loadStripeCustomers(true)">↓ Daha fazla yükle</button>';
+    } else {
+      loadMore.innerHTML = '<span class="text-muted text-sm">Tüm kayıtlar yüklendi</span>';
+    }
+  } catch (e) {
+    status.textContent = '❌ ' + e.message;
+  }
+}
+
+function renderStripeCustomers() {
+  const q = (document.getElementById('custSearch')?.value || '').toLowerCase();
+  const filtered = q ? stripeCustomers.filter(c =>
+    (c.name||'').toLowerCase().includes(q) ||
+    (c.email||'').toLowerCase().includes(q) ||
+    (c.phone||'').toLowerCase().includes(q)
+  ) : stripeCustomers;
+  document.getElementById('custCount').textContent = filtered.length;
+  document.getElementById('stripeTbody').innerHTML = filtered.map(c => {
+    const addr = c.address || (c.shipping && c.shipping.address) || {};
+    const addrParts = [addr.line1, addr.line2, addr.postal_code && addr.city ? `${addr.postal_code} ${addr.city}` : (addr.postal_code || addr.city), addr.country].filter(Boolean);
+    const addrTxt = addrParts.join(', ') || '—';
+    const succeeded = c.charges.filter(ch => ch.status === 'succeeded').length;
+    const lastDate = new Date(c.last_charge * 1000).toLocaleDateString('tr-TR');
+    const totalEur = (c.total_amount / 100).toFixed(2);
+    const methods = [...new Set(c.charges.map(ch => ch.payment_method).filter(Boolean))];
+    const emailSafe = c.email.replace(/'/g, "\\'");
+    return `<tr>
+      <td><strong>${escapeHtml(c.name)}</strong></td>
+      <td><a href="mailto:${escapeHtml(c.email)}" style="color:#3d6b2a">${escapeHtml(c.email)}</a></td>
+      <td>${escapeHtml(c.phone || '—')}</td>
+      <td style="font-size:0.8rem;color:#666;max-width:240px">${escapeHtml(addrTxt)}</td>
+      <td style="font-size:0.78rem">${succeeded}× ${methods.join(', ')||'—'}</td>
+      <td><strong>€${totalEur}</strong></td>
+      <td class="text-sm text-muted">${lastDate}</td>
+      <td><button class="btn btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.78rem" onclick="showStripeDetail('${emailSafe}')">Detay</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Müşteri bulunamadı</td></tr>';
+}
+
+function showStripeDetail(email) {
+  const c = stripeCustomers.find(x => x.email.toLowerCase() === email.toLowerCase());
+  if (!c) return;
+  const addr = c.address || (c.shipping && c.shipping.address) || {};
+  const addrLines = [addr.line1, addr.line2, addr.postal_code && addr.city ? `${addr.postal_code} ${addr.city}` : (addr.postal_code || addr.city), addr.state, addr.country].filter(Boolean).join('<br>');
+
+  const modal = document.createElement('div');
+  modal.className = 'stripe-charges-modal';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `
+    <div class="stripe-charges-card">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">
+        <div>
+          <h2 style="margin:0;font-size:1.3rem">${escapeHtml(c.name)}</h2>
+          <div style="color:#666;font-size:0.85rem;margin-top:0.3rem">
+            <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>
+            ${c.phone ? ' · <a href="tel:'+escapeHtml(c.phone)+'">'+escapeHtml(c.phone)+'</a>' : ''}
+          </div>
+        </div>
+        <button onclick="this.closest('.stripe-charges-modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888">×</button>
+      </div>
+
+      ${addrLines ? `<div style="background:#f7f4ee;padding:0.8rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.88rem;line-height:1.6">
+        <strong style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:#888">Adres</strong><br>${addrLines}
+      </div>` : ''}
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;margin-bottom:1.2rem">
+        <div style="background:#f7f4ee;padding:0.7rem;border-radius:6px;text-align:center">
+          <div style="font-size:0.7rem;color:#888;text-transform:uppercase">Ödeme</div>
+          <div style="font-weight:500">${c.charges.filter(ch=>ch.status==='succeeded').length}</div>
+        </div>
+        <div style="background:#f7f4ee;padding:0.7rem;border-radius:6px;text-align:center">
+          <div style="font-size:0.7rem;color:#888;text-transform:uppercase">Toplam</div>
+          <div style="font-weight:500">€${(c.total_amount/100).toFixed(2)}</div>
+        </div>
+        <div style="background:#f7f4ee;padding:0.7rem;border-radius:6px;text-align:center">
+          <div style="font-size:0.7rem;color:#888;text-transform:uppercase">İlk</div>
+          <div style="font-weight:500;font-size:0.85rem">${new Date(c.first_charge*1000).toLocaleDateString('tr-TR')}</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:0.95rem;margin:1rem 0 0.5rem">Ödeme Geçmişi</h3>
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>Tarih</th><th>Tutar</th><th>Yöntem</th><th>Durum</th><th></th></tr></thead>
+        <tbody>
+          ${c.charges.sort((a,b)=>b.created-a.created).map(ch => `<tr>
+            <td>${new Date(ch.created*1000).toLocaleString('tr-TR')}</td>
+            <td><strong>€${(ch.amount/100).toFixed(2)}</strong></td>
+            <td>${ch.payment_method || '—'}</td>
+            <td><span style="padding:0.15rem 0.5rem;border-radius:4px;font-size:0.75rem;background:${ch.status==='succeeded'?'#d4edda':'#f8d7da'};color:${ch.status==='succeeded'?'#155724':'#721c24'}">${ch.status}${ch.refunded?' (iade)':''}</span></td>
+            <td>${ch.receipt_url ? `<a href="${ch.receipt_url}" target="_blank" style="color:#3d6b2a;font-size:0.8rem">Makbuz↗</a>` : ''}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
 
 // ============================================================
 // HELPERS
