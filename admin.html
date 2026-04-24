@@ -178,7 +178,6 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 }
 .mobile-toggle { display: none; background: var(--olive-dark); color: white; border: none; padding: 0.5rem 0.8rem; border-radius: 7px; cursor: pointer; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -528,7 +527,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     <div class="modal-body">
       <div style="background:#f7f4ee;border-radius:6px;padding:0.9rem 1.1rem;margin-bottom:1.2rem;font-size:0.85rem">
         <strong style="color:#3d6b2a">📎 Anhang:</strong> <span id="em_filename">Rechnung.pdf</span>
-        <span id="em_pdf_status" style="float:right;color:#888;font-size:0.78rem">⏳ PDF hazırlanıyor…</span>
+        <span style="float:right;color:#3d6b2a;font-size:0.78rem">✓ PDF sunucuda üretilecek</span>
       </div>
       <div class="form-grid">
         <div class="field form-full">
@@ -550,7 +549,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeEmailModal()">İptal</button>
-      <button id="em_send_btn" class="btn btn-primary" onclick="sendInvoiceEmail()" disabled>📧 Gönder</button>
+      <button id="em_send_btn" class="btn btn-primary" onclick="sendInvoiceEmail()">📧 Gönder</button>
     </div>
   </div>
 </div>
@@ -1327,10 +1326,8 @@ async function generateInvoice() {
 }
 
 // ============================================================
-// EMAIL INVOICE
+// EMAIL INVOICE — PDF server-side üretilir (Browser Rendering)
 // ============================================================
-let _pendingPdfBase64 = null;
-
 async function emailInvoiceModal() {
   if (!editingOrder || !editingOrder.invoice_number) {
     toast('Önce Rechnung oluştur', 'err');
@@ -1340,7 +1337,6 @@ async function emailInvoiceModal() {
   const customerEmail = document.getElementById('of_email').value || '';
   const customerName = document.getElementById('of_name').value || 'Kundin/Kunde';
 
-  // Modal'ı doldur
   document.getElementById('em_recipient').value = customerEmail;
   document.getElementById('em_subject').value = `Ihre Rechnung ${inv} – Keby`;
   document.getElementById('em_message').value =
@@ -1358,87 +1354,15 @@ Keby — Premium Olivenöl
 https://keby.shop`;
 
   document.getElementById('em_filename').textContent = `Rechnung_${inv}.pdf`;
-  document.getElementById('em_pdf_status').innerHTML = '⏳ PDF hazırlanıyor…';
-  document.getElementById('em_send_btn').disabled = true;
-  _pendingPdfBase64 = null;
-
   document.getElementById('emailModal').classList.add('show');
-
-  // PDF üret (arka planda)
-  await preparePdfForEmail(editingOrder.id);
 }
 
 function closeEmailModal() {
   document.getElementById('emailModal').classList.remove('show');
-  _pendingPdfBase64 = null;
-}
-
-async function preparePdfForEmail(orderId) {
-  try {
-    // PDF-friendly HTML çek (sade CSS, html2canvas-uyumlu)
-    const url = API + '/api/invoice/' + encodeURIComponent(orderId) + '/pdf-html';
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Fatura HTML alınamadı');
-    const html = await res.text();
-
-    // Hidden iframe içine yerleştir, html2pdf çalıştır
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;height:1200px;border:0';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(html);
-    iframe.contentDocument.close();
-
-    setTimeout(async () => {
-      try {
-        // .page elementini hedefle (asıl fatura içeriği)
-        const target = iframe.contentDocument.querySelector('.page') || iframe.contentDocument.body;
-
-        const opt = {
-          margin: 0,
-          filename: 'Rechnung.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        const pdfBlob = await html2pdf().set(opt).from(target).output('blob');
-
-        // Base64'e çevir
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result.split(',')[1];
-          _pendingPdfBase64 = base64;
-          document.getElementById('em_pdf_status').innerHTML =
-            '<span style="color:#155724;background:#d4edda;padding:0.15rem 0.5rem;border-radius:4px">✓ PDF hazır (' + Math.round(pdfBlob.size/1024) + ' KB)</span>';
-          document.getElementById('em_send_btn').disabled = false;
-          iframe.remove();
-        };
-        reader.readAsDataURL(pdfBlob);
-      } catch (err) {
-        document.getElementById('em_pdf_status').innerHTML =
-          '<span style="color:#721c24;background:#f8d7da;padding:0.15rem 0.5rem;border-radius:4px">❌ ' + err.message + '</span>';
-        console.error('PDF generation error:', err);
-        iframe.remove();
-      }
-    }, 300);
-  } catch (e) {
-    document.getElementById('em_pdf_status').innerHTML =
-      '<span style="color:#721c24;background:#f8d7da;padding:0.15rem 0.5rem;border-radius:4px">❌ ' + e.message + '</span>';
-  }
 }
 
 async function sendInvoiceEmail() {
-  if (!editingOrder || !_pendingPdfBase64) {
-    toast('PDF henüz hazır değil', 'err');
-    return;
-  }
+  if (!editingOrder) return;
   const recipient = document.getElementById('em_recipient').value.trim();
   const subject = document.getElementById('em_subject').value.trim();
   const message = document.getElementById('em_message').value.trim();
@@ -1455,15 +1379,15 @@ async function sendInvoiceEmail() {
   const btn = document.getElementById('em_send_btn');
   const original = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '⏳ Gönderiliyor…';
+  btn.innerHTML = '⏳ PDF üretiliyor + gönderiliyor…';
 
   try {
     const d = await api('/api/admin/invoice/' + encodeURIComponent(editingOrder.id) + '/email', {
       method: 'POST',
-      body: { pdf_base64: _pendingPdfBase64, recipient, subject, message }
+      body: { recipient, subject, message }
     });
     if (d.success) {
-      toast(`✅ E-posta gönderildi → ${d.recipient}`, 'ok');
+      toast(`✅ E-posta gönderildi → ${d.recipient} (PDF: ${Math.round(d.pdf_size/1024)} KB)`, 'ok');
       closeEmailModal();
     } else {
       toast(d.error || 'Hata', 'err');
