@@ -817,6 +817,7 @@ async function uploadFiles(files, context) {
       });
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'Yükleme başarısız');
+      // Keep just key (without ?v=) for storage; cache-busting handled by ETag
       uploadedKeys.push(d.key);
       toast('↑ ' + f.name);
     } catch (e) { toast(e.message, 'err'); }
