@@ -736,15 +736,19 @@ function renderDash() {
       <div class="stat-meta">toplam: ${products.length} →</div>
     </div>
   `;
-  document.getElementById('dashRecentTbody').innerHTML = orders.slice(0,5).map(o => `
+  document.getElementById('dashRecentTbody').innerHTML = orders.slice(0,5).map(o => {
+    const displayName = (!o.name || o.name === 'Stripe Müşteri')
+      ? `<span style="color:#999;font-style:italic">Misafir</span>`
+      : escapeHtml(o.name);
+    return `
     <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')" title="Sipariş detayını aç">
       <td><strong>${o.ref || o.id}</strong></td>
-      <td>${o.name || '—'}</td>
+      <td>${displayName}</td>
       <td>€${(parseFloat(o.total)||0).toFixed(2)}</td>
       <td>${statusBadge(o.status)}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem">Henüz sipariş yok</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem">Henüz sipariş yok</td></tr>';
 }
 
 // ============================================================
@@ -975,18 +979,22 @@ function renderOrders() {
     (o.email||'').toLowerCase().includes(q)
   ) : orders;
   document.getElementById('orderCount').textContent = filtered.length;
-  document.getElementById('ordersTbody').innerHTML = filtered.map(o => `
+  document.getElementById('ordersTbody').innerHTML = filtered.map(o => {
+    const displayName = (!o.name || o.name === 'Stripe Müşteri')
+      ? `<span style="color:#999;font-style:italic">Misafir</span>`
+      : escapeHtml(o.name);
+    return `
     <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')">
       <td><strong>${o.ref || o.id}</strong></td>
-      <td>${escapeHtml(o.name || '—')}<div class="text-muted text-sm">${escapeHtml(o.email || '')}</div></td>
+      <td>${displayName}<div class="text-muted text-sm">${escapeHtml(o.email || '')}</div></td>
       <td class="text-sm">${fmtItems(o.items)}</td>
       <td><strong>€${(parseFloat(o.total)||0).toFixed(2)}</strong></td>
       <td>${paymentBadge(o.payment)}</td>
       <td>${statusBadge(o.status)}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
       <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button></td>
-    </tr>
-  `).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
 }
 
 function openOrderModal(id) {
@@ -1069,6 +1077,17 @@ async function fetchStripePayment(pi, order) {
     document.getElementById('of_email').placeholder = '';
     document.getElementById('of_name').placeholder = '';
     document.getElementById('of_addr').placeholder = '';
+
+    // Veri yoksa kullanıcıya bildir
+    const hasAnyCustomerData = p.name || p.email || p.phone || (a.line1 || a.city);
+    if (!hasAnyCustomerData) {
+      document.getElementById('of_stripe_status').innerHTML =
+        '<span style="color:#b45309;font-size:0.78rem;background:#fef3c7;padding:0.15rem 0.5rem;border-radius:4px">⚠️ Stripe\'ta müşteri verisi yok (Apple Pay/Link veya hızlı ödeme olabilir)</span>';
+      // Email boş ise placeholder
+      document.getElementById('of_email').placeholder = 'Stripe\'ta e-posta verisi yok';
+      document.getElementById('of_name').placeholder = 'İsim verisi yok';
+      document.getElementById('of_addr').placeholder = 'Adres verisi yok';
+    }
 
     // Etiket: "Canlı Stripe" olduğunu belirt
     showStripeLiveLabel();
