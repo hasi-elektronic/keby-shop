@@ -2112,46 +2112,31 @@ function addManualItemRow(item) {
   const wrap = document.getElementById('mi_items_wrap');
   const row = document.createElement('div');
   row.dataset.idx = idx;
-  row.style.cssText = 'background:white;border:1px solid #e8e3d6;border-radius:8px;padding:0.75rem 0.9rem;transition:all 0.15s';
+  row.style.cssText = 'background:white;border:1px solid #e8e3d6;border-radius:8px;padding:0.65rem 0.85rem';
 
   row.innerHTML = `
     <div style="display:flex;gap:0.7rem;align-items:center">
-      <!-- Ürün seçici (ana alan) -->
       <div style="flex:1;min-width:0">
-        <select onchange="selectProductForRow(${idx}, this.value)" style="width:100%;padding:0.55rem 0.7rem;border:1px solid #e0d8c7;border-radius:6px;background:white;font-size:0.88rem;cursor:pointer;color:#2a4a1a" data-role="select">
+        <select data-role="product-select" onchange="selectProductForRow(${idx}, this.value)" style="width:100%;padding:0.55rem 0.7rem;border:1px solid #e0d8c7;border-radius:6px;background:white;font-size:0.88rem;cursor:pointer;color:#2a4a1a">
           <option value="">— Ürün seç —</option>
           ${buildProductOptionsHTML(it.product_id)}
-          <option value="__custom__">✏️ Özel pozisyon (elle gir)</option>
+          <option value="__custom__">✏️ Özel pozisyon (elle yaz)</option>
         </select>
-        <!-- Satır bilgisi (ürün seçildikten sonra görünür) -->
-        <div data-role="info" style="display:${it.name && !it.custom ? 'flex' : 'none'};align-items:center;gap:0.5rem;margin-top:0.35rem;font-size:0.82rem">
-          <span data-role="artnr-badge" style="background:#f0ebe0;color:#6b6b5a;padding:0.15rem 0.5rem;border-radius:4px;font-family:monospace;font-size:0.72rem;font-weight:500">${escapeHtml(it.artikel_nr || '—')}</span>
-          <span data-role="name-display" style="color:#555">${escapeHtml(it.name || '')}</span>
-        </div>
-        <!-- Özel pozisyon name input (sadece "Özel pozisyon" seçilince görünür) -->
         <input data-role="custom-name" placeholder="Beschreibung (z.B. Beratung 1 Std.)" style="display:${it.custom ? 'block' : 'none'};width:100%;margin-top:0.35rem;padding:0.5rem 0.7rem;border:1px solid #e0d8c7;border-radius:6px;font-size:0.85rem" value="${escapeHtml(it.name)}" oninput="updateManualItem(${idx},'name',this.value)">
       </div>
-
-      <!-- Menge -->
       <div style="flex-shrink:0;text-align:center">
-        <label style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Menge</label>
+        <label style="font-size:0.66rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Menge</label>
         <input type="number" step="0.01" min="0.01" value="${it.qty}" oninput="updateManualItem(${idx},'qty',this.value)" style="width:64px;padding:0.45rem;border:1px solid #e0d8c7;border-radius:6px;text-align:center;font-size:0.88rem">
       </div>
-
-      <!-- Einzelpreis -->
       <div style="flex-shrink:0;text-align:right">
-        <label style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Preis €</label>
+        <label style="font-size:0.66rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Preis €</label>
         <input type="number" step="0.01" min="0" value="${it.price}" oninput="updateManualItem(${idx},'price',this.value)" style="width:88px;padding:0.45rem;border:1px solid #e0d8c7;border-radius:6px;text-align:right;font-size:0.88rem">
       </div>
-
-      <!-- Summe (hesaplanmış) -->
       <div style="flex-shrink:0;text-align:right;min-width:85px">
-        <label style="font-size:0.68rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Summe</label>
+        <label style="font-size:0.66rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;display:block">Summe</label>
         <span data-role="sum" style="display:inline-block;padding:0.45rem 0;color:#2a4a1a;font-weight:600;font-size:0.95rem">€ ${(it.qty*it.price).toFixed(2).replace('.', ',')}</span>
       </div>
-
-      <!-- Sil butonu -->
-      <button onclick="removeManualItemRow(${idx})" type="button" title="Sil" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.15rem;padding:0.4rem;margin-top:0.6rem;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">✕</button>
+      <button onclick="removeManualItemRow(${idx})" type="button" title="Sil" style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.1rem;padding:0.35rem;margin-top:0.55rem;opacity:0.5" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">✕</button>
     </div>
   `;
   wrap.appendChild(row);
@@ -2168,26 +2153,21 @@ function buildProductOptionsHTML(selectedProductId) {
   }).join('');
 }
 
-// Ürün seçildiğinde
 function selectProductForRow(idx, value) {
   if (!manualInvoiceItems[idx]) return;
   const row = document.querySelector(`#mi_items_wrap > div[data-idx="${idx}"]`);
   if (!row) return;
 
-  const info = row.querySelector('[data-role="info"]');
   const customInput = row.querySelector('[data-role="custom-name"]');
+  const priceInput = row.querySelectorAll('input[type="number"]')[1];
 
   if (value === '__custom__') {
-    // Özel pozisyon — input'u göster
     manualInvoiceItems[idx] = { artikel_nr: '', name: '', qty: manualInvoiceItems[idx].qty || 1, price: 0, product_id: '', custom: true };
-    info.style.display = 'none';
     customInput.style.display = 'block';
     customInput.value = '';
     customInput.focus();
-    row.querySelector('input[type="number"]').value = 1;
-    row.querySelectorAll('input[type="number"]')[1].value = 0;
+    priceInput.value = 0;
   } else if (value) {
-    // Mevcut ürün
     const p = products.find(pp => pp.id === value);
     if (!p) return;
     manualInvoiceItems[idx] = {
@@ -2198,17 +2178,12 @@ function selectProductForRow(idx, value) {
       price: p.price || 0,
       custom: false
     };
-    info.style.display = 'flex';
     customInput.style.display = 'none';
-    row.querySelector('[data-role="artnr-badge"]').textContent = manualInvoiceItems[idx].artikel_nr;
-    row.querySelector('[data-role="name-display"]').textContent = manualInvoiceItems[idx].name;
-    row.querySelectorAll('input[type="number"]')[1].value = manualInvoiceItems[idx].price;
+    priceInput.value = manualInvoiceItems[idx].price;
   } else {
-    // Temizle
     manualInvoiceItems[idx] = { artikel_nr: '', name: '', qty: 1, price: 0, product_id: '', custom: false };
-    info.style.display = 'none';
     customInput.style.display = 'none';
-    row.querySelectorAll('input[type="number"]')[1].value = 0;
+    priceInput.value = 0;
   }
 
   updateRowSum(idx);
