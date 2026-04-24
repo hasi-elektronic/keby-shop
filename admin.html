@@ -658,6 +658,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeManualInvoiceModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="previewManualInvoice()" style="margin-left:auto">👁 Vorschau</button>
       <button class="btn btn-primary" onclick="saveManualInvoice(false)">💾 Speichern + Drucken</button>
       <button class="btn btn-primary" onclick="saveManualInvoice(true)" style="background:#3d6b2a">💾 Speichern + Mail senden</button>
     </div>
@@ -2222,6 +2223,77 @@ function removeManualItemRow(idx) {
 function recalcManualTotal() {
   const total = manualInvoiceItems.filter(Boolean).reduce((s, it) => s + (it.qty * it.price), 0);
   document.getElementById('mi_total_display').textContent = '€ ' + total.toFixed(2).replace('.', ',');
+}
+
+// Manuel fatura ÖNİZLEME (kaydetmeden PDF yeni sekmede aç)
+async function previewManualInvoice() {
+  // Form verisini topla — saveManualInvoice ile aynı mantık
+  const items = manualInvoiceItems.filter(it => it && it.name && it.qty > 0);
+  if (items.length === 0) { toast('En az 1 pozisyon girin', 'err'); return; }
+
+  const sel = document.getElementById('mi_customer_select');
+  let body = {
+    items,
+    payment: document.getElementById('mi_payment').value,
+    order_date: document.getElementById('mi_order_date').value,
+    notes: document.getElementById('mi_notes').value
+  };
+
+  if (sel.value === '__new__') {
+    const name = document.getElementById('mi_nc_name').value.trim();
+    if (!name) { toast('Müşteri adı gerekli (veya mevcut seç)', 'err'); return; }
+    body.customer = {
+      name,
+      email: document.getElementById('mi_nc_email').value.trim(),
+      phone: document.getElementById('mi_nc_phone').value.trim(),
+      address: {
+        line1: document.getElementById('mi_nc_line1').value.trim(),
+        postal_code: document.getElementById('mi_nc_plz').value.trim(),
+        city: document.getElementById('mi_nc_city').value.trim(),
+        country: 'DE'
+      },
+      ust_idnr: document.getElementById('mi_nc_ust').value.trim()
+    };
+  } else if (sel.value) {
+    body.customer_id = sel.value;
+  } else {
+    toast('Müşteri seçin veya yeni ekleyin', 'err'); return;
+  }
+
+  toast('Vorschau hazırlanıyor...', 'ok');
+
+  // Yeni sekme AÇ hemen (popup blocker'ı için user-action sırasında yapılmalı)
+  const tab = window.open('about:blank', '_blank');
+  if (!tab) {
+    toast('Popup engellendi — tarayıcı ayarlarını kontrol edin', 'err');
+    return;
+  }
+  tab.document.write('<html><head><title>Vorschau yükleniyor...</title></head><body style="font-family:system-ui;text-align:center;padding-top:100px;color:#2a4a1a"><h2>📄 Vorschau hazırlanıyor...</h2><p style="color:#666">Birkaç saniye içinde açılacak.</p></body></html>');
+
+  try {
+    const res = await fetch(API + '/api/admin/invoices/preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TOKEN
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      tab.document.body.innerHTML = '<h2 style="color:#c0392b">❌ Hata</h2><p>' + err + '</p>';
+      toast('Vorschau hatası', 'err');
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    tab.location.href = url;
+  } catch (e) {
+    tab.document.body.innerHTML = '<h2 style="color:#c0392b">❌ Hata</h2><p>' + e.message + '</p>';
+    toast('Vorschau hatası: ' + e.message, 'err');
+  }
 }
 
 async function saveManualInvoice(sendMail) {
