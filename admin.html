@@ -75,7 +75,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 
 /* ============ CARDS / STATS ============ */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.stat-card { background: var(--card); border-radius: 10px; padding: 1.25rem 1.5rem; border: 1px solid var(--border); border-left: 3px solid var(--olive); }
+.stat-card { background: var(--card); border-radius: 10px; padding: 1.25rem 1.5rem; border: 1px solid var(--border); border-left: 3px solid var(--olive); transition: transform 0.15s, box-shadow 0.15s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(42,74,26,0.08); }
 .stat-card.accent { border-left-color: var(--accent); }
 .stat-card.info { border-left-color: var(--info); }
 .stat-card.warn { border-left-color: var(--warning); }
@@ -452,12 +453,26 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
 <!-- ============ ORDER MODAL ============ -->
 <div class="modal-backdrop" id="orderModal">
-  <div class="modal">
+  <div class="modal" style="max-width:760px">
     <div class="modal-head">
       <div class="modal-title">Sipariş detayı</div>
       <button class="modal-close" onclick="closeOrderModal()">✕</button>
     </div>
     <div class="modal-body">
+      <!-- Stripe rich panel (sadece Stripe siparişlerinde) -->
+      <div id="of_stripe_panel" style="display:none;background:linear-gradient(135deg,#635bff10,#635bff05);border:1px solid #635bff30;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.2rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem">
+          <span style="background:#635bff;color:white;padding:0.15rem 0.6rem;border-radius:4px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em">STRIPE</span>
+          <strong id="of_stripe_method" style="font-size:0.9rem;color:#333"></strong>
+          <span id="of_stripe_status" style="margin-left:auto;font-size:0.8rem"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.6rem;font-size:0.82rem">
+          <div><span style="color:#888">Payment ID:</span> <code id="of_stripe_pid" style="font-size:0.78rem;background:#f4f4f0;padding:0.1rem 0.4rem;border-radius:3px"></code></div>
+          <div><span style="color:#888">Tarih:</span> <span id="of_stripe_date"></span></div>
+          <div id="of_stripe_receipt_wrap"><a id="of_stripe_receipt" href="#" target="_blank" style="color:#3d6b2a;font-size:0.85rem">🧾 Stripe Makbuz ↗</a></div>
+        </div>
+      </div>
+
       <div class="form-grid">
         <div class="field"><label class="flabel">Ref</label><input id="of_ref" class="finput" readonly></div>
         <div class="field"><label class="flabel">Durum</label>
@@ -471,13 +486,25 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </select>
         </div>
         <div class="field"><label class="flabel">Müşteri</label><input id="of_name" class="finput"></div>
-        <div class="field"><label class="flabel">E-posta</label><input id="of_email" class="finput"></div>
-        <div class="field"><label class="flabel">Telefon</label><input id="of_phone" class="finput"></div>
+        <div class="field"><label class="flabel">E-posta <a id="of_email_link" href="#" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">📧 Mail at</a></label><input id="of_email" class="finput"></div>
+        <div class="field"><label class="flabel">Telefon <a id="of_phone_link" href="#" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">📞 Ara</a></label><input id="of_phone" class="finput"></div>
         <div class="field"><label class="flabel">Ödeme</label><input id="of_payment" class="finput"></div>
         <div class="field"><label class="flabel">Tutar</label><input id="of_total" class="finput" type="number" step="0.01"></div>
-        <div class="field form-full"><label class="flabel">Adres</label><textarea id="of_addr" class="ftextarea"></textarea></div>
-        <div class="field form-full"><label class="flabel">Ürünler</label><textarea id="of_items" class="ftextarea" readonly></textarea></div>
-        <div class="field form-full"><label class="flabel">Not</label><textarea id="of_note" class="ftextarea"></textarea></div>
+        <div class="field form-full">
+          <label class="flabel">Adres
+            <a id="of_addr_maps" href="#" target="_blank" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">🗺 Maps'te aç</a>
+          </label>
+          <textarea id="of_addr" class="ftextarea" rows="3"></textarea>
+        </div>
+
+        <!-- Ürünler tablosu (otomatik oluşturulacak) -->
+        <div class="field form-full">
+          <label class="flabel">Ürünler</label>
+          <div id="of_items_table" style="border:1px solid var(--border);border-radius:6px;overflow:hidden"></div>
+          <textarea id="of_items" style="display:none"></textarea>
+        </div>
+
+        <div class="field form-full"><label class="flabel">Not</label><textarea id="of_note" class="ftextarea" rows="2"></textarea></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -661,29 +688,29 @@ function renderDash() {
   const newOrders = orders.filter(o => o.status === 'neu' || !o.status).length;
 
   document.getElementById('dashStats').innerHTML = `
-    <div class="stat-card accent">
+    <div class="stat-card accent" onclick="goto('orders')" style="cursor:pointer" title="Siparişler sayfasına git">
       <div class="stat-label">Bu ay ciro</div>
       <div class="stat-value">€${revenueMonth.toFixed(2)}</div>
-      <div class="stat-meta">${ordersMonth.length} sipariş</div>
+      <div class="stat-meta">${ordersMonth.length} sipariş →</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" onclick="goto('orders')" style="cursor:pointer" title="Siparişler sayfasına git">
       <div class="stat-label">Bugün sipariş</div>
       <div class="stat-value">${ordersToday.length}</div>
-      <div class="stat-meta">yeni: ${newOrders}</div>
+      <div class="stat-meta">yeni: ${newOrders} →</div>
     </div>
-    <div class="stat-card info">
+    <div class="stat-card info" onclick="goto('customers')" style="cursor:pointer" title="Müşteriler sayfasına git">
       <div class="stat-label">Toplam müşteri</div>
       <div class="stat-value">${customers.length}</div>
-      <div class="stat-meta">kayıtlı</div>
+      <div class="stat-meta">kayıtlı →</div>
     </div>
-    <div class="stat-card warn">
+    <div class="stat-card warn" onclick="goto('products')" style="cursor:pointer" title="Ürünler sayfasına git">
       <div class="stat-label">Aktif ürün</div>
       <div class="stat-value">${products.filter(p=>p.active).length}</div>
-      <div class="stat-meta">toplam: ${products.length}</div>
+      <div class="stat-meta">toplam: ${products.length} →</div>
     </div>
   `;
   document.getElementById('dashRecentTbody').innerHTML = orders.slice(0,5).map(o => `
-    <tr>
+    <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')" title="Sipariş detayını aç">
       <td><strong>${o.ref || o.id}</strong></td>
       <td>${o.name || '—'}</td>
       <td>€${(parseFloat(o.total)||0).toFixed(2)}</td>
@@ -946,9 +973,97 @@ function openOrderModal(id) {
   document.getElementById('of_phone').value = o.phone || '';
   document.getElementById('of_payment').value = o.payment || '';
   document.getElementById('of_total').value = o.total || 0;
-  document.getElementById('of_addr').value = o.address || o.shipping_address || '';
-  document.getElementById('of_items').value = typeof o.items === 'string' ? o.items : JSON.stringify(o.items, null, 2);
+
+  // Adres formatla — addressDetail varsa structured kullan, yoksa string
+  let addrText = o.address || o.shipping_address || '';
+  if (o.addressDetail) {
+    const a = o.addressDetail;
+    addrText = [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean).join('\n');
+  }
+  document.getElementById('of_addr').value = addrText;
+
   document.getElementById('of_note').value = o.note || '';
+
+  // İletişim linkleri
+  const emailLink = document.getElementById('of_email_link');
+  if (o.email) {
+    emailLink.href = 'mailto:' + o.email + '?subject=' + encodeURIComponent('Bestellung ' + (o.ref || o.id));
+    emailLink.style.display = 'inline';
+  } else emailLink.style.display = 'none';
+
+  const phoneLink = document.getElementById('of_phone_link');
+  if (o.phone) {
+    phoneLink.href = 'tel:' + o.phone.replace(/\s/g, '');
+    phoneLink.style.display = 'inline';
+  } else phoneLink.style.display = 'none';
+
+  const mapsLink = document.getElementById('of_addr_maps');
+  if (addrText) {
+    mapsLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addrText.replace(/\n/g, ', '));
+    mapsLink.style.display = 'inline';
+  } else mapsLink.style.display = 'none';
+
+  // Stripe panel
+  const stripePanel = document.getElementById('of_stripe_panel');
+  if (o.payment === 'stripe' && o.stripePaymentId) {
+    stripePanel.style.display = '';
+    document.getElementById('of_stripe_pid').textContent = o.stripePaymentId;
+    document.getElementById('of_stripe_method').textContent = o.stripeMethod || 'Kart ödemesi';
+    document.getElementById('of_stripe_date').textContent = fmtDate(o.date);
+    const statusEl = document.getElementById('of_stripe_status');
+    const status = o.stripeStatus || 'succeeded';
+    statusEl.innerHTML = `<span style="padding:0.15rem 0.5rem;border-radius:4px;font-size:0.72rem;background:${status==='succeeded'?'#d4edda':'#f8d7da'};color:${status==='succeeded'?'#155724':'#721c24'}">${status}</span>`;
+    if (o.stripeReceiptUrl) {
+      document.getElementById('of_stripe_receipt').href = o.stripeReceiptUrl;
+      document.getElementById('of_stripe_receipt_wrap').style.display = '';
+    } else {
+      document.getElementById('of_stripe_receipt_wrap').style.display = 'none';
+    }
+  } else {
+    stripePanel.style.display = 'none';
+  }
+
+  // Ürünler tablosu
+  let items = o.items;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch { items = []; }
+  }
+  if (!Array.isArray(items)) items = [];
+  document.getElementById('of_items').value = JSON.stringify(items, null, 2);
+
+  const itemsTable = document.getElementById('of_items_table');
+  if (items.length > 0) {
+    itemsTable.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+        <thead><tr style="background:#f7f4ee;text-align:left">
+          <th style="padding:0.6rem">Ürün</th>
+          <th style="padding:0.6rem;text-align:center">Adet</th>
+          <th style="padding:0.6rem;text-align:right">Birim</th>
+          <th style="padding:0.6rem;text-align:right">Toplam</th>
+        </tr></thead>
+        <tbody>
+          ${items.map(it => {
+            const name = it.name || it.title || it.product || '—';
+            const qty = it.qty || it.quantity || it.count || 1;
+            const price = parseFloat(it.price || it.amount || 0);
+            const subtotal = price * qty;
+            return `<tr style="border-top:1px solid var(--border)">
+              <td style="padding:0.6rem">${escapeHtml(name)}</td>
+              <td style="padding:0.6rem;text-align:center">${qty}</td>
+              <td style="padding:0.6rem;text-align:right">€${price.toFixed(2)}</td>
+              <td style="padding:0.6rem;text-align:right;font-weight:500">€${subtotal.toFixed(2)}</td>
+            </tr>`;
+          }).join('')}
+          <tr style="background:#f7f4ee;font-weight:600">
+            <td colspan="3" style="padding:0.6rem;text-align:right">Toplam:</td>
+            <td style="padding:0.6rem;text-align:right">€${(parseFloat(o.total)||0).toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+  } else {
+    itemsTable.innerHTML = '<div style="padding:1rem;text-align:center;color:#888;font-size:0.85rem">Ürün listesi yok</div>';
+  }
+
   document.getElementById('orderModal').classList.add('show');
 }
 
