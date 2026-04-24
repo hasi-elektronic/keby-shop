@@ -7,6 +7,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Yağlı Siyah Zeytin 900g – Keby</title>
+<meta name="product-id" content="oliven-schwarz">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -416,5 +417,6 @@ function setImg(el,src){document.getElementById('mainImg').src=src;document.quer
 function showTab(id,el){document.querySelectorAll('.desc-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.desc-tab').forEach(function(t){t.classList.remove('active');});document.getElementById(id).classList.add('active');el.classList.add('active');if(id==='desc'){var dTR=document.getElementById('desc-tr');var dDE=document.getElementById('desc-de');if(dTR&&dDE){dTR.style.display=_lang==='tr'?'block':'none';dDE.style.display=_lang==='de'?'block':'none';}}if(id==='rev'){var rTR=document.getElementById('rev-tr');var rDE=document.getElementById('rev-de');if(rTR&&rDE){rTR.style.display=_lang==='tr'?'block':'none';rDE.style.display=_lang==='de'?'block':'none';}}}
 document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateCartUI(); });
 </script>
+<script src="/product-sync.js?v=2"></script>
 </body>
 </html>
