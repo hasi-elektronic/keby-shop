@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meine Bestellungen · Keby</title>
+<meta name="description" content="Ihre Bestellungen bei Keby ansehen und Rechnung herunterladen">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #faf7f0;
+  color: #2a2a22;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+}
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1.5px solid #e8e3d6;
+}
+header img { height: 56px; margin-bottom: 8px; }
+header .tagline {
+  color: #6b6b5a;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 28px 26px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #2a4a1a;
+  margin-bottom: 6px;
+}
+.subtitle {
+  color: #6b6b5a;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+label {
+  display: block;
+  font-size: 12px;
+  color: #6b6b5a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+  margin-top: 14px;
+  font-weight: 500;
+}
+input[type=email],
+input[type=text] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e0d8c7;
+  border-radius: 7px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #faf7f0;
+  color: #2a2a22;
+  transition: border 0.15s;
+}
+input:focus { outline: none; border-color: #3d6b2a; background: white; }
+.help {
+  font-size: 12px;
+  color: #888;
+  margin-top: 5px;
+}
+button.primary {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px 20px;
+  background: #3d6b2a;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.primary:hover { background: #2a4a1a; }
+button.primary:disabled { opacity: 0.6; cursor: wait; }
+.btn-back {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #3d6b2a;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.btn-back:hover { text-decoration: underline; }
+.error {
+  background: #fdeaea;
+  color: #a02525;
+  padding: 12px 16px;
+  border-radius: 7px;
+  font-size: 14px;
+  margin-top: 16px;
+  border-left: 3px solid #c0392b;
+}
+/* Sipariş kartı */
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e8e3d6;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.order-ref {
+  font-size: 11px;
+  color: #6b6b5a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.order-ref-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: #2a4a1a;
+  font-weight: 500;
+}
+.order-total {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  color: #2a4a1a;
+  font-weight: 500;
+  text-align: right;
+}
+.badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.badge {
+  display: inline-block;
+  background: #d4edda;
+  color: #155724;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge.warn { background: #fff3cd; color: #856404; }
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+@media (max-width: 560px) { .info-grid { grid-template-columns: 1fr; } }
+.info-block .lbl {
+  font-size: 11px;
+  color: #6b6b5a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.info-block .val { font-size: 14px; color: #2a2a22; line-height: 1.5; }
+table.items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+}
+table.items thead th {
+  text-align: left;
+  padding: 8px 0;
+  color: #6b6b5a;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e8e3d6;
+}
+table.items thead th.num { text-align: right; }
+table.items tbody td {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0ebe0;
+  font-size: 14px;
+}
+table.items tbody td.num { text-align: right; }
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: #3d6b2a;
+  color: white;
+  text-decoration: none;
+  border-radius: 7px;
+  font-weight: 500;
+  margin-top: 20px;
+  transition: background 0.15s;
+}
+.download-btn:hover { background: #2a4a1a; }
+.no-invoice {
+  text-align: center;
+  padding: 16px;
+  background: #faf7f0;
+  border-radius: 7px;
+  color: #6b6b5a;
+  font-size: 13px;
+  margin-top: 16px;
+}
+footer.page-foot {
+  text-align: center;
+  color: #888;
+  font-size: 12px;
+  margin-top: 40px;
+}
+footer.page-foot a { color: #3d6b2a; text-decoration: none; margin: 0 8px; }
+footer.page-foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+    <div class="tagline">Premium Olivenöl</div>
+  </header>
+
+  <!-- Form -->
+  <div class="card" id="formCard">
+    <h1>Meine Bestellungen</h1>
+    <p class="subtitle">Geben Sie Ihre E-Mail und Bestellnummer ein, um Ihre Bestellung anzusehen und die Rechnung herunterzuladen.</p>
+
+    <form id="lookupForm" onsubmit="return lookup(event)">
+      <label for="email">E-Mail-Adresse</label>
+      <input type="email" id="email" required autocomplete="email" placeholder="ihre@email.de">
+
+      <label for="order_ref">Bestellnummer</label>
+      <input type="text" id="order_ref" required autocomplete="off" placeholder="KEBY-XXXXXX" style="text-transform:uppercase;font-family:monospace">
+      <div class="help">Die Bestellnummer finden Sie in Ihrer Bestellbestätigungs-E-Mail (z.B. KEBY-ABC123)</div>
+
+      <button type="submit" class="primary" id="submitBtn">Bestellung anzeigen</button>
+    </form>
+    <div id="errorBox"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultCard" style="display:none"></div>
+
+  <footer class="page-foot">
+    <a href="/">← Zurück zum Shop</a>
+    <a href="/impressum.html">Impressum</a>
+    <a href="/datenschutz.html">Datenschutz</a>
+    <br><br>
+    Fragen? <a href="mailto:info@keby.shop">info@keby.shop</a>
+  </footer>
+</div>
+
+<script>
+const API = 'https://keby-api.hguencavdi.workers.dev';
+
+// URL parametrelerinden pre-fill
+(function() {
+  const url = new URL(window.location);
+  const email = url.searchParams.get('email');
+  const order = url.searchParams.get('order');
+  if (email) document.getElementById('email').value = email;
+  if (order) document.getElementById('order_ref').value = order.toUpperCase();
+  // Eğer ikisi de varsa otomatik ara
+  if (email && order) {
+    setTimeout(() => document.getElementById('lookupForm').dispatchEvent(new Event('submit', {cancelable: true})), 300);
+  }
+})();
+
+async function lookup(e) {
+  if (e) e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const orderRef = document.getElementById('order_ref').value.trim().toUpperCase();
+  const btn = document.getElementById('submitBtn');
+  const errBox = document.getElementById('errorBox');
+
+  errBox.innerHTML = '';
+  btn.disabled = true;
+  btn.textContent = 'Wird gesucht...';
+
+  try {
+    const res = await fetch(API + '/api/customer/lookup', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, order_ref: orderRef})
+    });
+    const data = await res.json();
+    if (!data.success) {
+      errBox.innerHTML = '<div class="error">❌ ' + (data.error || 'Nicht gefunden') + '</div>';
+      btn.disabled = false;
+      btn.textContent = 'Bestellung anzeigen';
+      return;
+    }
+
+    // Sonucu göster
+    renderOrder(data.order);
+    document.getElementById('formCard').style.display = 'none';
+  } catch (err) {
+    errBox.innerHTML = '<div class="error">❌ Fehler: ' + err.message + '</div>';
+    btn.disabled = false;
+    btn.textContent = 'Bestellung anzeigen';
+  }
+  return false;
+}
+
+function renderOrder(order) {
+  const card = document.getElementById('resultCard');
+  const fmt = (n) => '€ ' + (n||0).toFixed(2).replace('.', ',');
+  const fmtDate = (s) => s ? new Date(s).toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) : '—';
+
+  const statusLabels = {
+    'onaylandi': { label: 'Bestätigt', cls: '' },
+    'versendet': { label: 'Versendet', cls: '' },
+    'abgeschlossen': { label: 'Abgeschlossen', cls: '' },
+    'storniert': { label: 'Storniert', cls: 'warn' }
+  };
+  const status = statusLabels[order.status] || { label: order.status || 'In Bearbeitung', cls: 'warn' };
+  const paymentLabels = {
+    'stripe': '💳 Kreditkarte',
+    'paypal': 'PayPal',
+    'bar': '💵 Bar',
+    'ueberweisung': '🏦 Überweisung',
+    'offen': '⏳ Offen'
+  };
+
+  const items = order.items || [];
+  const itemRows = items.map(it => {
+    const name = it.name || it.title || it.productId || '—';
+    const qty = it.qty || 1;
+    const price = parseFloat(it.price) || 0;
+    return `<tr>
+      <td>${escapeHtml(name)}</td>
+      <td class="num">${qty}×</td>
+      <td class="num">${fmt(price)}</td>
+      <td class="num"><strong>${fmt(qty * price)}</strong></td>
+    </tr>`;
+  }).join('');
+
+  card.innerHTML = `
+    <button class="btn-back" onclick="goBack()">← Andere Bestellung suchen</button>
+    <div class="card">
+      <div class="order-head">
+        <div>
+          <div class="order-ref">Bestellnummer</div>
+          <div class="order-ref-val">${escapeHtml(order.ref)}</div>
+          <div class="badges">
+            <span class="badge ${status.cls}">${status.label}</span>
+            ${order.has_invoice ? `<span class="badge">📄 Rechnung ${escapeHtml(order.invoice_number)}</span>` : ''}
+          </div>
+        </div>
+        <div>
+          <div class="order-ref" style="text-align:right">Gesamtbetrag</div>
+          <div class="order-total">${fmt(order.total)}</div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-block">
+          <div class="lbl">Bestelldatum</div>
+          <div class="val">${fmtDate(order.date)}</div>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Zahlungsart</div>
+          <div class="val">${paymentLabels[order.payment] || order.payment || '—'}</div>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Name</div>
+          <div class="val">${escapeHtml(order.name || '—')}</div>
+        </div>
+        <div class="info-block">
+          <div class="lbl">Lieferadresse</div>
+          <div class="val">${escapeHtml(order.address || '—')}</div>
+        </div>
+      </div>
+
+      ${items.length ? `
+      <table class="items">
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th class="num">Menge</th>
+            <th class="num">Preis</th>
+            <th class="num">Summe</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+      ` : ''}
+
+      ${order.has_invoice && order.invoice_download_url
+        ? `<a href="${escapeHtml(order.invoice_download_url)}" class="download-btn" target="_blank">📄 Rechnung als PDF herunterladen</a>`
+        : '<div class="no-invoice">ℹ️ Für diese Bestellung liegt noch keine Rechnung vor. Bitte wenden Sie sich an <a href="mailto:info@keby.shop" style="color:#3d6b2a">info@keby.shop</a>.</div>'}
+    </div>
+  `;
+  card.style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function goBack() {
+  document.getElementById('formCard').style.display = 'block';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = 'Bestellung anzeigen';
+  document.getElementById('errorBox').innerHTML = '';
+  // URL'den parametre temizle ki refresh'te tekrar aramasın
+  if (window.history.replaceState) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
