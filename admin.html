@@ -643,7 +643,34 @@ async function loadOrders() {
     orders = (d.orders || []).sort((a,b) => new Date(b.date) - new Date(a.date));
     renderOrders();
     renderDash();
+
+    // Auto-enrich: boş Stripe siparişleri varsa sessizce arka planda Stripe'tan zenginleştir
+    const needsEnrich = orders.some(o =>
+      o.payment === 'stripe' && o.stripePaymentId &&
+      (!o.email || !o.name || o.name === 'Stripe Müşteri' || !o.address)
+    );
+    if (needsEnrich) {
+      autoEnrichStripe();
+    }
   } catch (e) { toast(e.message, 'err'); }
+}
+
+async function autoEnrichStripe() {
+  try {
+    const d = await api('/api/admin/orders/enrich-stripe', { method: 'POST' });
+    if (d.success && d.enriched > 0) {
+      // Sessiz toast (kullanıcıyı rahatsız etme, sadece bilgilendir)
+      toast(`✨ ${d.enriched} Stripe siparişi otomatik güncellendi`, 'ok');
+      // Sipariş listesini yenile
+      const r = await api('/api/orders');
+      orders = (r.orders || []).sort((a,b) => new Date(b.date) - new Date(a.date));
+      renderOrders();
+      renderDash();
+    }
+  } catch (e) {
+    // Sessizce başarısız ol, kullanıcıyı rahatsız etme
+    console.warn('Auto-enrich failed:', e);
+  }
 }
 
 async function enrichStripeOrders() {
@@ -968,62 +995,157 @@ function openOrderModal(id) {
   const o = editingOrder;
   document.getElementById('of_ref').value = o.ref || o.id;
   document.getElementById('of_status').value = o.status || 'neu';
-  document.getElementById('of_name').value = o.name || '';
-  document.getElementById('of_email').value = o.email || '';
-  document.getElementById('of_phone').value = o.phone || '';
   document.getElementById('of_payment').value = o.payment || '';
   document.getElementById('of_total').value = o.total || 0;
-
-  // Adres formatla — addressDetail varsa structured kullan, yoksa string
-  let addrText = o.address || o.shipping_address || '';
-  if (o.addressDetail) {
-    const a = o.addressDetail;
-    addrText = [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean).join('\n');
-  }
-  document.getElementById('of_addr').value = addrText;
-
   document.getElementById('of_note').value = o.note || '';
 
-  // İletişim linkleri
-  const emailLink = document.getElementById('of_email_link');
-  if (o.email) {
-    emailLink.href = 'mailto:' + o.email + '?subject=' + encodeURIComponent('Bestellung ' + (o.ref || o.id));
-    emailLink.style.display = 'inline';
-  } else emailLink.style.display = 'none';
+  // Önce mevcut DB verisini göster (varsa)
+  fillOrderModalCustomer(o.name || '', o.email || '', o.phone || '', o.address || '', null);
 
-  const phoneLink = document.getElementById('of_phone_link');
-  if (o.phone) {
-    phoneLink.href = 'tel:' + o.phone.replace(/\s/g, '');
-    phoneLink.style.display = 'inline';
-  } else phoneLink.style.display = 'none';
+  // Ürünler tablosu
+  renderOrderItems(o);
 
-  const mapsLink = document.getElementById('of_addr_maps');
-  if (addrText) {
-    mapsLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addrText.replace(/\n/g, ', '));
-    mapsLink.style.display = 'inline';
-  } else mapsLink.style.display = 'none';
+  // Modal göster
+  document.getElementById('orderModal').classList.add('show');
 
-  // Stripe panel
+  // Stripe panel ve canlı veri çekme
   const stripePanel = document.getElementById('of_stripe_panel');
   if (o.payment === 'stripe' && o.stripePaymentId) {
     stripePanel.style.display = '';
     document.getElementById('of_stripe_pid').textContent = o.stripePaymentId;
-    document.getElementById('of_stripe_method').textContent = o.stripeMethod || 'Kart ödemesi';
-    document.getElementById('of_stripe_date').textContent = fmtDate(o.date);
-    const statusEl = document.getElementById('of_stripe_status');
-    const status = o.stripeStatus || 'succeeded';
-    statusEl.innerHTML = `<span style="padding:0.15rem 0.5rem;border-radius:4px;font-size:0.72rem;background:${status==='succeeded'?'#d4edda':'#f8d7da'};color:${status==='succeeded'?'#155724':'#721c24'}">${status}</span>`;
-    if (o.stripeReceiptUrl) {
-      document.getElementById('of_stripe_receipt').href = o.stripeReceiptUrl;
-      document.getElementById('of_stripe_receipt_wrap').style.display = '';
-    } else {
-      document.getElementById('of_stripe_receipt_wrap').style.display = 'none';
-    }
+    document.getElementById('of_stripe_method').textContent = 'Yükleniyor…';
+    document.getElementById('of_stripe_date').textContent = '…';
+    document.getElementById('of_stripe_status').innerHTML = '<span style="color:#888;font-size:0.78rem">Stripe\'tan çekiliyor…</span>';
+    document.getElementById('of_stripe_receipt_wrap').style.display = 'none';
+
+    // Müşteri alanlarına "yükleniyor" göstergesi
+    if (!o.email) document.getElementById('of_email').placeholder = '⏳ Stripe\'tan çekiliyor…';
+    if (!o.name || o.name === 'Stripe Müşteri') document.getElementById('of_name').placeholder = '⏳ Stripe\'tan çekiliyor…';
+    if (!o.address) document.getElementById('of_addr').placeholder = '⏳ Stripe\'tan çekiliyor…';
+
+    // Async fetch
+    fetchStripePayment(o.stripePaymentId, o);
   } else {
     stripePanel.style.display = 'none';
   }
+}
 
-  // Ürünler tablosu
+async function fetchStripePayment(pi, order) {
+  try {
+    const d = await api('/api/admin/stripe/payment?pi=' + encodeURIComponent(pi));
+    if (!d.success) {
+      document.getElementById('of_stripe_status').innerHTML = '<span style="color:#c00;font-size:0.78rem">❌ ' + (d.error || 'çekilemedi') + '</span>';
+      return;
+    }
+    const p = d.payment;
+
+    // Sipariş artık açık değilse iptal (kullanıcı kapattı)
+    if (!editingOrder || editingOrder.id !== order.id) return;
+
+    // Stripe panel doldur
+    const methodLabel = formatPaymentMethod(p.payment_method, p.payment_method_details);
+    document.getElementById('of_stripe_method').textContent = methodLabel;
+    document.getElementById('of_stripe_date').textContent = new Date(p.created * 1000).toLocaleString('tr-TR');
+    document.getElementById('of_stripe_status').innerHTML =
+      '<span style="padding:0.15rem 0.5rem;border-radius:4px;font-size:0.72rem;background:' +
+      (p.status === 'succeeded' ? '#d4edda' : '#f8d7da') + ';color:' +
+      (p.status === 'succeeded' ? '#155724' : '#721c24') + '">' + p.status +
+      (p.refunded ? ' (iade)' : '') + '</span>';
+    if (p.receipt_url) {
+      document.getElementById('of_stripe_receipt').href = p.receipt_url;
+      document.getElementById('of_stripe_receipt_wrap').style.display = '';
+    }
+
+    // Müşteri verilerini canlı doldur (DB'den boş olanları, ya da hep Stripe'tan)
+    const liveName = p.name || 'Stripe Müşteri';
+    const liveEmail = p.email || '';
+    const livePhone = p.phone || '';
+    const a = p.address || {};
+    const liveAddr = [a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), a.state, a.country].filter(Boolean).join('\n');
+
+    fillOrderModalCustomer(liveName, liveEmail, livePhone, liveAddr, p);
+
+    // Placeholder temizle
+    document.getElementById('of_email').placeholder = '';
+    document.getElementById('of_name').placeholder = '';
+    document.getElementById('of_addr').placeholder = '';
+
+    // Etiket: "Canlı Stripe" olduğunu belirt
+    showStripeLiveLabel();
+  } catch (e) {
+    document.getElementById('of_stripe_status').innerHTML = '<span style="color:#c00;font-size:0.78rem">❌ ' + e.message + '</span>';
+  }
+}
+
+function fillOrderModalCustomer(name, email, phone, addr, stripePayment) {
+  document.getElementById('of_name').value = name || '';
+  document.getElementById('of_email').value = email || '';
+  document.getElementById('of_phone').value = phone || '';
+  document.getElementById('of_addr').value = addr || '';
+
+  // İletişim linkleri
+  const emailLink = document.getElementById('of_email_link');
+  if (email) {
+    const ref = editingOrder?.ref || editingOrder?.id || '';
+    emailLink.href = 'mailto:' + email + '?subject=' + encodeURIComponent('Bestellung ' + ref);
+    emailLink.style.display = 'inline';
+  } else emailLink.style.display = 'none';
+
+  const phoneLink = document.getElementById('of_phone_link');
+  if (phone) {
+    phoneLink.href = 'tel:' + phone.replace(/\s/g, '');
+    phoneLink.style.display = 'inline';
+  } else phoneLink.style.display = 'none';
+
+  const mapsLink = document.getElementById('of_addr_maps');
+  if (addr) {
+    mapsLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr.replace(/\n/g, ', '));
+    mapsLink.style.display = 'inline';
+  } else mapsLink.style.display = 'none';
+}
+
+function formatPaymentMethod(type, details) {
+  if (!type) return 'Bilinmeyen';
+  const map = {
+    'card': '💳 Kart',
+    'apple_pay': '🍎 Apple Pay',
+    'google_pay': '🟢 Google Pay',
+    'paypal': '🅿️ PayPal',
+    'klarna': '🩷 Klarna',
+    'sepa_debit': '🇪🇺 SEPA',
+    'sofort': '⚡ Sofort',
+    'giropay': '🟣 Giropay',
+    'eps': 'EPS',
+    'ideal': 'iDEAL',
+    'bancontact': 'Bancontact'
+  };
+  let label = map[type] || type;
+  if (type === 'card' && details && details.card) {
+    const c = details.card;
+    if (c.wallet) {
+      const wallet = c.wallet.type;
+      if (wallet === 'apple_pay') label = '🍎 Apple Pay';
+      else if (wallet === 'google_pay') label = '🟢 Google Pay';
+    }
+    if (c.brand && c.last4) {
+      label += ' · ' + c.brand.toUpperCase() + ' •••' + c.last4;
+    }
+  }
+  return label;
+}
+
+function showStripeLiveLabel() {
+  let badge = document.getElementById('of_stripe_live_badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.id = 'of_stripe_live_badge';
+    badge.style.cssText = 'display:inline-block;background:#10b981;color:white;padding:0.1rem 0.5rem;border-radius:4px;font-size:0.65rem;font-weight:600;letter-spacing:0.05em;margin-left:0.5rem;text-transform:uppercase;animation:pulse 2s infinite';
+    badge.textContent = '🟢 Canlı Stripe';
+    document.querySelector('#of_stripe_panel').appendChild(badge);
+  }
+}
+
+function renderOrderItems(o) {
   let items = o.items;
   if (typeof items === 'string') {
     try { items = JSON.parse(items); } catch { items = []; }
@@ -1063,11 +1185,14 @@ function openOrderModal(id) {
   } else {
     itemsTable.innerHTML = '<div style="padding:1rem;text-align:center;color:#888;font-size:0.85rem">Ürün listesi yok</div>';
   }
-
-  document.getElementById('orderModal').classList.add('show');
 }
 
-function closeOrderModal() { document.getElementById('orderModal').classList.remove('show'); }
+function closeOrderModal() {
+  document.getElementById('orderModal').classList.remove('show');
+  // Live Stripe badge temizle
+  const badge = document.getElementById('of_stripe_live_badge');
+  if (badge) badge.remove();
+}
 
 async function saveOrder() {
   if (!editingOrder) return;
