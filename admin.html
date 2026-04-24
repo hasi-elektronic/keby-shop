@@ -628,23 +628,24 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
           <thead>
             <tr style="background:#2a4a1a;color:white">
-              <th style="padding:0.5rem 0.6rem;text-align:left;font-size:0.75rem;text-transform:uppercase">Beschreibung</th>
-              <th style="padding:0.5rem 0.6rem;text-align:center;font-size:0.75rem;text-transform:uppercase;width:80px">Menge</th>
-              <th style="padding:0.5rem 0.6rem;text-align:right;font-size:0.75rem;text-transform:uppercase;width:110px">Einzelpreis €</th>
-              <th style="padding:0.5rem 0.6rem;text-align:right;font-size:0.75rem;text-transform:uppercase;width:110px">Summe</th>
+              <th style="padding:0.5rem 0.6rem;text-align:left;font-size:0.72rem;text-transform:uppercase;width:110px">Art-Nr</th>
+              <th style="padding:0.5rem 0.6rem;text-align:left;font-size:0.72rem;text-transform:uppercase">Beschreibung</th>
+              <th style="padding:0.5rem 0.6rem;text-align:center;font-size:0.72rem;text-transform:uppercase;width:70px">Menge</th>
+              <th style="padding:0.5rem 0.6rem;text-align:right;font-size:0.72rem;text-transform:uppercase;width:100px">Einzelpreis €</th>
+              <th style="padding:0.5rem 0.6rem;text-align:right;font-size:0.72rem;text-transform:uppercase;width:100px">Summe</th>
               <th style="width:30px"></th>
             </tr>
           </thead>
           <tbody id="mi_items_tbody"></tbody>
           <tfoot>
             <tr style="background:#faf7f0">
-              <td colspan="3" style="padding:0.7rem;text-align:right;font-weight:bold">Gesamtbetrag:</td>
+              <td colspan="4" style="padding:0.7rem;text-align:right;font-weight:bold">Gesamtbetrag:</td>
               <td style="padding:0.7rem;text-align:right;font-weight:bold;color:#2a4a1a;font-size:1.05rem" id="mi_total_display">€ 0,00</td>
               <td></td>
             </tr>
           </tfoot>
         </table>
-        <div style="font-size:0.72rem;color:#888;margin-top:0.3rem">💡 Hızlı: Üründen seçmek için "Ürün" alanına yaz veya kendin gir (her şey satılabilir).</div>
+        <div style="font-size:0.72rem;color:#888;margin-top:0.3rem">💡 Ürün seç (otomatik dolsun) veya elle gir (her şey satılabilir — beratung, özel iş vb.).</div>
       </div>
 
       <!-- Ödeme + Tarih -->
@@ -2119,34 +2120,66 @@ function onManualCustomerChange() {
 
 function addManualItemRow(item) {
   const idx = manualInvoiceItems.length;
-  const it = item || { name: '', qty: 1, price: 0 };
+  const it = item || { artikel_nr: '', name: '', qty: 1, price: 0, product_id: '' };
   manualInvoiceItems.push(it);
+
+  // Ürün seçenekleri (Almanca isim + fiyat + art-nr)
+  const productOptions = products.map(p =>
+    `<option value="${escapeHtml(p.id)}" data-artikel-nr="${escapeHtml(p.artikel_nr||'')}" data-name="${escapeHtml(p.name_de||p.name||'')}" data-price="${p.price||0}">${escapeHtml(p.artikel_nr||'—')} — ${escapeHtml(p.name_de||p.name||'')} (€${(p.price||0).toFixed(2)})</option>`
+  ).join('');
 
   const tbody = document.getElementById('mi_items_tbody');
   const tr = document.createElement('tr');
   tr.dataset.idx = idx;
   tr.innerHTML = `
-    <td style="padding:0.4rem"><input class="finput" data-field="name" placeholder="z.B. Sızma Zeytinyağı 750ml" oninput="updateManualItem(${idx},'name',this.value)" value="${escapeHtml(it.name)}" list="mi_products_list"></td>
+    <td style="padding:0.4rem">
+      <input class="finput" data-field="artikel_nr" placeholder="KB-XXX-XX" oninput="updateManualItem(${idx},'artikel_nr',this.value)" value="${escapeHtml(it.artikel_nr)}" style="font-family:monospace;font-size:0.78rem">
+    </td>
+    <td style="padding:0.4rem">
+      <div style="display:flex;gap:0.3rem;align-items:center">
+        <select onchange="selectProductForRow(${idx}, this.value)" style="padding:0.4rem;border:1px solid #e0d8c7;border-radius:4px;background:white;font-size:0.78rem;flex-shrink:0;max-width:36px" title="Ürün seç">
+          <option value="">▾</option>
+          ${productOptions}
+        </select>
+        <input class="finput" data-field="name" placeholder="z.B. Natives Olivenöl 750ml veya kendi yazın" oninput="updateManualItem(${idx},'name',this.value)" value="${escapeHtml(it.name)}" style="flex:1">
+      </div>
+    </td>
     <td style="padding:0.4rem"><input class="finput" data-field="qty" type="number" step="0.01" min="0.01" oninput="updateManualItem(${idx},'qty',this.value)" value="${it.qty}" style="text-align:center"></td>
     <td style="padding:0.4rem"><input class="finput" data-field="price" type="number" step="0.01" min="0" oninput="updateManualItem(${idx},'price',this.value)" value="${it.price}" style="text-align:right"></td>
     <td style="padding:0.4rem;text-align:right;color:#2a4a1a;font-weight:500" data-sum="${idx}">€ ${(it.qty*it.price).toFixed(2).replace('.', ',')}</td>
     <td style="padding:0.4rem;text-align:center"><button onclick="removeManualItemRow(${idx})" type="button" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.1rem">✕</button></td>
   `;
   tbody.appendChild(tr);
-  buildProductsDatalist();
   recalcManualTotal();
 }
 
-function buildProductsDatalist() {
-  let dl = document.getElementById('mi_products_list');
-  if (!dl) {
-    dl = document.createElement('datalist');
-    dl.id = 'mi_products_list';
-    document.body.appendChild(dl);
+// Ürün seçildiğinde satırı doldur
+function selectProductForRow(idx, productId) {
+  if (!productId || !manualInvoiceItems[idx]) return;
+  const p = products.find(pp => pp.id === productId);
+  if (!p) return;
+
+  manualInvoiceItems[idx].product_id = p.id;
+  manualInvoiceItems[idx].artikel_nr = p.artikel_nr || '';
+  manualInvoiceItems[idx].name = p.name_de || p.name || '';
+  manualInvoiceItems[idx].price = p.price || 0;
+
+  const tr = document.querySelector(`#mi_items_tbody tr[data-idx="${idx}"]`);
+  if (tr) {
+    tr.querySelector('input[data-field="artikel_nr"]').value = manualInvoiceItems[idx].artikel_nr;
+    tr.querySelector('input[data-field="name"]').value = manualInvoiceItems[idx].name;
+    tr.querySelector('input[data-field="price"]').value = manualInvoiceItems[idx].price;
+    // Selecti sıfırla (buton gibi davransın)
+    const sel = tr.querySelector('select');
+    if (sel) sel.value = '';
   }
-  dl.innerHTML = products.map(p =>
-    `<option value="${escapeHtml(p.name||p.title||'')}" data-price="${p.price||0}">${(p.price||0).toFixed(2)} €</option>`
-  ).join('');
+  recalcManualTotal();
+  // Satır toplamını güncelle
+  const sumCell = document.querySelector(`#mi_items_tbody tr[data-idx="${idx}"] [data-sum="${idx}"]`);
+  if (sumCell) {
+    const it = manualInvoiceItems[idx];
+    sumCell.textContent = '€ ' + (it.qty * it.price).toFixed(2).replace('.', ',');
+  }
 }
 
 function updateManualItem(idx, field, value) {
@@ -2155,13 +2188,6 @@ function updateManualItem(idx, field, value) {
     manualInvoiceItems[idx][field] = parseFloat(value) || 0;
   } else {
     manualInvoiceItems[idx][field] = value;
-    // Eğer ürün listesinden seçildiyse fiyatı otomatik doldur
-    const p = products.find(pp => (pp.name||pp.title) === value);
-    if (p && manualInvoiceItems[idx].price === 0) {
-      manualInvoiceItems[idx].price = p.price || 0;
-      const tr = document.querySelector(`#mi_items_tbody tr[data-idx="${idx}"]`);
-      if (tr) tr.querySelector('input[data-field="price"]').value = p.price || 0;
-    }
   }
   // Satır toplamı
   const tr = document.querySelector(`#mi_items_tbody tr[data-idx="${idx}"]`);
