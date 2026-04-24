@@ -268,6 +268,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </div>
           <div class="flex gap-sm">
             <input class="finput" style="width:220px" placeholder="🔍 Ara…" id="orderSearch" oninput="renderOrders()">
+            <button class="btn btn-secondary" onclick="enrichStripeOrders()" title="Eski Stripe siparişlerinin müşteri/adres bilgisini Stripe'tan çek">💳 Stripe verilerini güncelle</button>
             <button class="btn btn-secondary" onclick="loadOrders()">↻</button>
           </div>
         </div>
@@ -471,6 +472,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         </div>
         <div class="field"><label class="flabel">Müşteri</label><input id="of_name" class="finput"></div>
         <div class="field"><label class="flabel">E-posta</label><input id="of_email" class="finput"></div>
+        <div class="field"><label class="flabel">Telefon</label><input id="of_phone" class="finput"></div>
         <div class="field"><label class="flabel">Ödeme</label><input id="of_payment" class="finput"></div>
         <div class="field"><label class="flabel">Tutar</label><input id="of_total" class="finput" type="number" step="0.01"></div>
         <div class="field form-full"><label class="flabel">Adres</label><textarea id="of_addr" class="ftextarea"></textarea></div>
@@ -614,6 +616,20 @@ async function loadOrders() {
     orders = (d.orders || []).sort((a,b) => new Date(b.date) - new Date(a.date));
     renderOrders();
     renderDash();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function enrichStripeOrders() {
+  if (!confirm('Eski Stripe siparişlerinin müşteri ve adres bilgisi Stripe API\'sinden çekilecek. Devam?')) return;
+  toast('Stripe verileri çekiliyor…');
+  try {
+    const d = await api('/api/admin/orders/enrich-stripe', { method: 'POST' });
+    if (d.success) {
+      toast(`✅ ${d.enriched} sipariş güncellendi (${d.total_stripe} Stripe siparişi var)`, 'ok');
+      await loadOrders();
+    } else {
+      toast(d.error || 'Hata', 'err');
+    }
   } catch (e) { toast(e.message, 'err'); }
 }
 
@@ -927,6 +943,7 @@ function openOrderModal(id) {
   document.getElementById('of_status').value = o.status || 'neu';
   document.getElementById('of_name').value = o.name || '';
   document.getElementById('of_email').value = o.email || '';
+  document.getElementById('of_phone').value = o.phone || '';
   document.getElementById('of_payment').value = o.payment || '';
   document.getElementById('of_total').value = o.total || 0;
   document.getElementById('of_addr').value = o.address || o.shipping_address || '';
@@ -942,6 +959,7 @@ async function saveOrder() {
   editingOrder.status = document.getElementById('of_status').value;
   editingOrder.name = document.getElementById('of_name').value;
   editingOrder.email = document.getElementById('of_email').value;
+  editingOrder.phone = document.getElementById('of_phone').value;
   editingOrder.payment = document.getElementById('of_payment').value;
   editingOrder.total = parseFloat(document.getElementById('of_total').value) || 0;
   editingOrder.address = document.getElementById('of_addr').value;
