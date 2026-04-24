@@ -1868,6 +1868,37 @@ function closeStripeModal() {
   if (stripeCardElement) { stripeCardElement.unmount(); stripeCardElement=null; stripeElements=null; }
 }
 
+
+// === Sipariş başarılı sonrası: PDF download butonu göster ===
+async function showInvoiceDownloadButton(orderId, email) {
+  var btn = document.getElementById('invoice-download-btn');
+  var loading = document.getElementById('invoice-loading');
+  if (!btn || !loading) return;
+
+  loading.style.display = 'block';
+  btn.style.display = 'none';
+
+  try {
+    // 1.5 sn bekle - Worker order kaydının yayılması için
+    await new Promise(function(r){ setTimeout(r, 1500); });
+
+    var res = await fetch('https://keby-api.hguencavdi.workers.dev/api/invoice-link', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({order_id: orderId, email: email})
+    });
+    var data = await res.json();
+    if (data.success && data.download_url) {
+      btn.href = data.download_url;
+      btn.style.display = 'inline-flex';
+    }
+  } catch(e) {
+    console.error('Invoice link error:', e);
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
 async function confirmStripePayment() {
   if (!stripe || !stripeCardElement || !stripeClientSecret) return;
   
@@ -1961,7 +1992,9 @@ async function confirmStripePayment() {
     );
     
     cart = []; saveCart(); updateCartUI();
-    setTimeout(function(){ closeStripeModal(); }, 5000);
+
+    // PDF download butonunu göster
+    showInvoiceDownloadButton(orderData.id, email);
   }
 }
 
@@ -2921,7 +2954,9 @@ async function confirmStripePayment() {
     );
     
     cart = []; saveCart(); updateCartUI();
-    setTimeout(function(){ closeStripeModal(); }, 5000);
+
+    // PDF download butonunu göster
+    showInvoiceDownloadButton(orderData.id, email);
   }
 }
 
@@ -3138,7 +3173,14 @@ document.addEventListener('DOMContentLoaded', function() {
       <div id="stripe-success" style="display:none;text-align:center;padding:2rem 0">
         <div style="font-size:2.5rem;margin-bottom:0.75rem">✅</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--olive-dark);margin-bottom:0.4rem" data-tr="Ödeme Başarılı!" data-de="Zahlung erfolgreich!">Ödeme Başarılı!</div>
-        <p style="font-size:0.84rem;color:var(--muted)" data-tr="Siparişiniz alındı. Teşekkür ederiz!" data-de="Ihre Bestellung wurde aufgenommen. Vielen Dank!">Siparişiniz alındı. Teşekkür ederiz!</p>
+        <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.2rem" data-tr="Siparişiniz alındı. Teşekkür ederiz!" data-de="Ihre Bestellung wurde aufgenommen. Vielen Dank!">Siparişiniz alındı. Teşekkür ederiz!</p>
+        <a id="invoice-download-btn" href="#" target="_blank" style="display:none;align-items:center;justify-content:center;gap:0.5rem;background:#3d6b2a;color:white;padding:0.85rem 1.5rem;border-radius:6px;text-decoration:none;font-size:0.88rem;font-weight:500;margin-top:0.5rem">
+          <span style="font-size:1.1rem">📄</span>
+          <span data-tr="Faturayı PDF olarak indir" data-de="Rechnung als PDF herunterladen">Faturayı PDF olarak indir</span>
+        </a>
+        <div id="invoice-loading" style="display:none;font-size:0.78rem;color:var(--muted);margin-top:0.75rem">
+          <span data-tr="Faturanız hazırlanıyor..." data-de="Rechnung wird vorbereitet...">Faturanız hazırlanıyor...</span>
+        </div>
       </div>
     </div>
   </div>
