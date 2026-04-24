@@ -276,7 +276,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>Ref</th><th>Müşteri</th><th>Ürünler</th><th>Tutar</th><th>Ödeme</th><th>Durum</th><th>Tarih</th><th></th>
+              <th>Ref</th><th>Müşteri</th><th>Ürünler</th><th>Tutar</th><th>Ödeme</th><th>Durum</th><th>Rechnung</th><th>Tarih</th><th></th>
             </tr></thead>
             <tbody id="ordersTbody"></tbody></table>
           </div>
@@ -509,6 +509,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-foot">
       <button class="btn btn-danger" onclick="delOrder()" style="margin-right:auto">🗑 Sil</button>
+      <button id="of_invoice_btn" class="btn btn-secondary" onclick="generateInvoice()" style="background:#3d6b2a;color:white;border-color:#3d6b2a">📄 Rechnung</button>
       <button class="btn btn-secondary" onclick="closeOrderModal()">İptal</button>
       <button class="btn btn-primary" onclick="saveOrder()">Kaydet</button>
     </div>
@@ -983,6 +984,9 @@ function renderOrders() {
     const displayName = (!o.name || o.name === 'Stripe Müşteri')
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
+    const invoiceCell = o.invoice_number
+      ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung aç">📄 ${o.invoice_number}</a>`
+      : `<span style="color:#bbb;font-size:0.75rem">—</span>`;
     return `
     <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')">
       <td><strong>${o.ref || o.id}</strong></td>
@@ -991,10 +995,11 @@ function renderOrders() {
       <td><strong>€${(parseFloat(o.total)||0).toFixed(2)}</strong></td>
       <td>${paymentBadge(o.payment)}</td>
       <td>${statusBadge(o.status)}</td>
+      <td>${invoiceCell}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
       <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
+  }).join('') || '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
 }
 
 function openOrderModal(id) {
@@ -1035,6 +1040,21 @@ function openOrderModal(id) {
     fetchStripePayment(o.stripePaymentId, o);
   } else {
     stripePanel.style.display = 'none';
+  }
+
+  // Rechnung butonu: var mı yok mu, ona göre etiket
+  updateInvoiceButton();
+}
+
+function updateInvoiceButton() {
+  const btn = document.getElementById('of_invoice_btn');
+  if (!btn || !editingOrder) return;
+  if (editingOrder.invoice_number) {
+    btn.innerHTML = `📄 Rechnung ${editingOrder.invoice_number}`;
+    btn.title = 'Faturayı yeni sekmede aç';
+  } else {
+    btn.innerHTML = '📄 Rechnung oluştur';
+    btn.title = 'Yeni fatura numarası alıp PDF açar';
   }
 }
 
@@ -1211,6 +1231,57 @@ function closeOrderModal() {
   // Live Stripe badge temizle
   const badge = document.getElementById('of_stripe_live_badge');
   if (badge) badge.remove();
+}
+
+async function generateInvoice() {
+  if (!editingOrder) return;
+  const btn = document.getElementById('of_invoice_btn');
+  const originalText = btn.innerHTML;
+
+  // Eğer fatura zaten varsa direkt aç
+  if (editingOrder.invoice_number) {
+    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
+    window.open(url, '_blank');
+    return;
+  }
+
+  // Yoksa oluştur
+  if (!confirm('Bu sipariş için yeni bir Rechnung numarası oluşturulacak. Devam?')) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Oluşturuluyor…';
+
+  try {
+    const d = await api('/api/admin/invoice/' + encodeURIComponent(editingOrder.id), { method: 'POST' });
+    if (!d.success) {
+      toast(d.error || 'Hata', 'err');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    editingOrder.invoice_number = d.invoice.number;
+    editingOrder.invoice_issued_at = d.invoice.issued_at;
+
+    // Sipariş listesini de güncelle (memory)
+    const idx = orders.findIndex(o => o.id === editingOrder.id);
+    if (idx >= 0) {
+      orders[idx].invoice_number = d.invoice.number;
+      orders[idx].invoice_issued_at = d.invoice.issued_at;
+    }
+
+    toast(`✅ Rechnung ${d.invoice.number} oluşturuldu`, 'ok');
+    btn.disabled = false;
+    updateInvoiceButton();
+    renderOrders();
+
+    // Yeni sekmede aç
+    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
+    window.open(url, '_blank');
+  } catch (e) {
+    toast(e.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
 }
 
 async function saveOrder() {
