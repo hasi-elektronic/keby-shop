@@ -3283,8 +3283,8 @@ async function openStripeEmbeddedCheckout() {
     '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.3rem">' + itemsLine + '</div>' +
     '<div><span data-tr="Toplam" data-de="Gesamt" style="font-size:0.82rem;color:var(--muted)">Toplam</span>: <strong style="font-size:1.1rem;color:var(--olive-dark)">' + total.toFixed(2).replace('.', ',') + '&nbsp;€</strong></div>';
 
-  // Loading reset
-  document.getElementById('stripe-checkout-loading').style.display = 'block';
+  // Loading reset (ayrı bir element, mount div'inden bağımsız)
+  document.getElementById('stripe-checkout-loading-overlay').style.display = 'block';
   document.getElementById('stripe-checkout-error').style.display = 'none';
 
   // Eski mount'u temizle
@@ -3292,11 +3292,9 @@ async function openStripeEmbeddedCheckout() {
     try { _stripeEmbeddedCheckoutInst.destroy(); } catch(e) {}
     _stripeEmbeddedCheckoutInst = null;
   }
+  // Mount div'i TAMAMEN boşalt (Stripe child node istemiyor)
   var mount = document.getElementById('stripe-checkout-mount');
-  // Loading div'i koru, gerisini temizle
-  Array.from(mount.children).forEach(function(c){
-    if (c.id !== 'stripe-checkout-loading') c.remove();
-  });
+  while (mount.firstChild) mount.removeChild(mount.firstChild);
 
   try {
     // Backend: Checkout session oluştur
@@ -3344,12 +3342,14 @@ async function openStripeEmbeddedCheckout() {
       clientSecret: d.clientSecret
     });
 
-    // Loading'i gizle, mount et
-    document.getElementById('stripe-checkout-loading').style.display = 'none';
+    // Mount et — boş div'e
     checkout.mount('#stripe-checkout-mount');
     _stripeEmbeddedCheckoutInst = checkout;
+
+    // Loading overlay'i gizle (mount tamamlandı)
+    document.getElementById('stripe-checkout-loading-overlay').style.display = 'none';
   } catch (e) {
-    document.getElementById('stripe-checkout-loading').style.display = 'none';
+    document.getElementById('stripe-checkout-loading-overlay').style.display = 'none';
     var errBox = document.getElementById('stripe-checkout-error');
     errBox.style.display = 'block';
     errBox.textContent = e.message;
@@ -3453,9 +3453,10 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
     <div class="pm-body" style="padding:0;overflow-y:auto;flex:1">
       <!-- Sepet özeti üstte -->
       <div class="pm-summary" id="stripe-summary" style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--cream)"></div>
-      <!-- Stripe Embedded Checkout buraya mount edilir -->
-      <div id="stripe-checkout-mount" style="min-height:400px;padding:0.5rem">
-        <div style="text-align:center;padding:3rem 1rem;color:var(--muted);font-size:0.85rem" id="stripe-checkout-loading">
+      <!-- Stripe Embedded Checkout buraya mount edilir (BOŞ, child node yok!) -->
+      <div style="position:relative;min-height:400px">
+        <div id="stripe-checkout-mount"></div>
+        <div id="stripe-checkout-loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:white;color:var(--muted);font-size:0.85rem">
           <div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>
           <span data-tr="Ödeme yükleniyor..." data-de="Zahlung wird geladen...">Ödeme yükleniyor...</span>
         </div>
