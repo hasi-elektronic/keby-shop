@@ -2571,7 +2571,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="pm-mbody">
           <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.65rem" data-tr="Güvenli kart ödemesi — Stripe ile şifreli." data-de="Sichere Kartenzahlung — verschlüsselt via Stripe.">Güvenli kart ödemesi — Stripe ile şifreli.</p>
-          <button onclick="closeModal();openStripeModal()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Karte / SEPA →" data-de="Karte / SEPA →">Karte / SEPA →</button>
+          <button onclick="redirectToStripeCheckout()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Online Ödeme (Karte, SEPA, Apple Pay, Google Pay) →" data-de="Online bezahlen (Karte, SEPA, Apple Pay, Google Pay) →">Online bezahlen →</button>
         </div>
       </div>
       <div class="pm-method" id="method-paypal">
@@ -3210,6 +3210,107 @@ async function checkStripeReturn(paymentIntentId, clientSecret) {
     } catch(e) {}
   }
 }
+
+// === STRIPE CHECKOUT (hosted) — yeni yöntem ===
+async function redirectToStripeCheckout() {
+  if (!cart || cart.length === 0) {
+    showToast(_lang==='tr' ? 'Sepetiniz boş' : 'Warenkorb ist leer', 'err');
+    return;
+  }
+
+  // Eğer ödeme modal'ı açıksa kapat
+  if (typeof closeModal === 'function') closeModal();
+
+  // Loading mesajı
+  showStripeReturnMessage('info',
+    'Stripe ödeme sayfasına yönlendiriliyorsunuz...',
+    'Sie werden zu Stripe weitergeleitet...',
+    null);
+
+  try {
+    var items = cart.map(function(i){ return {
+      productId: i.id || i.name,
+      name: i.name,
+      qty: i.qty,
+      price: i.price,
+      artikel_nr: i.artikel_nr || ''
+    }; });
+
+    var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/create-checkout-session', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        items: items,
+        locale: (typeof _lang !== 'undefined' && _lang === 'tr') ? 'auto' : 'de'
+      })
+    });
+    var d = await r.json();
+
+    if (!d.success || !d.url) {
+      showStripeReturnMessage('error',
+        'Ödeme başlatılamadı: ' + (d.error || 'unbekannt'),
+        'Zahlung konnte nicht gestartet werden: ' + (d.error || 'unbekannt'),
+        null);
+      return;
+    }
+
+    // Redirect → Stripe Checkout sayfası
+    window.location.href = d.url;
+  } catch (e) {
+    showStripeReturnMessage('error',
+      'Hata: ' + e.message,
+      'Fehler: ' + e.message,
+      null);
+  }
+}
+
+// === STRIPE CHECKOUT SUCCESS handler ===
+// Stripe Checkout'tan dönerken ?stripe_checkout_success=cs_xxx parametresi gelir
+(function() {
+  var url = new URL(window.location.href);
+  var sessionId = url.searchParams.get('stripe_checkout_success');
+  var cancelled = url.searchParams.get('stripe_checkout_cancel');
+
+  if (sessionId) {
+    // URL temizle
+    if (window.history.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    // Sepeti temizle
+    try {
+      if (typeof cart !== 'undefined') {
+        cart = [];
+        if (typeof saveCart === 'function') saveCart();
+        if (typeof renderCart === 'function') renderCart();
+        if (typeof syncCartCount === 'function') syncCartCount();
+      }
+    } catch(e) {}
+
+    // Başarı mesajı (DOM hazır olunca)
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        showStripeReturnMessage('success',
+          'Ödemeniz başarıyla tamamlandı! Onay e-postasını yakında alacaksınız.',
+          'Zahlung erfolgreich! Sie erhalten in Kürze eine Bestellbestätigung per E-Mail.',
+          sessionId.slice(-12));
+      }, 300);
+    });
+  }
+
+  if (cancelled === '1') {
+    if (window.history.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        showStripeReturnMessage('info',
+          'Ödeme iptal edildi. Sepetinizdeki ürünler kayıtlı kaldı.',
+          'Zahlung abgebrochen. Ihre Artikel sind weiterhin im Warenkorb.',
+          null);
+      }, 300);
+    });
+  }
+})();
 
 function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   var lang = (typeof _lang !== 'undefined' && _lang === 'tr') ? 'tr' : 'de';
