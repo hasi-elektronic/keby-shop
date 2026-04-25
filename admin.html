@@ -210,6 +210,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="sb-item" data-page="products" onclick="goto('products')"><span class="sb-ico">🫒</span> Ürünler</div>
         <div class="sb-item" data-page="orders" onclick="goto('orders')"><span class="sb-ico">📦</span> Siparişler</div>
         <div class="sb-item" data-page="buchhaltung" onclick="goto('buchhaltung')"><span class="sb-ico">📋</span> Buchhaltung</div>
+        <div class="sb-item" data-page="geldfluss" onclick="goto('geldfluss')"><span class="sb-ico">💰</span> Geldfluss</div>
         <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Müşteriler</div>
         <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medya</div>
       </nav>
@@ -343,6 +344,76 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
               <th>Nr</th><th>Datum</th><th>Müşteri</th><th>Pozisyonlar</th><th>Tutar</th><th>Ödeme</th><th>Kaynak</th><th>Durum</th><th></th>
             </tr></thead>
             <tbody id="invTbody"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== GELDFLUSS ===== -->
+      <section id="page-geldfluss" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">💰 Geldfluss</h1>
+            <div class="page-sub">Einnahmen & Ausgaben — GoBD-konform</div>
+          </div>
+          <div class="flex gap-sm" style="flex-wrap:wrap">
+            <select class="finput" id="gfPeriod" onchange="loadGeldfluss()" style="width:160px">
+              <option value="all">Alle Zeiten</option>
+              <option value="this_month" selected>Diesen Monat</option>
+              <option value="last_month">Letzter Monat</option>
+              <option value="this_year">Dieses Jahr</option>
+              <option value="last_year">Letztes Jahr</option>
+            </select>
+            <select class="finput" id="gfType" onchange="renderGeldfluss()" style="width:140px">
+              <option value="">Alle Typen</option>
+              <option value="einnahme">Nur Einnahmen</option>
+              <option value="ausgabe">Nur Ausgaben</option>
+            </select>
+            <button class="btn btn-primary" onclick="openGeldflussModal('ausgabe')" style="background:#c0392b">− Ausgabe</button>
+            <button class="btn btn-primary" onclick="openGeldflussModal('einnahme')" style="background:#3d6b2a">+ Einnahme</button>
+          </div>
+        </div>
+
+        <!-- KPI Kartları -->
+        <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+          <div class="card" style="border-left:4px solid #3d6b2a;padding:1rem 1.2rem">
+            <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Einnahmen</div>
+            <div style="font-size:1.6rem;font-weight:600;color:#3d6b2a" id="gfTotalEinnahmen">€ 0,00</div>
+          </div>
+          <div class="card" style="border-left:4px solid #c0392b;padding:1rem 1.2rem">
+            <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Ausgaben</div>
+            <div style="font-size:1.6rem;font-weight:600;color:#c0392b" id="gfTotalAusgaben">€ 0,00</div>
+          </div>
+          <div class="card" style="border-left:4px solid #2a4a1a;padding:1rem 1.2rem">
+            <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Saldo</div>
+            <div style="font-size:1.6rem;font-weight:600;color:#2a4a1a" id="gfSaldo">€ 0,00</div>
+          </div>
+        </div>
+
+        <!-- Sync info -->
+        <div id="gfSyncBanner" style="display:none;background:#fff8e7;border-left:3px solid #c4a24a;padding:0.7rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem">
+          <strong>İlk kurulum:</strong> Mevcut faturaları Geldfluss'a dahil etmek için
+          <button onclick="syncInvoicesToGeldfluss()" class="btn btn-secondary" style="margin-left:0.5rem;padding:0.3rem 0.8rem;font-size:0.8rem">🔄 Faturaları Senkronize Et</button>
+        </div>
+
+        <!-- Tablo -->
+        <div class="card" style="padding:0">
+          <div style="overflow-x:auto">
+            <table id="gfTable" style="width:100%;border-collapse:collapse;font-size:0.88rem">
+              <thead>
+                <tr style="background:#faf7f0;border-bottom:2px solid #e8e3d6">
+                  <th style="padding:0.7rem 0.9rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Datum</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Beleg-Nr</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Beschreibung</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Kategorie</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Einnahme</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Ausgabe</th>
+                  <th style="padding:0.7rem 0.9rem;text-align:center;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Aktion</th>
+                </tr>
+              </thead>
+              <tbody id="gfTbody">
+                <tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Yükleniyor...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -665,6 +736,68 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ===== GELDFLUSS MODAL (Ausgabe / Einnahme) ===== -->
+<div class="modal-backdrop" id="geldflussModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title" id="gfm_title">+ Eintrag</div>
+      <button class="modal-close" onclick="closeGeldflussModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="gfm_type" value="ausgabe">
+
+      <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div>
+          <label class="form-lbl">Datum *</label>
+          <input type="date" class="finput" id="gfm_date">
+        </div>
+        <div>
+          <label class="form-lbl">Betrag (€) *</label>
+          <input type="number" step="0.01" min="0.01" class="finput" id="gfm_amount" placeholder="0,00">
+        </div>
+      </div>
+
+      <div style="margin-top:0.8rem">
+        <label class="form-lbl">Beschreibung *</label>
+        <input type="text" class="finput" id="gfm_description" placeholder="z.B. Wareneinkauf Olivenöl Türkei">
+      </div>
+
+      <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.8rem">
+        <div>
+          <label class="form-lbl">Kategorie *</label>
+          <select class="finput" id="gfm_category"></select>
+        </div>
+        <div>
+          <label class="form-lbl">Zahlungsart</label>
+          <select class="finput" id="gfm_payment">
+            <option value="bar">💵 Bar (nakit)</option>
+            <option value="ueberweisung">🏦 Banka transferi</option>
+            <option value="karte">💳 Karte</option>
+            <option value="paypal">PayPal</option>
+            <option value="stripe">Stripe</option>
+            <option value="sonstiges">Sonstiges</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:0.8rem">
+        <label class="form-lbl">Beleg-URL (opsiyonel)</label>
+        <input type="text" class="finput" id="gfm_beleg_url" placeholder="https://... (PDF/Foto upload sonradan eklenebilir)">
+        <div style="font-size:0.75rem;color:#888;margin-top:0.3rem">💡 Şimdilik manuel URL. PDF upload özelliği ileri sürümde eklenecek.</div>
+      </div>
+
+      <div style="margin-top:0.8rem">
+        <label class="form-lbl">Notizen (opsiyonel)</label>
+        <textarea class="finput" id="gfm_notes" rows="2" placeholder="İç not..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeGeldflussModal()">İptal</button>
+      <button class="btn btn-primary" id="gfm_save_btn" onclick="saveGeldflussEntry()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== CUSTOMER MODAL (CRUD) ===== -->
 <div class="modal-backdrop" id="customerModal">
   <div class="modal" style="max-width:600px">
@@ -843,6 +976,7 @@ function goto(page) {
   document.getElementById('sidebar').classList.remove('open');
   if (page === 'images') loadImages();
   if (page === 'buchhaltung') loadInvoices();
+  if (page === 'geldfluss') loadGeldfluss();
 }
 
 // ============================================================
@@ -2563,6 +2697,224 @@ async function openCustomerTimeline(customer) {
 
 function closeTimelineModal() {
   document.getElementById('timelineModal').classList.remove('show');
+}
+
+// ============================================================
+// GELDFLUSS — Einnahmen & Ausgaben Buch
+// ============================================================
+let geldflussData = { entries: [], totals: {}, by_category: {}, categories: {}, category_labels: {} };
+
+function getPeriodRange(period) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const fmt = d => d.toISOString().slice(0, 10);
+  switch (period) {
+    case 'this_month':
+      return { from: fmt(new Date(y, m, 1)), to: fmt(new Date(y, m + 1, 0)) };
+    case 'last_month':
+      return { from: fmt(new Date(y, m - 1, 1)), to: fmt(new Date(y, m, 0)) };
+    case 'this_year':
+      return { from: y + '-01-01', to: y + '-12-31' };
+    case 'last_year':
+      return { from: (y - 1) + '-01-01', to: (y - 1) + '-12-31' };
+    default:
+      return { from: '', to: '' };
+  }
+}
+
+async function loadGeldfluss() {
+  const period = document.getElementById('gfPeriod').value;
+  const { from, to } = getPeriodRange(period);
+  const params = new URLSearchParams();
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+
+  document.getElementById('gfTbody').innerHTML = '<tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Yükleniyor...</td></tr>';
+
+  try {
+    const d = await api('/api/admin/geldfluss?' + params.toString());
+    geldflussData = d;
+
+    // Eğer hiç entry yok ama fatura var → sync banner göster
+    const hasInvoices = invoices && invoices.length > 0;
+    const banner = document.getElementById('gfSyncBanner');
+    if (hasInvoices && d.entries.length === 0) {
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    renderGeldfluss();
+  } catch (e) {
+    document.getElementById('gfTbody').innerHTML = '<tr><td colspan="7" style="padding:2rem;text-align:center;color:#c0392b">Fehler: ' + e.message + '</td></tr>';
+  }
+}
+
+function renderGeldfluss() {
+  const typeFilter = document.getElementById('gfType').value;
+  let entries = [...geldflussData.entries];
+  if (typeFilter) entries = entries.filter(e => e.type === typeFilter);
+
+  // Toplamları yeniden hesapla (filtered)
+  let einnahmen = 0, ausgaben = 0;
+  for (const e of entries) {
+    if (e.voided_by) continue;
+    if (e.type === 'einnahme') einnahmen += e.amount;
+    else ausgaben += e.amount;
+  }
+  const saldo = einnahmen - ausgaben;
+  const fmt = n => '€ ' + (n || 0).toFixed(2).replace('.', ',');
+  document.getElementById('gfTotalEinnahmen').textContent = fmt(einnahmen);
+  document.getElementById('gfTotalAusgaben').textContent = fmt(ausgaben);
+  document.getElementById('gfSaldo').textContent = fmt(saldo);
+  document.getElementById('gfSaldo').style.color = saldo >= 0 ? '#2a4a1a' : '#c0392b';
+
+  // Tablo
+  const tbody = document.getElementById('gfTbody');
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:2.5rem;text-align:center;color:#888">Bu dönem için kayıt yok</td></tr>';
+    return;
+  }
+
+  const labels = geldflussData.category_labels || {};
+  const fmtDate = s => {
+    if (!s) return '—';
+    const d = new Date(s);
+    return d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'2-digit'});
+  };
+  const payIcons = {
+    'bar': '💵', 'ueberweisung': '🏦', 'karte': '💳',
+    'paypal': 'PP', 'stripe': '💳', 'sonstiges': '·'
+  };
+
+  tbody.innerHTML = entries.map(e => {
+    const isVoided = !!e.voided_by;
+    const isStorno = e.category === 'storno' || e.ref_type === 'void';
+    const isAuto = e.created_by === 'auto';
+    const rowStyle = isVoided ? 'opacity:0.5;text-decoration:line-through' : '';
+    const refLabel = e.ref_number ? `<span style="font-family:monospace;font-size:0.8rem;color:#3d6b2a">${escapeHtml(e.ref_number)}</span>` : `<span style="font-family:monospace;font-size:0.78rem;color:#888">${escapeHtml(e.id)}</span>`;
+    const catLabel = labels[e.category] || e.category;
+
+    const einnVal = e.type === 'einnahme' ? `<span style="color:#3d6b2a;font-weight:600">${fmt(e.amount)}</span>` : '';
+    const ausgVal = e.type === 'ausgabe' ? `<span style="color:#c0392b;font-weight:600">${fmt(e.amount)}</span>` : '';
+
+    let actions = '';
+    if (!isVoided && !isAuto) {
+      actions = `<button onclick="voidGeldflussEntry('${escapeHtml(e.id)}')" title="Storno-Buchung" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:0.85rem;padding:0.2rem 0.4rem">↩ Storno</button>`;
+    } else if (isAuto && !isVoided) {
+      actions = `<span style="font-size:0.7rem;color:#888;font-style:italic">auto</span>`;
+    } else if (isVoided) {
+      actions = `<span style="font-size:0.7rem;color:#888">storniert</span>`;
+    }
+
+    return `
+      <tr style="border-bottom:1px solid #f0ebe0;${rowStyle}">
+        <td style="padding:0.6rem 0.9rem;white-space:nowrap;color:#555">${fmtDate(e.date)}</td>
+        <td style="padding:0.6rem 0.9rem">${refLabel}</td>
+        <td style="padding:0.6rem 0.9rem">${escapeHtml(e.description)}${e.notes ? '<div style="font-size:0.75rem;color:#888;margin-top:0.1rem">'+escapeHtml(e.notes)+'</div>' : ''}</td>
+        <td style="padding:0.6rem 0.9rem"><span style="background:#f5f1e8;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.75rem;color:#6b6b5a">${escapeHtml(catLabel)}</span> <span style="font-size:0.7rem;color:#888;margin-left:0.3rem">${payIcons[e.payment_method] || ''}</span></td>
+        <td style="padding:0.6rem 0.9rem;text-align:right">${einnVal}</td>
+        <td style="padding:0.6rem 0.9rem;text-align:right">${ausgVal}</td>
+        <td style="padding:0.6rem 0.9rem;text-align:center">${actions}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openGeldflussModal(type) {
+  document.getElementById('gfm_type').value = type;
+  document.getElementById('gfm_title').textContent = type === 'einnahme' ? '+ Einnahme' : '− Ausgabe';
+  document.getElementById('gfm_save_btn').style.background = type === 'einnahme' ? '#3d6b2a' : '#c0392b';
+
+  // Bugünün tarihi default
+  document.getElementById('gfm_date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('gfm_amount').value = '';
+  document.getElementById('gfm_description').value = '';
+  document.getElementById('gfm_notes').value = '';
+  document.getElementById('gfm_beleg_url').value = '';
+  document.getElementById('gfm_payment').value = type === 'einnahme' ? 'ueberweisung' : 'bar';
+
+  // Kategori dropdown
+  const cats = (geldflussData.categories && geldflussData.categories[type]) || [];
+  const labels = geldflussData.category_labels || {};
+  const catSel = document.getElementById('gfm_category');
+  if (cats.length === 0) {
+    // Fallback - eğer categories henüz yüklenmemişse
+    const fallback = type === 'einnahme'
+      ? [['verkauf','Verkauf'],['sonstige_einnahme','Sonstige Einnahme']]
+      : [['wareneinkauf','Wareneinkauf'],['versand','Versand & Logistik'],['verpackung','Etiketten & Verpackung'],['marketing','Marketing & Werbung'],['buerobedarf','Bürobedarf'],['steuern','Steuern & Gebühren'],['miete','Miete & Nebenkosten'],['sonstiges','Sonstiges']];
+    catSel.innerHTML = fallback.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+  } else {
+    catSel.innerHTML = cats.filter(c => c !== 'storno').map(c => `<option value="${c}">${labels[c] || c}</option>`).join('');
+  }
+
+  document.getElementById('geldflussModal').classList.add('show');
+}
+
+function closeGeldflussModal() {
+  document.getElementById('geldflussModal').classList.remove('show');
+}
+
+async function saveGeldflussEntry() {
+  const body = {
+    type: document.getElementById('gfm_type').value,
+    date: document.getElementById('gfm_date').value,
+    amount: parseFloat(document.getElementById('gfm_amount').value) || 0,
+    description: document.getElementById('gfm_description').value.trim(),
+    category: document.getElementById('gfm_category').value,
+    payment_method: document.getElementById('gfm_payment').value,
+    beleg_url: document.getElementById('gfm_beleg_url').value.trim() || null,
+    notes: document.getElementById('gfm_notes').value.trim()
+  };
+
+  if (!body.date) { toast('Datum erforderlich', 'err'); return; }
+  if (body.amount <= 0) { toast('Betrag muss > 0 sein', 'err'); return; }
+  if (!body.description) { toast('Beschreibung erforderlich', 'err'); return; }
+
+  const btn = document.getElementById('gfm_save_btn');
+  btn.disabled = true;
+  btn.textContent = 'Speichern...';
+
+  try {
+    await api('/api/admin/geldfluss', { method: 'POST', body });
+    toast('Eintrag gespeichert', 'ok');
+    closeGeldflussModal();
+    await loadGeldfluss();
+  } catch (e) {
+    toast('Fehler: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Speichern';
+  }
+}
+
+async function voidGeldflussEntry(id) {
+  const reason = prompt('Begründung für Storno-Buchung (GoBD-Pflicht):', '');
+  if (!reason || !reason.trim()) return;
+
+  try {
+    await api('/api/admin/geldfluss/' + encodeURIComponent(id) + '/void', {
+      method: 'POST',
+      body: { reason: reason.trim() }
+    });
+    toast('Storno-Buchung angelegt', 'ok');
+    await loadGeldfluss();
+  } catch (e) {
+    toast('Fehler: ' + e.message, 'err');
+  }
+}
+
+async function syncInvoicesToGeldfluss() {
+  if (!confirm('Tüm mevcut faturalar Geldfluss\'a Einnahme olarak eklenecek. Devam?')) return;
+  toast('Senkronize ediliyor...', 'ok');
+  try {
+    const d = await api('/api/admin/geldfluss/sync-invoices', { method: 'POST' });
+    toast(`${d.added} eklendi · ${d.skipped} atlandı`, 'ok');
+    await loadGeldfluss();
+  } catch (e) {
+    toast('Fehler: ' + e.message, 'err');
+  }
 }
 </script>
 </body>
