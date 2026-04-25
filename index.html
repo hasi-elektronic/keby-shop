@@ -2544,10 +2544,10 @@ document.addEventListener('DOMContentLoaded', function() {
       <span class="cart-total-price" id="cartTotal">0,00 €</span>
     </div>
     
-    <button class="btn-checkout" onclick="checkoutStripe()" style="background:#635bff" data-tr="💳 Online Ödeme (Karte)" data-de="💳 Online bezahlen (Karte)">💳 Online bezahlen</button>
+    <button class="btn-checkout" onclick="checkoutStripe()" style="background:#635bff" data-tr="💳 Online Ödeme (Karte)" data-de="💳 Online bezahlen (Karte)">💳 Online bezahlen (Karte)</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
       <button class="btn-checkout" onclick="checkoutPaypal()" style="background:#ffc439;color:#003087;margin-bottom:0;font-size:0.74rem;padding:0.7rem">🅿️ PayPal</button>
-      <button class="btn-checkout" onclick="checkoutIban()" style="background:var(--olive-dark);margin-bottom:0;font-size:0.74rem;padding:0.7rem" data-tr="🏦 Havale" data-de="🏦 Überweisung">🏦 Überweisung</button>
+      <button class="btn-checkout" onclick="checkoutKlarna()" style="background:#ffa8cd;color:#0e1014;margin-bottom:0;font-size:0.74rem;padding:0.7rem;font-weight:600">Klarna</button>
     </div>
     <p class="cart-note" data-tr="120 € üzeri kargo bedava · Güvenli ödeme" data-de="Versandkostenfrei ab 120 € · Sicher bezahlen">120 € üzeri kargo bedava · Güvenli ödeme</p>
   </div>
@@ -2718,6 +2718,16 @@ function checkoutStripe() {
   document.body.classList.remove('cart-open');
   // Direkt Stripe modal aç
   openStripeEmbeddedCheckout();
+}
+
+function checkoutKlarna() {
+  if (!cart.length) return;
+  // Sepet kapat
+  if (typeof closeCart === 'function') closeCart();
+  document.querySelectorAll('.cart-drawer').forEach(d => d.classList.remove('open'));
+  document.body.classList.remove('cart-open');
+  // Stripe modal aç — Klarna varsayılan seçili
+  openStripeEmbeddedCheckout({ preferredMethod: 'klarna' });
 }
 
 function checkoutPaypal() {
@@ -3263,7 +3273,8 @@ async function checkStripeReturn(paymentIntentId, clientSecret) {
 // === STRIPE EMBEDDED CHECKOUT (site içinde, redirect yok) ===
 var _stripeEmbeddedCheckoutInst = null;
 
-async function openStripeEmbeddedCheckout() {
+async function openStripeEmbeddedCheckout(opts) {
+  opts = opts || {};
   if (!cart || cart.length === 0) {
     if (typeof showToast === 'function') showToast(_lang==='tr' ? 'Sepetiniz boş' : 'Warenkorb ist leer', 'err');
     return;
@@ -3311,7 +3322,8 @@ async function openStripeEmbeddedCheckout() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         items: items,
-        locale: (typeof _lang !== 'undefined' && _lang === 'tr') ? 'auto' : 'de'
+        locale: (typeof _lang !== 'undefined' && _lang === 'tr') ? 'auto' : 'de',
+        preferredMethod: opts.preferredMethod || null
       })
     });
     var d = await r.json();
