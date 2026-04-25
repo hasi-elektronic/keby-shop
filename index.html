@@ -2571,7 +2571,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="pm-mbody">
           <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.65rem" data-tr="Güvenli kart ödemesi — Stripe ile şifreli." data-de="Sichere Kartenzahlung — verschlüsselt via Stripe.">Güvenli kart ödemesi — Stripe ile şifreli.</p>
-          <button onclick="redirectToStripeCheckout()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Online Ödeme (Karte, SEPA, Apple Pay, Google Pay) →" data-de="Online bezahlen (Karte, SEPA, Apple Pay, Google Pay) →">Online bezahlen →</button>
+          <button onclick="openStripeEmbeddedCheckout()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Online Ödeme (Karte / SEPA) →" data-de="Online bezahlen (Karte / SEPA) →">Online bezahlen →</button>
         </div>
       </div>
       <div class="pm-method" id="method-paypal">
@@ -3211,23 +3211,46 @@ async function checkStripeReturn(paymentIntentId, clientSecret) {
   }
 }
 
-// === STRIPE CHECKOUT (hosted) — yeni yöntem ===
-async function redirectToStripeCheckout() {
+// === STRIPE EMBEDDED CHECKOUT (site içinde, redirect yok) ===
+var _stripeEmbeddedCheckoutInst = null;
+
+async function openStripeEmbeddedCheckout() {
   if (!cart || cart.length === 0) {
-    showToast(_lang==='tr' ? 'Sepetiniz boş' : 'Warenkorb ist leer', 'err');
+    if (typeof showToast === 'function') showToast(_lang==='tr' ? 'Sepetiniz boş' : 'Warenkorb ist leer', 'err');
     return;
   }
 
-  // Eğer ödeme modal'ı açıksa kapat
+  // Diğer modal'ları kapat
   if (typeof closeModal === 'function') closeModal();
 
-  // Loading mesajı
-  showStripeReturnMessage('info',
-    'Stripe ödeme sayfasına yönlendiriliyorsunuz...',
-    'Sie werden zu Stripe weitergeleitet...',
-    null);
+  // Stripe modal'ı aç
+  var modal = document.getElementById('stripeModal');
+  modal.classList.add('open');
+
+  // Sepet özeti göster
+  var total = cart.reduce(function(s, i){ return s + i.qty * i.price; }, 0);
+  var itemsLine = cart.map(function(i){ return i.qty + 'x ' + (i.name || i.id); }).join(', ');
+  document.getElementById('stripe-summary').innerHTML =
+    '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.3rem">' + itemsLine + '</div>' +
+    '<div><span data-tr="Toplam" data-de="Gesamt" style="font-size:0.82rem;color:var(--muted)">Toplam</span>: <strong style="font-size:1.1rem;color:var(--olive-dark)">' + total.toFixed(2).replace('.', ',') + '&nbsp;€</strong></div>';
+
+  // Loading reset
+  document.getElementById('stripe-checkout-loading').style.display = 'block';
+  document.getElementById('stripe-checkout-error').style.display = 'none';
+
+  // Eski mount'u temizle
+  if (_stripeEmbeddedCheckoutInst) {
+    try { _stripeEmbeddedCheckoutInst.destroy(); } catch(e) {}
+    _stripeEmbeddedCheckoutInst = null;
+  }
+  var mount = document.getElementById('stripe-checkout-mount');
+  // Loading div'i koru, gerisini temizle
+  Array.from(mount.children).forEach(function(c){
+    if (c.id !== 'stripe-checkout-loading') c.remove();
+  });
 
   try {
+    // Backend: Checkout session oluştur
     var items = cart.map(function(i){ return {
       productId: i.id || i.name,
       name: i.name,
@@ -3246,23 +3269,54 @@ async function redirectToStripeCheckout() {
     });
     var d = await r.json();
 
-    if (!d.success || !d.url) {
-      showStripeReturnMessage('error',
-        'Ödeme başlatılamadı: ' + (d.error || 'unbekannt'),
-        'Zahlung konnte nicht gestartet werden: ' + (d.error || 'unbekannt'),
-        null);
+    if (!d.success || !d.clientSecret) {
+      document.getElementById('stripe-checkout-loading').style.display = 'none';
+      var errBox = document.getElementById('stripe-checkout-error');
+      errBox.style.display = 'block';
+      errBox.textContent = (d.error || 'Bilinmeyen hata');
       return;
     }
 
-    // Redirect → Stripe Checkout sayfası
-    window.location.href = d.url;
+    // Stripe.js yükle
+    if (!window.Stripe) {
+      await new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    var stripeInst = window.Stripe('pk_live_51RGtcIPjzcd25CIMagy3DdiqbjCJlj0YIUJI7oDuaTCdKrhCWIsmVRmVHnJrGIRnyTH9NjJp6pIIYL6MepQk6jnj00OhmLE6NV');
+
+    // Embedded Checkout init
+    var checkout = await stripeInst.initEmbeddedCheckout({
+      clientSecret: d.clientSecret
+    });
+
+    // Loading'i gizle, mount et
+    document.getElementById('stripe-checkout-loading').style.display = 'none';
+    checkout.mount('#stripe-checkout-mount');
+    _stripeEmbeddedCheckoutInst = checkout;
   } catch (e) {
-    showStripeReturnMessage('error',
-      'Hata: ' + e.message,
-      'Fehler: ' + e.message,
-      null);
+    document.getElementById('stripe-checkout-loading').style.display = 'none';
+    var errBox = document.getElementById('stripe-checkout-error');
+    errBox.style.display = 'block';
+    errBox.textContent = e.message;
   }
 }
+
+function closeStripeModal() {
+  document.getElementById('stripeModal').classList.remove('open');
+  if (_stripeEmbeddedCheckoutInst) {
+    try { _stripeEmbeddedCheckoutInst.destroy(); } catch(e) {}
+    _stripeEmbeddedCheckoutInst = null;
+  }
+}
+
+// LEGACY (Payment Element modal) — artık kullanılmıyor ama eski referanslar olabilir
+async function redirectToStripeCheckout() { return openStripeEmbeddedCheckout(); }
 
 // === STRIPE CHECKOUT SUCCESS handler ===
 // Stripe Checkout'tan dönerken ?stripe_checkout_success=cs_xxx parametresi gelir
@@ -3340,67 +3394,28 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
 
 </script>
 
-<!-- STRIPE MODAL -->
+<!-- STRIPE MODAL - EMBEDDED CHECKOUT -->
 <div class="pm-overlay" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
-  <div class="pm-box">
+  <div class="pm-box" style="max-width:560px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column">
     <div class="pm-head">
       <h3 data-tr="Online Ödeme" data-de="Online bezahlen">Online Ödeme</h3>
       <button class="pm-xbtn" onclick="closeStripeModal()">✕</button>
     </div>
-    <div class="pm-body">
-      <div class="pm-summary" id="stripe-summary"></div>
-      <div id="stripe-form">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
-          <div>
-            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Ad" data-de="Vorname">Ad</label>
-            <input type="text" id="stripe-fname" placeholder="Kader" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-          </div>
-          <div>
-            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Soyad" data-de="Nachname">Soyad</label>
-            <input type="text" id="stripe-lname" placeholder="Kayihan" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-          </div>
-        </div>
-        <div style="margin-bottom:0.6rem">
-          <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="E-posta" data-de="E-Mail">E-posta</label>
-          <input type="email" id="stripe-email" placeholder="musteri@email.com" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-        </div>
-        <div style="margin-bottom:0.6rem">
-          <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Adres" data-de="Adresse">Adres</label>
-          <input type="text" id="stripe-address" placeholder="Musterstr. 1" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:0.6rem;margin-bottom:0.75rem">
-          <div>
-            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="PLZ" data-de="PLZ">PLZ</label>
-            <input type="text" id="stripe-plz" placeholder="71665" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-          </div>
-          <div>
-            <label style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.3rem" data-tr="Şehir" data-de="Stadt">Şehir</label>
-            <input type="text" id="stripe-city" placeholder="Vaihingen an der Enz" style="width:100%;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.75rem;font-family:'Jost',sans-serif;font-size:0.84rem;outline:none">
-          </div>
-        </div>
-        <div id="stripe-card-element" style="background:var(--cream);border:1px solid var(--border);border-radius:3px;padding:0.85rem 0.9rem;margin-bottom:1rem">
-          <!-- Stripe Elements burada render edilecek -->
-          <div style="font-size:0.82rem;color:var(--muted)" id="stripe-placeholder" data-tr="Kart bilgileri yükleniyor..." data-de="Kartendaten werden geladen...">Kart bilgileri yükleniyor...</div>
-        </div>
-        <div id="stripe-error" style="color:#c0392b;font-size:0.78rem;margin-bottom:0.75rem;display:none"></div>
-        <button id="stripe-pay-btn" onclick="confirmStripePayment()" style="width:100%;background:var(--olive-dark);color:white;border:none;padding:0.95rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:background 0.2s" data-tr="Ödemeyi Tamamla" data-de="Zahlung abschließen">Ödemeyi Tamamla</button>
-        <p style="font-size:0.68rem;text-align:center;color:var(--muted);margin-top:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.3rem">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          <span data-tr="256-bit SSL ile güvenli ödeme" data-de="Sichere Zahlung mit 256-Bit SSL">256-bit SSL ile güvenli ödeme</span>
-        </p>
-      </div>
-      <div id="stripe-success" style="display:none;text-align:center;padding:2rem 0">
-        <div style="font-size:2.5rem;margin-bottom:0.75rem">✅</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--olive-dark);margin-bottom:0.4rem" data-tr="Ödeme Başarılı!" data-de="Zahlung erfolgreich!">Ödeme Başarılı!</div>
-        <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.2rem" data-tr="Siparişiniz alındı. Teşekkür ederiz!" data-de="Ihre Bestellung wurde aufgenommen. Vielen Dank!">Siparişiniz alındı. Teşekkür ederiz!</p>
-        <a id="invoice-download-btn" href="#" target="_blank" style="display:none;align-items:center;justify-content:center;gap:0.5rem;background:#3d6b2a;color:white;padding:0.85rem 1.5rem;border-radius:6px;text-decoration:none;font-size:0.88rem;font-weight:500;margin-top:0.5rem">
-          <span style="font-size:1.1rem">📄</span>
-          <span data-tr="Faturayı PDF olarak indir" data-de="Rechnung als PDF herunterladen">Faturayı PDF olarak indir</span>
-        </a>
-        <div id="invoice-loading" style="display:none;font-size:0.78rem;color:var(--muted);margin-top:0.75rem">
-          <span data-tr="Faturanız hazırlanıyor..." data-de="Rechnung wird vorbereitet...">Faturanız hazırlanıyor...</span>
+    <div class="pm-body" style="padding:0;overflow-y:auto;flex:1">
+      <!-- Sepet özeti üstte -->
+      <div class="pm-summary" id="stripe-summary" style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--cream)"></div>
+      <!-- Stripe Embedded Checkout buraya mount edilir -->
+      <div id="stripe-checkout-mount" style="min-height:400px;padding:0.5rem">
+        <div style="text-align:center;padding:3rem 1rem;color:var(--muted);font-size:0.85rem" id="stripe-checkout-loading">
+          <div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>
+          <span data-tr="Ödeme yükleniyor..." data-de="Zahlung wird geladen...">Ödeme yükleniyor...</span>
         </div>
       </div>
+      <div id="stripe-checkout-error" style="color:#c0392b;font-size:0.85rem;padding:1rem 1.25rem;display:none;background:#fdeaea;border-top:1px solid #f5c6cb"></div>
+      <p style="font-size:0.68rem;text-align:center;color:var(--muted);padding:0.75rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0.3rem;background:var(--cream)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <span data-tr="256-bit SSL · Stripe ile güvenli" data-de="256-Bit SSL · Sicher mit Stripe">256-bit SSL · Stripe ile güvenli</span>
+      </p>
     </div>
   </div>
 </div>
