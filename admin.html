@@ -736,6 +736,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ===== INVOICE DETAIL MODAL ===== -->
+<div class="modal-backdrop" id="invoiceDetailModal">
+  <div class="modal" style="max-width:780px;max-height:90vh">
+    <div class="modal-head">
+      <div class="modal-title" id="idm_title">📄 Rechnung</div>
+      <button class="modal-close" onclick="closeInvoiceDetailModal()">✕</button>
+    </div>
+    <div class="modal-body" id="idm_body" style="max-height:75vh;overflow-y:auto">
+      <div style="text-align:center;padding:3rem;color:#888">Yükleniyor...</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== GELDFLUSS MODAL (Ausgabe / Einnahme) ===== -->
 <div class="modal-backdrop" id="geldflussModal">
   <div class="modal" style="max-width:560px">
@@ -2116,7 +2129,7 @@ function renderInvoicesList() {
       ? `<strong>${escapeHtml(inv.customer_name)}</strong>${inv.customer_email ? '<br><span style="color:#888;font-size:0.74rem">'+escapeHtml(inv.customer_email)+'</span>' : ''}`
       : '<em style="color:#aaa">Misafir</em>';
 
-    return `<tr>
+    return `<tr style="cursor:pointer" onclick="viewInvoice('${inv.order_id}')" onmouseover="this.style.background='#faf7f0'" onmouseout="this.style.background=''">
       <td><strong style="color:#2a4a1a">${inv.number}</strong></td>
       <td>${dateStr}</td>
       <td>${customerLine}</td>
@@ -2125,8 +2138,8 @@ function renderInvoicesList() {
       <td><span style="color:${payColor};font-size:0.78rem">${payBadge}</span></td>
       <td><span style="font-size:0.78rem">${srcBadge} ${srcLabel}</span></td>
       <td>${statusBadge}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-secondary" onclick="viewInvoice('${inv.order_id}')" title="Görüntüle">👁</button>
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">
+        <button class="btn btn-sm btn-secondary" onclick="viewInvoice('${inv.order_id}')" title="Detail görüntüle">👁</button>
         ${!inv.stornoed_at && !inv.storno_for ? `<button class="btn btn-sm btn-danger" onclick="stornoInvoice('${inv.order_id}', '${inv.number}')" title="Storno">🚫</button>` : ''}
       </td>
     </tr>`;
@@ -2146,8 +2159,198 @@ function filterInvByPayment(pay) {
   renderInvoicesList();
 }
 
-function viewInvoice(orderId) {
-  window.open(API + '/api/invoice/' + encodeURIComponent(orderId), '_blank');
+async function viewInvoice(orderId) {
+  // Modal'ı aç + yüklenirken loading göster
+  const modal = document.getElementById('invoiceDetailModal');
+  const body = document.getElementById('idm_body');
+  body.innerHTML = '<div style="text-align:center;padding:3rem;color:#888">Yükleniyor...</div>';
+  modal.classList.add('show');
+
+  try {
+    const d = await api('/api/admin/invoice/' + encodeURIComponent(orderId));
+    renderInvoiceDetail(d.invoice);
+  } catch (e) {
+    body.innerHTML = '<div style="text-align:center;padding:3rem;color:#c0392b">Fehler: ' + e.message + '</div>';
+  }
+}
+
+function renderInvoiceDetail(inv) {
+  const fmt = n => '€ ' + (parseFloat(n)||0).toFixed(2).replace('.', ',');
+  const fmtSigned = n => {
+    const v = parseFloat(n) || 0;
+    return (v < 0 ? '−€ ' + Math.abs(v).toFixed(2) : '€ ' + v.toFixed(2)).replace('.', ',');
+  };
+  const fmtDate = s => s ? new Date(s).toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) : '—';
+  const fmtDateTime = s => s ? new Date(s).toLocaleString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '—';
+
+  const payLabels = {
+    bar: '💵 Bar (nakit)', ec: '💳 EC-Karte', ueberweisung: '🏦 Überweisung',
+    stripe: '💳 Kreditkarte (Stripe)', paypal: 'PayPal', offen: '⏳ Offen', invoice: '📄 Auf Rechnung'
+  };
+
+  const c = inv.customer || {};
+  const addr = c.address || {};
+  const addrLines = [
+    addr.line1, addr.line2,
+    [addr.postal_code, addr.city].filter(Boolean).join(' '),
+    addr.country && addr.country !== 'DE' ? addr.country : null
+  ].filter(Boolean);
+
+  const items = (inv.items || []).map(it => {
+    const qty = parseFloat(it.qty || it.quantity || 1);
+    const price = parseFloat(it.price || 0);
+    const sum = qty * price;
+    const artNr = it.artikel_nr ? `<span style="font-family:monospace;font-size:0.75rem;color:#6b6b5a;background:#f5f1e8;padding:0.1rem 0.35rem;border-radius:3px">${escapeHtml(it.artikel_nr)}</span> ` : '';
+    return `<tr>
+      <td style="padding:0.6rem 0;border-bottom:1px solid #f0ebe0">${artNr}<strong style="color:#2a4a1a">${escapeHtml(it.name || '—')}</strong></td>
+      <td style="padding:0.6rem 0;border-bottom:1px solid #f0ebe0;text-align:center;color:#555">${qty}×</td>
+      <td style="padding:0.6rem 0;border-bottom:1px solid #f0ebe0;text-align:right;color:#555">${fmt(price)}</td>
+      <td style="padding:0.6rem 0;border-bottom:1px solid #f0ebe0;text-align:right;font-weight:600">${fmt(sum)}</td>
+    </tr>`;
+  }).join('');
+
+  // Status badges
+  let statusBadges = '';
+  if (inv.stornoed_at) {
+    statusBadges += '<span style="background:#f8d7da;color:#721c24;padding:0.25rem 0.6rem;border-radius:5px;font-size:0.8rem;font-weight:500">🚫 STORNIERT</span> ';
+  }
+  if (inv.storno_for) {
+    statusBadges += `<span style="background:#fff3cd;color:#856404;padding:0.25rem 0.6rem;border-radius:5px;font-size:0.8rem;font-weight:500">↩ Storno-Rechnung für ${escapeHtml(inv.storno_for_number || inv.storno_for)}</span> `;
+  }
+  if (!inv.stornoed_at && !inv.storno_for) {
+    statusBadges += '<span style="background:#d4edda;color:#155724;padding:0.25rem 0.6rem;border-radius:5px;font-size:0.8rem;font-weight:500">✓ Aktiv</span>';
+  }
+
+  const subtotal = parseFloat(inv.subtotal) || 0;
+  const shipping = parseFloat(inv.shipping_fee) || 0;
+  const total = parseFloat(inv.total) || 0;
+
+  const sourceLabel = inv.source === 'manual' ? '✋ Manuel' : (inv.source === 'storno' ? '↩ Storno' : '🌐 Online (Shop)');
+
+  document.getElementById('idm_title').textContent = `Rechnung ${inv.number}`;
+
+  document.getElementById('idm_body').innerHTML = `
+    <!-- Status + Aksiyonlar üstte -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e8e3d6">
+      <div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Status</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">${statusBadges}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="window.open(API + '/api/invoice/${escapeHtml(inv.order_id)}', '_blank')" style="padding:0.4rem 0.8rem;font-size:0.85rem">🌐 HTML</button>
+        <button class="btn btn-secondary" onclick="downloadInvoicePDF('${escapeHtml(inv.order_id)}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">📄 PDF</button>
+        ${!inv.stornoed_at && !inv.storno_for
+          ? `<button class="btn btn-danger" onclick="closeInvoiceDetailModal();stornoInvoice('${escapeHtml(inv.order_id)}','${escapeHtml(inv.number)}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">🚫 Storno</button>`
+          : ''}
+      </div>
+    </div>
+
+    <!-- Üst meta: Numara, Tarih, Bestellref -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem">
+      <div style="background:#faf7f0;border-left:3px solid #3d6b2a;padding:0.6rem 0.9rem;border-radius:4px">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Rechnungs-Nr.</div>
+        <div style="font-weight:600;color:#2a4a1a;font-size:1.05rem">${escapeHtml(inv.number)}</div>
+      </div>
+      <div style="background:#faf7f0;border-left:3px solid #3d6b2a;padding:0.6rem 0.9rem;border-radius:4px">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Datum</div>
+        <div style="font-weight:600;color:#2a2a22">${fmtDate(inv.issued_at)}</div>
+      </div>
+      <div style="background:#faf7f0;border-left:3px solid #3d6b2a;padding:0.6rem 0.9rem;border-radius:4px">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Bestellnr.</div>
+        <div style="font-weight:600;color:#2a2a22;font-family:monospace;font-size:0.9rem">${escapeHtml(inv.order_ref || '—')}</div>
+      </div>
+      <div style="background:#faf7f0;border-left:3px solid #3d6b2a;padding:0.6rem 0.9rem;border-radius:4px">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Quelle</div>
+        <div style="font-weight:600;color:#2a2a22;font-size:0.9rem">${sourceLabel}</div>
+      </div>
+    </div>
+
+    <!-- Müşteri -->
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Kunde</div>
+      <div style="background:white;border:1px solid #e8e3d6;border-radius:7px;padding:0.9rem 1.1rem">
+        <div style="font-weight:600;color:#2a4a1a;font-size:1.05rem;margin-bottom:0.3rem">${escapeHtml(c.name || '—')}</div>
+        ${c.email ? `<div style="font-size:0.88rem;color:#555;margin-bottom:0.15rem">📧 <a href="mailto:${escapeHtml(c.email)}" style="color:#3d6b2a;text-decoration:none">${escapeHtml(c.email)}</a></div>` : ''}
+        ${c.phone ? `<div style="font-size:0.88rem;color:#555;margin-bottom:0.15rem">📞 <a href="tel:${escapeHtml(c.phone)}" style="color:#3d6b2a;text-decoration:none">${escapeHtml(c.phone)}</a></div>` : ''}
+        ${addrLines.length ? `<div style="font-size:0.88rem;color:#555;margin-top:0.4rem;line-height:1.5">📍 ${addrLines.map(escapeHtml).join('<br>')}</div>` : ''}
+        ${c.ust_idnr ? `<div style="font-size:0.78rem;color:#888;margin-top:0.4rem">USt-IdNr: <span style="font-family:monospace">${escapeHtml(c.ust_idnr)}</span></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Pozisyonlar tablosu -->
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Positionen (${(inv.items||[]).length})</div>
+      <div style="background:white;border:1px solid #e8e3d6;border-radius:7px;padding:0.5rem 1.1rem">
+        <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+          <thead>
+            <tr>
+              <th style="padding:0.5rem 0;text-align:left;font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid #e8e3d6">Artikel</th>
+              <th style="padding:0.5rem 0;text-align:center;font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid #e8e3d6;width:60px">Menge</th>
+              <th style="padding:0.5rem 0;text-align:right;font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid #e8e3d6;width:90px">Preis</th>
+              <th style="padding:0.5rem 0;text-align:right;font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid #e8e3d6;width:100px">Summe</th>
+            </tr>
+          </thead>
+          <tbody>${items}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Toplamlar + Ödeme -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Zahlung</div>
+        <div style="background:white;border:1px solid #e8e3d6;border-radius:7px;padding:0.7rem 0.9rem;font-size:0.9rem">
+          <div style="margin-bottom:0.3rem">${payLabels[inv.payment] || inv.payment || '—'}</div>
+          ${inv.payment_id ? `<div style="font-size:0.72rem;color:#888;font-family:monospace">${escapeHtml(inv.payment_id)}</div>` : ''}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Beträge</div>
+        <div style="background:white;border:1px solid #e8e3d6;border-radius:7px;padding:0.5rem 0.9rem;font-size:0.9rem">
+          ${shipping > 0 || subtotal !== total ? `
+            <div style="display:flex;justify-content:space-between;padding:0.2rem 0;color:#555"><span>Zwischensumme</span><span>${fmtSigned(subtotal)}</span></div>
+            ${shipping > 0 ? `<div style="display:flex;justify-content:space-between;padding:0.2rem 0;color:#555"><span>Versand</span><span>${fmt(shipping)}</span></div>` : ''}
+          ` : ''}
+          <div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-top:1px solid #e8e3d6;margin-top:0.3rem;font-weight:600;color:#2a4a1a;font-size:1.05rem">
+            <span>Gesamt</span><span>${fmtSigned(total)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${inv.tax_note ? `<div style="background:#fff8e7;border-left:3px solid #c4a24a;padding:0.6rem 0.9rem;border-radius:4px;margin-bottom:1rem;font-size:0.82rem;color:#5a4a1a">ℹ️ ${escapeHtml(inv.tax_note)}</div>` : ''}
+
+    ${inv.notes ? `
+      <div style="margin-bottom:1rem">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem">Notizen (intern)</div>
+        <div style="background:#fff8e7;border:1px solid #f0e4c2;border-radius:6px;padding:0.7rem 0.9rem;font-size:0.85rem;color:#5a4a1a;white-space:pre-wrap">${escapeHtml(inv.notes)}</div>
+      </div>
+    ` : ''}
+
+    <!-- Audit info -->
+    <div style="font-size:0.72rem;color:#aaa;padding-top:0.8rem;border-top:1px dashed #e8e3d6;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+      <span>Erstellt: ${fmtDateTime(inv.issued_at)}</span>
+      ${inv.stornoed_at ? `<span style="color:#c0392b">Storniert: ${fmtDateTime(inv.stornoed_at)}</span>` : ''}
+    </div>
+  `;
+}
+
+function closeInvoiceDetailModal() {
+  document.getElementById('invoiceDetailModal').classList.remove('show');
+}
+
+function downloadInvoicePDF(orderId) {
+  // PDF endpoint'i çağır, blob aç
+  toast('PDF hazırlanıyor...', 'ok');
+  fetch(API + '/api/invoice/' + encodeURIComponent(orderId) + '/pdf', {
+    headers: { 'Authorization': 'Bearer ' + TOKEN }
+  })
+    .then(r => r.ok ? r.blob() : Promise.reject('Fehler ' + r.status))
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    })
+    .catch(e => toast('PDF hatası: ' + e, 'err'));
 }
 
 async function stornoInvoice(orderId, number) {
