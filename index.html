@@ -1846,13 +1846,23 @@ async function openStripeModal() {
   if (!d.success) { showToast('Stripe hatası: '+d.error, 'err'); return; }
   stripeClientSecret = d.clientSecret;
 
-  // Card element mount
-  stripeElements = stripe.elements();
-  stripeCardElement = stripeElements.create('card', {
-    style: {
-      base: { fontFamily: "'Jost', sans-serif", fontSize: '15px', color: '#2a2a22', '::placeholder': { color: '#9e9e8e' } },
-      invalid: { color: '#c0392b' }
+  // Payment Element mount (Karte + SEPA + Sofort + andere — automatic_payment_methods)
+  stripeElements = stripe.elements({
+    clientSecret: stripeClientSecret,
+    appearance: {
+      theme: 'stripe',
+      variables: {
+        fontFamily: "'Jost', sans-serif",
+        fontSizeBase: '15px',
+        colorPrimary: '#3d6b2a',
+        colorText: '#2a2a22',
+        colorDanger: '#c0392b',
+        borderRadius: '6px'
+      }
     }
+  });
+  stripeCardElement = stripeElements.create('payment', {
+    layout: { type: 'tabs', defaultCollapsed: false }
   });
   document.getElementById('stripe-placeholder').style.display = 'none';
   stripeCardElement.mount('#stripe-card-element');
@@ -1928,20 +1938,25 @@ async function confirmStripePayment() {
   errEl.style.display = 'none';
 
   var fullName = fname + ' ' + lname;
-  var result = await stripe.confirmCardPayment(stripeClientSecret, {
-    payment_method: {
-      card: stripeCardElement,
-      billing_details: {
-        name: fullName,
-        email: email,
-        address: {
-          line1: address,
-          postal_code: plz,
-          city: city,
-          country: 'DE',
+  // Payment Element ile confirm — Karte + SEPA + Sofort tümü desteklenir
+  var result = await stripe.confirmPayment({
+    elements: stripeElements,
+    confirmParams: {
+      return_url: window.location.origin + '/index.html?stripe_return=1',
+      payment_method_data: {
+        billing_details: {
+          name: fullName,
+          email: email,
+          address: {
+            line1: address,
+            postal_code: plz,
+            city: city,
+            country: 'DE'
+          }
         }
-      },
-    }
+      }
+    },
+    redirect: 'if_required'
   });
 
   if (result.error) {
@@ -2556,7 +2571,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="pm-mbody">
           <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.65rem" data-tr="Güvenli kart ödemesi — Stripe ile şifreli." data-de="Sichere Kartenzahlung — verschlüsselt via Stripe.">Güvenli kart ödemesi — Stripe ile şifreli.</p>
-          <button onclick="closeModal();openStripeModal()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Kart ile Öde →" data-de="Mit Karte bezahlen →">Kart ile Öde →</button>
+          <button onclick="closeModal();openStripeModal()" style="width:100%;background:#635bff;color:white;border:none;padding:0.8rem;border-radius:3px;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;font-weight:500" data-tr="Karte / SEPA / Sofort →" data-de="Karte / SEPA / Sofort →">Karte / SEPA / Sofort →</button>
         </div>
       </div>
       <div class="pm-method" id="method-paypal">
@@ -2839,13 +2854,23 @@ async function openStripeModal() {
   if (!d.success) { showToast('Stripe hatası: '+d.error, 'err'); return; }
   stripeClientSecret = d.clientSecret;
 
-  // Card element mount
-  stripeElements = stripe.elements();
-  stripeCardElement = stripeElements.create('card', {
-    style: {
-      base: { fontFamily: "'Jost', sans-serif", fontSize: '15px', color: '#2a2a22', '::placeholder': { color: '#9e9e8e' } },
-      invalid: { color: '#c0392b' }
+  // Payment Element mount (Karte + SEPA + Sofort + andere — automatic_payment_methods)
+  stripeElements = stripe.elements({
+    clientSecret: stripeClientSecret,
+    appearance: {
+      theme: 'stripe',
+      variables: {
+        fontFamily: "'Jost', sans-serif",
+        fontSizeBase: '15px',
+        colorPrimary: '#3d6b2a',
+        colorText: '#2a2a22',
+        colorDanger: '#c0392b',
+        borderRadius: '6px'
+      }
     }
+  });
+  stripeCardElement = stripeElements.create('payment', {
+    layout: { type: 'tabs', defaultCollapsed: false }
   });
   document.getElementById('stripe-placeholder').style.display = 'none';
   stripeCardElement.mount('#stripe-card-element');
@@ -2890,20 +2915,25 @@ async function confirmStripePayment() {
   errEl.style.display = 'none';
 
   var fullName = fname + ' ' + lname;
-  var result = await stripe.confirmCardPayment(stripeClientSecret, {
-    payment_method: {
-      card: stripeCardElement,
-      billing_details: {
-        name: fullName,
-        email: email,
-        address: {
-          line1: address,
-          postal_code: plz,
-          city: city,
-          country: 'DE',
+  // Payment Element ile confirm — Karte + SEPA + Sofort tümü desteklenir
+  var result = await stripe.confirmPayment({
+    elements: stripeElements,
+    confirmParams: {
+      return_url: window.location.origin + '/index.html?stripe_return=1',
+      payment_method_data: {
+        billing_details: {
+          name: fullName,
+          email: email,
+          address: {
+            line1: address,
+            postal_code: plz,
+            city: city,
+            country: 'DE'
+          }
         }
-      },
-    }
+      }
+    },
+    redirect: 'if_required'
   });
 
   if (result.error) {
@@ -3117,7 +3147,95 @@ document.addEventListener('DOMContentLoaded', function() {
   if (origSetLang) {
     // setLang override kaldirildi
   }
+
+  // Stripe return URL handler (SEPA/Sofort/Überweisung sonrası dönüş)
+  var url = new URL(window.location.href);
+  var stripeReturn = url.searchParams.get('stripe_return');
+  var pi = url.searchParams.get('payment_intent');
+  var piClientSecret = url.searchParams.get('payment_intent_client_secret');
+  if (stripeReturn === '1' && pi && piClientSecret) {
+    handleStripeReturn(pi, piClientSecret);
+  }
 });
+
+async function handleStripeReturn(paymentIntentId, clientSecret) {
+  if (!window.Stripe) {
+    var s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = function() { checkStripeReturn(paymentIntentId, clientSecret); };
+    document.head.appendChild(s);
+  } else {
+    checkStripeReturn(paymentIntentId, clientSecret);
+  }
+}
+
+async function checkStripeReturn(paymentIntentId, clientSecret) {
+  var stripeKey = 'pk_live_51RGtcIPjzcd25CIMagy3DdiqbjCJlj0YIUJI7oDuaTCdKrhCWIsmVRmVHnJrGIRnyTH9NjJp6pIIYL6MepQk6jnj00OhmLE6NV';
+  var stripeInst = window.Stripe(stripeKey);
+  var result = await stripeInst.retrievePaymentIntent(clientSecret);
+  var status = result.paymentIntent && result.paymentIntent.status;
+
+  if (window.history.replaceState) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  if (status === 'succeeded') {
+    showStripeReturnMessage('success',
+      'Ödemeniz başarıyla tamamlandı! Onay e-postasını yakında alacaksınız.',
+      'Zahlung erfolgreich! Sie erhalten in Kürze eine Bestellbestätigung per E-Mail.',
+      paymentIntentId);
+  } else if (status === 'processing') {
+    showStripeReturnMessage('info',
+      'Ödemeniz işleniyor. Onaylandığında size e-posta göndereceğiz (genelde 1-3 iş günü, SEPA için).',
+      'Ihre Zahlung wird verarbeitet. Sie erhalten eine E-Mail nach Bestätigung (1-3 Werktage bei SEPA).',
+      paymentIntentId);
+  } else if (status === 'requires_payment_method') {
+    showStripeReturnMessage('error',
+      'Ödeme başarısız oldu. Lütfen başka bir ödeme yöntemi deneyin.',
+      'Zahlung fehlgeschlagen. Bitte versuchen Sie eine andere Zahlungsmethode.',
+      null);
+  } else {
+    showStripeReturnMessage('info',
+      'Ödeme durumu: ' + status,
+      'Zahlungsstatus: ' + status,
+      paymentIntentId);
+  }
+
+  if (status === 'succeeded' || status === 'processing') {
+    try {
+      cart = [];
+      saveCart();
+      if (typeof renderCart === 'function') renderCart();
+      if (typeof syncCartCount === 'function') syncCartCount();
+    } catch(e) {}
+  }
+}
+
+function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
+  var lang = (typeof _lang !== 'undefined' && _lang === 'tr') ? 'tr' : 'de';
+  var msg = lang === 'tr' ? msgTr : msgDe;
+  var colors = {
+    success: { bg: '#d4edda', border: '#3d6b2a', icon: '✅', color: '#155724' },
+    info:    { bg: '#fff8e7', border: '#c4a24a', icon: 'ℹ️', color: '#856404' },
+    error:   { bg: '#f8d7da', border: '#c0392b', icon: '❌', color: '#721c24' }
+  };
+  var c = colors[type] || colors.info;
+  var existing = document.getElementById('stripe-return-msg');
+  if (existing) existing.remove();
+
+  var div = document.createElement('div');
+  div.id = 'stripe-return-msg';
+  div.style.cssText = 'position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:10000;max-width:520px;width:90%;background:'+c.bg+';border-left:4px solid '+c.border+';color:'+c.color+';padding:1rem 1.4rem;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-family:Jost,sans-serif;font-size:14px;line-height:1.5';
+  div.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">' +
+      '<div><strong style="font-size:1.05rem">'+c.icon+' '+msg+'</strong>' +
+        (paymentIntentId ? '<div style="font-size:0.78rem;opacity:0.7;margin-top:0.4rem;font-family:monospace">Ref: '+paymentIntentId.slice(-12)+'</div>' : '') +
+      '</div>' +
+      '<button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:'+c.color+';font-size:1.2rem;padding:0;line-height:1">✕</button>' +
+    '</div>';
+  document.body.appendChild(div);
+  setTimeout(function(){ if (div.parentNode) { div.style.transition='opacity 0.5s'; div.style.opacity='0'; setTimeout(function(){if(div.parentNode)div.remove();}, 500); } }, 12000);
+}
 
 </script>
 
@@ -3125,7 +3243,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="pm-overlay" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
   <div class="pm-box">
     <div class="pm-head">
-      <h3 data-tr="Kart ile Öde" data-de="Mit Karte bezahlen">Kart ile Öde</h3>
+      <h3 data-tr="Online Ödeme" data-de="Online bezahlen">Online Ödeme</h3>
       <button class="pm-xbtn" onclick="closeStripeModal()">✕</button>
     </div>
     <div class="pm-body">
