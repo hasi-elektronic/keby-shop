@@ -441,7 +441,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div id="cust-pane-local" class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>İsim</th><th>E-posta</th><th>Şehir</th><th>Sipariş</th><th>Toplam</th><th>Son sipariş</th>
+              <th>İsim</th><th>Tip</th><th>E-posta</th><th>Şehir</th><th>Sipariş</th><th>Bakiye</th><th>Son sipariş</th><th></th>
             </tr></thead>
             <tbody id="custTbody"></tbody></table>
           </div>
@@ -811,6 +811,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ===== KONTOKORRENT (Cari Hesap Defteri) MODAL ===== -->
+<div class="modal-backdrop" id="kontokorrentModal">
+  <div class="modal" style="max-width:920px">
+    <div class="modal-head">
+      <div class="modal-title">📊 Cari Hesap Defteri — <span id="kk_customer_name">—</span></div>
+      <button class="modal-close" onclick="closeKontokorrent()">✕</button>
+    </div>
+    <div class="modal-body" id="kk_body">
+      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor…</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== CUSTOMER MODAL (CRUD) ===== -->
 <div class="modal-backdrop" id="customerModal">
   <div class="modal" style="max-width:600px">
@@ -820,17 +833,40 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-body">
       <input type="hidden" id="cm_id">
+      <!-- Tip seçici -->
+      <div class="field form-full" style="margin-bottom:1rem">
+        <label class="flabel">Müşteri Tipi</label>
+        <div style="display:flex;gap:0;border:1px solid #e0e0d8;border-radius:8px;padding:3px;background:#f7f4ee">
+          <button type="button" id="cm_type_b2c" onclick="setCustomerType('b2c')" class="cm-type-btn active" style="flex:1;padding:0.5rem;border:none;background:none;cursor:pointer;border-radius:6px;font-size:0.88rem;transition:all 0.15s">👤 B2C — Özel Müşteri</button>
+          <button type="button" id="cm_type_b2b" onclick="setCustomerType('b2b')" class="cm-type-btn" style="flex:1;padding:0.5rem;border:none;background:none;cursor:pointer;border-radius:6px;font-size:0.88rem;transition:all 0.15s">🏢 B2B — Firma</button>
+        </div>
+      </div>
+      <input type="hidden" id="cm_customer_type" value="b2c">
+
       <div class="form-grid">
-        <div class="field form-full"><label class="flabel">Ad / Firma *</label><input class="finput" id="cm_name"></div>
+        <div class="field form-full" id="cm_company_field" style="display:none">
+          <label class="flabel">Firma Adı *</label>
+          <input class="finput" id="cm_company_name" placeholder="ör. Müller GmbH">
+        </div>
+        <div class="field form-full"><label class="flabel"><span id="cm_name_lbl">Ad Soyad</span> *</label><input class="finput" id="cm_name"></div>
         <div class="field"><label class="flabel">E-Mail</label><input class="finput" id="cm_email" type="email"></div>
         <div class="field"><label class="flabel">Telefon</label><input class="finput" id="cm_phone"></div>
         <div class="field form-full"><label class="flabel">Strasse + Nr</label><input class="finput" id="cm_line1"></div>
         <div class="field"><label class="flabel">PLZ</label><input class="finput" id="cm_plz"></div>
         <div class="field"><label class="flabel">Ort</label><input class="finput" id="cm_city"></div>
         <div class="field"><label class="flabel">Land</label><input class="finput" id="cm_country" value="DE"></div>
-        <div class="field"><label class="flabel">USt-IdNr</label><input class="finput" id="cm_ust"></div>
-        <div class="field form-full"><label class="flabel">Notizen</label><textarea class="ftextarea" id="cm_notes" rows="3"></textarea></div>
+        <div class="field" id="cm_ust_field"><label class="flabel">USt-IdNr</label><input class="finput" id="cm_ust" placeholder="DE123456789"></div>
+        <div class="field" id="cm_terms_field" style="display:none">
+          <label class="flabel">Zahlungsfrist (Tage)</label>
+          <input class="finput" id="cm_payment_terms" type="number" value="14" min="0" max="90">
+        </div>
+        <div class="field form-full"><label class="flabel">Notizen</label><textarea class="ftextarea" id="cm_notes" rows="2"></textarea></div>
       </div>
+
+      <style>
+        .cm-type-btn.active { background: white; color: #2a4a1a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 500; }
+        .cm-type-btn:not(.active) { color: #888; }
+      </style>
     </div>
     <div class="modal-foot">
       <button class="btn btn-danger" id="cm_delete_btn" onclick="deleteCustomer()" style="display:none;margin-right:auto">🗑 Sil</button>
@@ -1786,25 +1822,65 @@ function renderCustomers() {
   const q = (document.getElementById('custSearch')?.value || '').toLowerCase();
   const filtered = q ? customers.filter(c =>
     (c.name||'').toLowerCase().includes(q) ||
-    (c.email||'').toLowerCase().includes(q)
+    (c.email||'').toLowerCase().includes(q) ||
+    (c.company_name||'').toLowerCase().includes(q)
   ) : customers;
   document.getElementById('custCount').textContent = filtered.length;
   document.getElementById('custTbody').innerHTML = filtered.map((c, i) => {
     const custOrders = orders.filter(o => (o.email||'').toLowerCase() === (c.email||'').toLowerCase());
-    const total = custOrders.reduce((s,o) => s + (parseFloat(o.total)||0), 0);
     const last = custOrders[0]?.date;
+    const idx = customers.indexOf(c);
+    // Tip badge
+    const isB2B = c.customer_type === 'b2b';
+    const typeBadge = isB2B
+      ? '<span style="background:#e0e7ff;color:#3730a3;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.7rem;font-weight:500">🏢 B2B</span>'
+      : '<span style="background:#fef3c7;color:#92400e;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.7rem">👤 B2C</span>';
+    // Source badge
     const sourceBadge = c.source === 'direct'
-      ? '<span style="background:#fff3cd;color:#856404;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.7rem;margin-left:0.4rem">📝 Direkt</span>'
-      : (c.source === 'online' ? '<span style="background:#d4edda;color:#155724;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.7rem;margin-left:0.4rem">🌐 Online</span>' : '');
-    return `<tr style="cursor:pointer" onclick="openCustomerTimeline(customers[${customers.indexOf(c)}])">
-      <td><strong>${escapeHtml(c.name || '—')}</strong>${sourceBadge}</td>
-      <td>${escapeHtml(c.email || '')}</td>
-      <td>${escapeHtml(c.address?.city || extractCity(c.address) || c.city || '—')}</td>
-      <td>${custOrders.length}</td>
-      <td>€${total.toFixed(2)}</td>
-      <td class="text-muted text-sm">${fmtDate(last)}</td>
+      ? '<span style="background:#fff3cd;color:#856404;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.65rem;margin-left:0.3rem">📝</span>'
+      : (c.source === 'online' ? '<span style="background:#d4edda;color:#155724;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.65rem;margin-left:0.3rem">🌐</span>' : '');
+    // İsim — B2B ise şirket adı + kişi
+    const displayName = isB2B && c.company_name
+      ? `<strong>${escapeHtml(c.company_name)}</strong><br><span style="font-size:0.78rem;color:#888">${escapeHtml(c.name || '')}</span>`
+      : `<strong>${escapeHtml(c.name || '—')}</strong>`;
+    // Bakiye placeholder (asyncly load)
+    const balanceCell = `<span class="cust-balance" data-id="${escapeHtml(c.id)}" style="font-size:0.82rem;color:#888">…</span>`;
+
+    return `<tr>
+      <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer">${displayName}${sourceBadge}</td>
+      <td>${typeBadge}</td>
+      <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer">${escapeHtml(c.email || '—')}</td>
+      <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer">${escapeHtml(c.address?.city || extractCity(c.address) || c.city || '—')}</td>
+      <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer">${custOrders.length}</td>
+      <td>${balanceCell}</td>
+      <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer" class="text-muted text-sm">${fmtDate(last)}</td>
+      <td><button class="btn btn-sm" style="background:#3d6b2a;color:white" onclick="openKontokorrent('${escapeHtml(c.id)}')">📊 Cari</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" class="text-center text-muted" style="padding:2rem">Müşteri yok — yukarıdan "+ Yeni Müşteri" tıklayın</td></tr>';
+  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Müşteri yok — yukarıdan "+ Yeni Müşteri" tıklayın</td></tr>';
+
+  // Bakiyeleri lazy load (asenkron, paralel)
+  setTimeout(loadAllBalances, 100);
+}
+
+// Müşterilerin bakiyelerini paralel yükle
+async function loadAllBalances() {
+  const cells = document.querySelectorAll('.cust-balance[data-id]');
+  for (const cell of cells) {
+    const id = cell.dataset.id;
+    try {
+      const d = await api(`/api/admin/customers/${encodeURIComponent(id)}/balance`);
+      if (d.success && d.balance) {
+        const bal = d.balance.balance || 0;
+        const color = bal > 0 ? '#dc2626' : (bal < 0 ? '#ea580c' : '#16a34a');
+        const label = bal > 0 ? 'Borç' : (bal < 0 ? 'Avans' : 'Kapalı');
+        cell.innerHTML = `<span style="color:${color};font-weight:500">${bal === 0 ? '€0,00' : '€' + Math.abs(bal).toFixed(2).replace('.', ',')}</span> <span style="font-size:0.7rem;color:#888">${label}</span>`;
+      } else {
+        cell.textContent = '—';
+      }
+    } catch (e) {
+      cell.textContent = '—';
+    }
+  }
 }
 
 // ============================================================
@@ -2709,12 +2785,23 @@ async function sendInvoiceEmailDirect(orderId, recipient, number, name) {
 // CUSTOMER CRUD MODAL
 // ============================================================
 
+function setCustomerType(type) {
+  document.getElementById('cm_customer_type').value = type;
+  document.getElementById('cm_type_b2c').classList.toggle('active', type === 'b2c');
+  document.getElementById('cm_type_b2b').classList.toggle('active', type === 'b2b');
+  // B2B alanları toggle
+  document.getElementById('cm_company_field').style.display = type === 'b2b' ? '' : 'none';
+  document.getElementById('cm_terms_field').style.display = type === 'b2b' ? '' : 'none';
+  document.getElementById('cm_name_lbl').textContent = type === 'b2b' ? 'Ansprechpartner' : 'Ad Soyad';
+}
+
 function openCustomerModal(customer, fromManualInvoice) {
   editingCustomer = customer;
   if (customer) {
-    document.getElementById('cm_title').textContent = '👤 ' + customer.name;
+    document.getElementById('cm_title').textContent = '👤 ' + (customer.company_name || customer.name);
     document.getElementById('cm_id').value = customer.id || '';
     document.getElementById('cm_name').value = customer.name || '';
+    document.getElementById('cm_company_name').value = customer.company_name || '';
     document.getElementById('cm_email').value = customer.email || '';
     document.getElementById('cm_phone').value = customer.phone || '';
     document.getElementById('cm_line1').value = customer.address?.line1 || '';
@@ -2722,13 +2809,17 @@ function openCustomerModal(customer, fromManualInvoice) {
     document.getElementById('cm_city').value = customer.address?.city || '';
     document.getElementById('cm_country').value = customer.address?.country || 'DE';
     document.getElementById('cm_ust').value = customer.ust_idnr || '';
+    document.getElementById('cm_payment_terms').value = customer.payment_terms_days || 14;
     document.getElementById('cm_notes').value = customer.notes || '';
     document.getElementById('cm_delete_btn').style.display = customer.id ? 'inline-block' : 'none';
+    setCustomerType(customer.customer_type || 'b2c');
   } else {
     document.getElementById('cm_title').textContent = '👤 Yeni Müşteri';
-    ['cm_id','cm_name','cm_email','cm_phone','cm_line1','cm_plz','cm_city','cm_ust','cm_notes'].forEach(id => document.getElementById(id).value = '');
+    ['cm_id','cm_name','cm_company_name','cm_email','cm_phone','cm_line1','cm_plz','cm_city','cm_ust','cm_notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('cm_country').value = 'DE';
+    document.getElementById('cm_payment_terms').value = '14';
     document.getElementById('cm_delete_btn').style.display = 'none';
+    setCustomerType('b2c');
   }
   // Fatura modali içinden açıldıysa kaydedince oraya geri dön
   document.getElementById('customerModal').dataset.fromInvoice = fromManualInvoice ? '1' : '';
@@ -2744,9 +2835,15 @@ async function saveCustomer() {
   const name = document.getElementById('cm_name').value.trim();
   if (!name) { toast('Ad gerekli', 'err'); return; }
 
+  const customerType = document.getElementById('cm_customer_type').value;
+  const companyName = document.getElementById('cm_company_name').value.trim();
+  if (customerType === 'b2b' && !companyName) { toast('Firma adı gerekli', 'err'); return; }
+
   const id = document.getElementById('cm_id').value;
   const data = {
     name,
+    customer_type: customerType,
+    company_name: companyName,
     email: document.getElementById('cm_email').value.trim(),
     phone: document.getElementById('cm_phone').value.trim(),
     address: {
@@ -2756,6 +2853,7 @@ async function saveCustomer() {
       country: document.getElementById('cm_country').value.trim() || 'DE'
     },
     ust_idnr: document.getElementById('cm_ust').value.trim(),
+    payment_terms_days: parseInt(document.getElementById('cm_payment_terms').value) || 14,
     notes: document.getElementById('cm_notes').value
   };
 
@@ -2903,6 +3001,277 @@ function closeTimelineModal() {
 }
 
 // ============================================================
+// KONTOKORRENT — Müşteri Cari Hesap Defteri
+// ============================================================
+let _kkCurrentCustomer = null;
+let _kkCurrentBalance = null;
+
+async function openKontokorrent(customerId) {
+  const customer = customers.find(c => c.id === customerId);
+  if (!customer) { toast('Müşteri bulunamadı', 'err'); return; }
+  _kkCurrentCustomer = customer;
+
+  document.getElementById('kk_customer_name').textContent = customer.company_name || customer.name;
+  document.getElementById('kk_body').innerHTML = '<div class="text-center" style="padding:2rem;color:#888">Bakiye yükleniyor…</div>';
+  document.getElementById('kontokorrentModal').classList.add('show');
+
+  try {
+    const d = await api(`/api/admin/customers/${encodeURIComponent(customerId)}/balance`);
+    if (!d.success) {
+      document.getElementById('kk_body').innerHTML = '<div class="text-center" style="padding:2rem;color:#dc2626">Hata: ' + (d.error || 'bilinmeyen') + '</div>';
+      return;
+    }
+    _kkCurrentBalance = d.balance;
+    renderKontokorrent();
+  } catch (e) {
+    document.getElementById('kk_body').innerHTML = '<div class="text-center" style="padding:2rem;color:#dc2626">Hata: ' + e.message + '</div>';
+  }
+}
+
+function closeKontokorrent() {
+  document.getElementById('kontokorrentModal').classList.remove('show');
+  _kkCurrentCustomer = null;
+  _kkCurrentBalance = null;
+}
+
+function renderKontokorrent() {
+  if (!_kkCurrentCustomer || !_kkCurrentBalance) return;
+  const c = _kkCurrentCustomer;
+  const b = _kkCurrentBalance;
+
+  const balanceColor = b.balance > 0.01 ? '#dc2626' : (b.balance < -0.01 ? '#ea580c' : '#16a34a');
+  const balanceLabel = b.balance > 0.01 ? 'Borç' : (b.balance < -0.01 ? 'Avans/Alacaklı' : 'Kapalı');
+  const isB2B = c.customer_type === 'b2b';
+
+  // Header
+  let html = `
+    <!-- Müşteri özeti -->
+    <div style="background:#f7f4ee;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:1rem;align-items:center">
+      <div>
+        <div style="font-weight:500;font-size:1.05rem">${escapeHtml(c.company_name || c.name)}</div>
+        ${c.company_name ? `<div style="font-size:0.82rem;color:#666">${escapeHtml(c.name)}</div>` : ''}
+        <div style="font-size:0.78rem;color:#888;margin-top:0.3rem">
+          ${c.email ? `📧 ${escapeHtml(c.email)} ` : ''}
+          ${c.phone ? `📞 ${escapeHtml(c.phone)} ` : ''}
+        </div>
+        ${isB2B ? `<div style="margin-top:0.4rem;font-size:0.78rem"><span style="background:#e0e7ff;color:#3730a3;padding:0.15rem 0.5rem;border-radius:3px;font-weight:500">🏢 B2B</span> ${c.ust_idnr ? '· USt-IdNr: <code>' + escapeHtml(c.ust_idnr) + '</code>' : ''} · Zahlungsfrist: ${c.payment_terms_days || 14} Tage</div>` : '<div style="margin-top:0.3rem;font-size:0.78rem"><span style="background:#fef3c7;color:#92400e;padding:0.15rem 0.5rem;border-radius:3px">👤 B2C</span></div>'}
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Toplam Fatura</div>
+        <div style="font-size:1.1rem;font-weight:500">€${b.total_invoiced.toFixed(2).replace('.', ',')}</div>
+        <div style="font-size:0.72rem;color:#888">${b.invoice_count} adet</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Toplam Ödenen</div>
+        <div style="font-size:1.1rem;font-weight:500;color:#16a34a">€${b.total_paid.toFixed(2).replace('.', ',')}</div>
+        <div style="font-size:0.7rem;color:#888">Online: €${b.total_paid_online.toFixed(2)} · Manuel: €${b.total_paid_manual.toFixed(2)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Bakiye</div>
+        <div style="font-size:1.4rem;font-weight:600;color:${balanceColor}">€${Math.abs(b.balance).toFixed(2).replace('.', ',')}</div>
+        <div style="font-size:0.72rem;color:${balanceColor}">${balanceLabel}</div>
+      </div>
+    </div>
+
+    <!-- Aksiyon: Ödeme ekle -->
+    <div style="background:#fff;border:1px solid #e5e5e0;border-radius:8px;padding:1rem;margin-bottom:1rem">
+      <div style="font-weight:500;margin-bottom:0.7rem;font-size:0.92rem">+ Ödeme Kaydı Ekle (manuel)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1.2fr auto;gap:0.5rem;align-items:end">
+        <div>
+          <label style="font-size:0.72rem;color:#888;display:block;margin-bottom:0.2rem">Tarih</label>
+          <input type="date" id="kk_pay_date" class="finput" style="font-size:0.85rem" value="${new Date().toISOString().slice(0,10)}">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;color:#888;display:block;margin-bottom:0.2rem">Tutar (€)</label>
+          <input type="number" id="kk_pay_amount" class="finput" style="font-size:0.85rem" placeholder="0.00" step="0.01">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;color:#888;display:block;margin-bottom:0.2rem">Yöntem</label>
+          <select id="kk_pay_method" class="finput" style="font-size:0.85rem">
+            <option value="ueberweisung">🏦 Banka transferi</option>
+            <option value="bar">💵 Nakit (mağaza)</option>
+            <option value="ec_karte">💳 EC-Karte (mağaza)</option>
+            <option value="paypal">🅿️ PayPal (manuel)</option>
+            <option value="manual">Diğer</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;color:#888;display:block;margin-bottom:0.2rem">Fatura Ref.</label>
+          <select id="kk_pay_invoice" class="finput" style="font-size:0.85rem">
+            <option value="">— Genel ödeme —</option>
+            ${b.invoices.map(inv => `<option value="${escapeHtml(inv.number)}">${escapeHtml(inv.number)} (€${inv.total.toFixed(2)})</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;color:#888;display:block;margin-bottom:0.2rem">Not</label>
+          <input type="text" id="kk_pay_note" class="finput" style="font-size:0.85rem" placeholder="opsiyonel">
+        </div>
+        <div>
+          <button class="btn btn-primary" style="background:#3d6b2a;height:38px" onclick="kkAddPayment()">💾 Kaydet</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Hareket dökümü (faturalar + ödemeler birleştirilmiş, tarih sıralı)
+  const movements = [];
+  for (const inv of b.invoices) {
+    movements.push({
+      type: 'invoice',
+      date: inv.issued_at,
+      label: `Rechnung ${inv.number}`,
+      ref: inv.number,
+      debit: inv.total,    // Müşteriye borç (alacağımız var)
+      credit: 0,
+      payment_status: inv.payment_status,
+      order_id: inv.order_id
+    });
+    // Online ödeme = otomatik kapatıldı say
+    if (['paid','succeeded','completed'].includes(inv.payment_status)) {
+      movements.push({
+        type: 'payment_online',
+        date: inv.issued_at,
+        label: `Online Ödeme (${inv.payment_status})`,
+        ref: inv.number,
+        debit: 0,
+        credit: inv.total,
+        auto: true
+      });
+    }
+  }
+  for (const p of (b.payments || [])) {
+    if (p.voided) {
+      movements.push({
+        type: 'payment_voided',
+        date: p.date,
+        label: `Storno: ${p.method}`,
+        ref: p.invoice_ref || '—',
+        debit: 0,
+        credit: 0,
+        voided: true,
+        payment_id: p.id
+      });
+    } else {
+      movements.push({
+        type: 'payment_manual',
+        date: p.date,
+        label: `Ödeme (${methodLabel(p.method)})`,
+        ref: p.invoice_ref || '—',
+        debit: 0,
+        credit: p.amount,
+        note: p.note,
+        payment_id: p.id,
+        manual: true
+      });
+    }
+  }
+  // Tarih sıralı (eski → yeni, çünkü cari defter genelde böyle)
+  movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // Yürüyen bakiye hesabı
+  let runningBalance = 0;
+  const rows = movements.map(m => {
+    if (!m.voided) runningBalance += (m.debit || 0) - (m.credit || 0);
+    const balColor = runningBalance > 0.01 ? '#dc2626' : (runningBalance < -0.01 ? '#ea580c' : '#16a34a');
+    return `<tr style="${m.voided ? 'opacity:0.5;text-decoration:line-through' : ''}">
+      <td style="font-size:0.78rem;color:#666;white-space:nowrap">${fmtDate(m.date)}</td>
+      <td>
+        <div style="font-size:0.85rem">${escapeHtml(m.label)}</div>
+        ${m.note ? `<div style="font-size:0.72rem;color:#888">${escapeHtml(m.note)}</div>` : ''}
+      </td>
+      <td style="font-size:0.78rem;color:#666">${escapeHtml(m.ref)}</td>
+      <td style="text-align:right;font-size:0.85rem;color:#dc2626">${m.debit > 0 ? '€' + m.debit.toFixed(2).replace('.', ',') : ''}</td>
+      <td style="text-align:right;font-size:0.85rem;color:#16a34a">${m.credit > 0 ? '€' + m.credit.toFixed(2).replace('.', ',') : ''}</td>
+      <td style="text-align:right;font-size:0.85rem;font-weight:500;color:${balColor}">${m.voided ? '—' : '€' + runningBalance.toFixed(2).replace('.', ',')}</td>
+      <td style="text-align:center">
+        ${m.manual && !m.voided ? `<button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;font-size:0.7rem" onclick="kkVoidPayment('${escapeHtml(m.payment_id)}')">Storno</button>` : ''}
+        ${m.auto ? '<span style="font-size:0.7rem;color:#888">otomatik</span>' : ''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  html += `
+    <div style="background:#fff;border:1px solid #e5e5e0;border-radius:8px;overflow:hidden">
+      <div style="padding:0.7rem 1rem;background:#f7f4ee;font-weight:500;font-size:0.88rem;border-bottom:1px solid #e5e5e0">
+        Hareket Dökümü (${movements.length})
+      </div>
+      <table class="tbl" style="margin:0">
+        <thead>
+          <tr>
+            <th>Tarih</th><th>Açıklama</th><th>Ref.</th>
+            <th style="text-align:right">Borç (€)</th>
+            <th style="text-align:right">Alacak (€)</th>
+            <th style="text-align:right">Bakiye (€)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows || '<tr><td colspan="7" class="text-center text-muted" style="padding:2rem">Henüz hareket yok</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('kk_body').innerHTML = html;
+}
+
+function methodLabel(m) {
+  const labels = {
+    bar: 'Nakit',
+    ueberweisung: 'Banka transferi',
+    ec_karte: 'EC-Karte',
+    paypal: 'PayPal',
+    manual: 'Diğer'
+  };
+  return labels[m] || m;
+}
+
+async function kkAddPayment() {
+  if (!_kkCurrentCustomer) return;
+  const amount = parseFloat(document.getElementById('kk_pay_amount').value);
+  if (!amount || amount <= 0) { toast('Geçerli tutar girin', 'err'); return; }
+  const data = {
+    date: document.getElementById('kk_pay_date').value,
+    amount,
+    method: document.getElementById('kk_pay_method').value,
+    invoice_ref: document.getElementById('kk_pay_invoice').value || null,
+    note: document.getElementById('kk_pay_note').value
+  };
+  try {
+    const d = await api(`/api/admin/customers/${encodeURIComponent(_kkCurrentCustomer.id)}/payments`, {
+      method: 'POST',
+      body: data
+    });
+    if (d.success) {
+      toast('✅ Ödeme kaydedildi', 'ok');
+      // Bakiyeyi yeniden yükle
+      await openKontokorrent(_kkCurrentCustomer.id);
+      // Müşteri tablosunu güncelle (bakiye göstergeleri için)
+      loadAllBalances();
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
+}
+
+async function kkVoidPayment(paymentId) {
+  if (!_kkCurrentCustomer) return;
+  if (!confirm('Bu ödeme kaydı storno edilsin mi?\n\n(Kaydedilmiş ödeme silinmez, "iptal" işaretlenir — GoBD uyumlu)')) return;
+  try {
+    const d = await api(`/api/admin/customers/${encodeURIComponent(_kkCurrentCustomer.id)}/payments/${encodeURIComponent(paymentId)}/void`, {
+      method: 'POST'
+    });
+    if (d.success) {
+      toast('✓ Storno kaydedildi', 'ok');
+      await openKontokorrent(_kkCurrentCustomer.id);
+      loadAllBalances();
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
+}
+
+// ============================================================
 // GELDFLUSS — Einnahmen & Ausgaben Buch
 // ============================================================
 let geldflussData = { entries: [], totals: {}, by_category: {}, categories: {}, category_labels: {} };
@@ -3011,6 +3380,18 @@ function renderGeldfluss() {
       actions = `<span style="font-size:0.7rem;color:#888">storniert</span>`;
     }
 
+    // Beleg butonu (sadece Ausgabe için ve voided değilse)
+    let belegBtn = '';
+    if (e.type === 'ausgabe' && !isVoided && !isAuto) {
+      if (e.beleg && e.beleg.r2_key) {
+        belegBtn = `<button onclick="viewBeleg('${escapeHtml(e.id)}')" title="Beleg ansehen" style="background:#dbeafe;border:none;cursor:pointer;color:#1e40af;font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.3rem">📎 Beleg</button>`;
+      } else {
+        belegBtn = `<button onclick="uploadBeleg('${escapeHtml(e.id)}')" title="Beleg hochladen (Rechnung PDF)" style="background:none;border:1px dashed #c0392b;cursor:pointer;color:#c0392b;font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:4px;margin-right:0.3rem">+ Beleg</button>`;
+      }
+    } else if (e.beleg && e.beleg.r2_key) {
+      belegBtn = `<button onclick="viewBeleg('${escapeHtml(e.id)}')" title="Beleg ansehen" style="background:#f0f0f0;border:none;cursor:pointer;color:#666;font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.3rem">📎</button>`;
+    }
+
     return `
       <tr style="border-bottom:1px solid #f0ebe0;${rowStyle}">
         <td style="padding:0.6rem 0.9rem;white-space:nowrap;color:#555">${fmtDate(e.date)}</td>
@@ -3019,10 +3400,82 @@ function renderGeldfluss() {
         <td style="padding:0.6rem 0.9rem"><span style="background:#f5f1e8;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.75rem;color:#6b6b5a">${escapeHtml(catLabel)}</span> <span style="font-size:0.7rem;color:#888;margin-left:0.3rem">${payIcons[e.payment_method] || ''}</span></td>
         <td style="padding:0.6rem 0.9rem;text-align:right">${einnVal}</td>
         <td style="padding:0.6rem 0.9rem;text-align:right">${ausgVal}</td>
-        <td style="padding:0.6rem 0.9rem;text-align:center">${actions}</td>
+        <td style="padding:0.6rem 0.9rem;text-align:center">${belegBtn}${actions}</td>
       </tr>
     `;
   }).join('');
+}
+
+// Belegerfassung — gizli file input + R2 upload
+function uploadBeleg(entryId) {
+  // Gizli file input oluştur
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.jpg,.jpeg,.png,.webp';
+  input.style.display = 'none';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast('Dosya çok büyük (max 10MB)', 'err');
+      return;
+    }
+    const fd = new FormData();
+    fd.append('file', file);
+    toast('Beleg yükleniyor...', 'info');
+    try {
+      const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN },
+        body: fd
+      });
+      const d = await r.json();
+      if (d.success) {
+        toast('✅ Beleg kaydedildi', 'ok');
+        await loadGeldfluss();
+      } else {
+        toast('Hata: ' + (d.error || 'bilinmeyen'), 'err');
+      }
+    } catch (err) {
+      toast('Hata: ' + err.message, 'err');
+    } finally {
+      input.remove();
+    }
+  };
+  document.body.appendChild(input);
+  input.click();
+}
+
+function viewBeleg(entryId) {
+  // Yeni sekmede aç (Authorization header eklenmiyor — backend cookie veya alternatif lazım)
+  // Çözüm: blob URL olarak indir, sonra aç
+  fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', {
+    headers: { 'Authorization': 'Bearer ' + TOKEN }
+  })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url, '_blank');
+      // 1 dk sonra revoke (popup açıldıysa)
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    })
+    .catch(err => toast('Beleg açılamadı: ' + err.message, 'err'));
+}
+
+async function deleteBeleg(entryId) {
+  if (!confirm('Beleg silinsin mi? (R2\'den kalıcı silinir)')) return;
+  try {
+    const d = await api('/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', { method: 'DELETE' });
+    if (d.success) {
+      toast('✓ Beleg silindi', 'ok');
+      await loadGeldfluss();
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
 }
 
 function openGeldflussModal(type) {
