@@ -178,6 +178,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 }
 .mobile-toggle { display: none; background: var(--olive-dark); color: white; border: none; padding: 0.5rem 0.8rem; border-radius: 7px; cursor: pointer; }
 </style>
+<!-- SheetJS for XLSX export (EÜR) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 </head>
 <body>
 
@@ -368,6 +370,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
               <option value="einnahme">Nur Einnahmen</option>
               <option value="ausgabe">Nur Ausgaben</option>
             </select>
+            <button class="btn btn-secondary" onclick="openExportModal()" title="EÜR / DATEV Export" style="border:1px solid #2a4a1a;color:#2a4a1a">📊 Export</button>
             <button class="btn btn-primary" onclick="openGeldflussModal('ausgabe')" style="background:#c0392b">− Ausgabe</button>
             <button class="btn btn-primary" onclick="openGeldflussModal('einnahme')" style="background:#3d6b2a">+ Einnahme</button>
           </div>
@@ -820,6 +823,81 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-body" id="kk_body">
       <div class="text-center" style="padding:2rem;color:#888">Yükleniyor…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EÜR / DATEV EXPORT MODAL ===== -->
+<div class="modal-backdrop" id="exportModal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-head">
+      <div class="modal-title">📊 Buchhaltung Export</div>
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:0;border-bottom:1px solid #e5e5e0;margin-bottom:1.5rem">
+        <button id="extab-eur" class="ex-tab active" onclick="switchExTab('eur')">📋 EÜR (Yıl Sonu Vergi)</button>
+        <button id="extab-datev" class="ex-tab" onclick="switchExTab('datev')">📁 DATEV (Steuerberater)</button>
+      </div>
+
+      <!-- EÜR Pane -->
+      <div id="ex-pane-eur">
+        <div style="background:#f0f9ff;border-left:3px solid #0369a1;padding:0.8rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem">
+          <strong>EÜR — Einnahmen-Überschuss-Rechnung:</strong> Kleinunternehmer için yıl sonu vergi raporu (§ 4 Abs. 3 EStG). Finanzamt'a sunabilir veya kendi vergi beyannamenizde kullanabilirsiniz.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+          <div>
+            <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Steuerjahr</label>
+            <select id="eur_year" class="finput" onchange="loadEurPreview()">
+              <!-- yıllar JS'te doldurulur -->
+            </select>
+          </div>
+          <div style="display:flex;align-items:end">
+            <button class="btn btn-primary" style="background:#3d6b2a;width:100%" onclick="downloadEurXlsx()">⬇ Excel İndir (.xlsx)</button>
+          </div>
+        </div>
+        <!-- EÜR önizleme -->
+        <div id="eur_preview" style="background:white;border:1px solid #e5e5e0;border-radius:8px;padding:1rem;min-height:200px">
+          <div class="text-center" style="color:#888;padding:2rem">Yıl seçin…</div>
+        </div>
+      </div>
+
+      <!-- DATEV Pane -->
+      <div id="ex-pane-datev" style="display:none">
+        <div style="background:#fff8e7;border-left:3px solid #c4a24a;padding:0.8rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem">
+          <strong>DATEV Buchungsstapel:</strong> Vergi danışmanınızın yazılımına direkt import edebileceği standart CSV formatı (Format I). SKR03 hesap planına göre otomatik kontolanmıştır.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+          <div>
+            <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Tarih başlangıcı</label>
+            <input type="date" id="datev_from" class="finput">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Tarih bitişi</label>
+            <input type="date" id="datev_to" class="finput">
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_month')">Bu Ay</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_month')">Geçen Ay</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_quarter')">Bu Çeyrek</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_year')">Bu Yıl</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_year')">Geçen Yıl</button>
+        </div>
+        <button class="btn btn-primary" style="background:#3d6b2a;width:100%" onclick="downloadDatevCsv()">⬇ DATEV CSV İndir</button>
+        <div style="margin-top:1rem;font-size:0.8rem;color:#666">
+          <strong>Format:</strong> CSV (UTF-8 BOM, ";" ayraç, Windows-1252 uyumlu)<br>
+          <strong>Sütunlar:</strong> Umsatz · Soll/Haben · Konto · Gegenkonto · Belegdatum · Belegfeld · Buchungstext · Steuersatz<br>
+          <strong>Hesap planı:</strong> SKR03 (Kleinunternehmer)
+        </div>
+      </div>
+
+      <style>
+        .ex-tab { background: none; border: none; padding: 0.7rem 1.2rem; cursor: pointer; color: #888; font-size: 0.9rem; border-bottom: 2px solid transparent; transition: all 0.15s; }
+        .ex-tab:hover { color: #2a4a1a; }
+        .ex-tab.active { color: #2a4a1a; border-bottom-color: #2a4a1a; font-weight: 500; }
+      </style>
     </div>
   </div>
 </div>
@@ -3269,6 +3347,241 @@ async function kkVoidPayment(paymentId) {
   } catch (e) {
     toast('Hata: ' + e.message, 'err');
   }
+}
+
+// ============================================================
+// EXPORT MODAL — EÜR (XLSX) + DATEV (CSV)
+// ============================================================
+let _eurData = null;
+
+function openExportModal() {
+  // Yıl dropdown'ını doldur
+  const sel = document.getElementById('eur_year');
+  const currentYear = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (let y = currentYear; y >= currentYear - 4; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  // DATEV varsayılan tarih: bu yıl
+  document.getElementById('datev_from').value = `${currentYear}-01-01`;
+  document.getElementById('datev_to').value = `${currentYear}-12-31`;
+
+  document.getElementById('exportModal').classList.add('show');
+  // İlk yıl için EÜR önizleme yükle
+  loadEurPreview();
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.remove('show');
+  _eurData = null;
+}
+
+function switchExTab(tab) {
+  document.getElementById('extab-eur').classList.toggle('active', tab === 'eur');
+  document.getElementById('extab-datev').classList.toggle('active', tab === 'datev');
+  document.getElementById('ex-pane-eur').style.display = tab === 'eur' ? '' : 'none';
+  document.getElementById('ex-pane-datev').style.display = tab === 'datev' ? '' : 'none';
+}
+
+async function loadEurPreview() {
+  const year = document.getElementById('eur_year').value;
+  document.getElementById('eur_preview').innerHTML = '<div class="text-center" style="color:#888;padding:2rem">Yükleniyor…</div>';
+  try {
+    const d = await api(`/api/admin/export/eur?year=${year}`);
+    if (!d.success) {
+      document.getElementById('eur_preview').innerHTML = '<div class="text-center" style="color:#dc2626;padding:2rem">Hata: ' + (d.error || 'bilinmeyen') + '</div>';
+      return;
+    }
+    _eurData = d;
+    renderEurPreview(d);
+  } catch (e) {
+    document.getElementById('eur_preview').innerHTML = '<div class="text-center" style="color:#dc2626;padding:2rem">Hata: ' + e.message + '</div>';
+  }
+}
+
+function renderEurPreview(d) {
+  const sum = d.summary;
+  const fmt = n => '€' + (n||0).toFixed(2).replace('.', ',');
+  const grenzeWarning = sum.ueber_grenze
+    ? `<div style="background:#fee2e2;border-left:3px solid #dc2626;padding:0.6rem 0.9rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;color:#991b1b"><strong>⚠️ Kleinunternehmer-Grenze aşıldı!</strong> ${fmt(sum.total_einnahmen)} > ${fmt(sum.kleinunternehmer_grenze)} (§ 19 UStG). Sonraki yıl Umsatzsteuerpflichtig olabilirsiniz.</div>`
+    : `<div style="background:#dcfce7;border-left:3px solid #16a34a;padding:0.6rem 0.9rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem;color:#15803d">✓ Kleinunternehmer-Grenze altında: ${fmt(sum.total_einnahmen)} / ${fmt(sum.kleinunternehmer_grenze)}</div>`;
+
+  // Kategori dağılımı (en yüksek 5)
+  const einnTop = Object.entries(d.einnahmen_by_category)
+    .sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const ausgTop = Object.entries(d.ausgaben_by_category)
+    .sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  document.getElementById('eur_preview').innerHTML = `
+    ${grenzeWarning}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;margin-bottom:1rem">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:0.8rem">
+        <div style="font-size:0.7rem;color:#15803d;text-transform:uppercase;letter-spacing:0.05em">Einnahmen ${d.year}</div>
+        <div style="font-size:1.4rem;font-weight:600;color:#15803d">${fmt(sum.total_einnahmen)}</div>
+      </div>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:0.8rem">
+        <div style="font-size:0.7rem;color:#991b1b;text-transform:uppercase;letter-spacing:0.05em">Ausgaben ${d.year}</div>
+        <div style="font-size:1.4rem;font-weight:600;color:#991b1b">${fmt(sum.total_ausgaben)}</div>
+      </div>
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:0.8rem">
+        <div style="font-size:0.7rem;color:#0369a1;text-transform:uppercase;letter-spacing:0.05em">Gewinn / Saldo</div>
+        <div style="font-size:1.4rem;font-weight:600;color:${sum.saldo >= 0 ? '#0369a1' : '#dc2626'}">${fmt(sum.saldo)}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.82rem">
+      <div>
+        <div style="font-weight:500;margin-bottom:0.4rem;color:#15803d">Top Einnahmen-Kategorien</div>
+        ${einnTop.length === 0 ? '<div style="color:#888">Hiç einnahme yok</div>' : einnTop.map(([cat, amt]) =>
+          `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid #f0f0eb"><span>${escapeHtml(cat)}</span><span style="font-weight:500">${fmt(amt)}</span></div>`
+        ).join('')}
+      </div>
+      <div>
+        <div style="font-weight:500;margin-bottom:0.4rem;color:#991b1b">Top Ausgaben-Kategorien</div>
+        ${ausgTop.length === 0 ? '<div style="color:#888">Hiç ausgabe yok</div>' : ausgTop.map(([cat, amt]) =>
+          `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid #f0f0eb"><span>${escapeHtml(cat)}</span><span style="font-weight:500">${fmt(amt)}</span></div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-top:1rem;font-size:0.78rem;color:#888">
+      ${sum.entry_count} hareket · ${d.year}
+    </div>
+  `;
+}
+
+async function downloadEurXlsx() {
+  if (!_eurData) {
+    toast('Önce yıl seçin', 'err');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    toast('XLSX kütüphanesi yüklenmedi, sayfa yenileyin', 'err');
+    return;
+  }
+  const d = _eurData;
+  const fmt = n => Math.round((n||0) * 100) / 100;
+
+  // Workbook oluştur
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Übersicht (özet)
+  const overview = [
+    ['EÜR — Einnahmen-Überschuss-Rechnung'],
+    [`Steuerjahr ${d.year}`],
+    [`Erstellt am ${new Date().toLocaleDateString('de-DE')}`],
+    [],
+    ['Kleinunternehmer-Regelung gemäß § 19 UStG'],
+    [`Grenze: € ${d.summary.kleinunternehmer_grenze.toLocaleString('de-DE')}`],
+    [`Status: ${d.summary.ueber_grenze ? '⚠️ ÜBERSCHRITTEN' : '✓ Innerhalb der Grenze'}`],
+    [],
+    ['ZUSAMMENFASSUNG'],
+    ['Einnahmen gesamt', fmt(d.summary.total_einnahmen)],
+    ['Ausgaben gesamt', fmt(d.summary.total_ausgaben)],
+    ['Gewinn / Saldo', fmt(d.summary.saldo)],
+    [`Anzahl Buchungen`, d.summary.entry_count],
+    [],
+    ['EINNAHMEN NACH KATEGORIE'],
+    ['Kategorie', 'Betrag (€)'],
+    ...Object.entries(d.einnahmen_by_category).map(([k, v]) => [k, fmt(v)]),
+    [],
+    ['AUSGABEN NACH KATEGORIE'],
+    ['Kategorie', 'Betrag (€)'],
+    ...Object.entries(d.ausgaben_by_category).map(([k, v]) => [k, fmt(v)]),
+    [],
+    ['MONATLICHE VERTEILUNG'],
+    ['Monat', 'Einnahmen', 'Ausgaben', 'Saldo'],
+    ...Object.entries(d.monthly).map(([m, v]) =>
+      [`${m}/${d.year}`, fmt(v.einnahmen), fmt(v.ausgaben), fmt(v.einnahmen - v.ausgaben)]
+    )
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(overview);
+  ws1['!cols'] = [{ wch: 35 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Übersicht');
+
+  // Sheet 2: Buchungen detay
+  const buchungen = [
+    ['Datum', 'Beleg-Nr', 'Beschreibung', 'Kategorie', 'Einnahme (€)', 'Ausgabe (€)', 'Zahlungsart', 'Beleg vorh.', 'Notizen']
+  ];
+  for (const t of d.transactions) {
+    buchungen.push([
+      t.datum, t.beleg_nr, t.beschreibung, t.kategorie,
+      fmt(t.einnahme), fmt(t.ausgabe),
+      t.zahlungsart, t.beleg_vorhanden, t.notizen
+    ]);
+  }
+  const ws2 = XLSX.utils.aoa_to_sheet(buchungen);
+  ws2['!cols'] = [
+    { wch: 12 }, { wch: 14 }, { wch: 40 }, { wch: 18 },
+    { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 25 }
+  ];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Buchungen');
+
+  // İndir
+  XLSX.writeFile(wb, `EUR_${d.year}_Keby.xlsx`);
+  toast('✅ EÜR Excel indirildi', 'ok');
+}
+
+function setDatevPeriod(p) {
+  const now = new Date();
+  const y = now.getFullYear();
+  let from, to;
+  switch (p) {
+    case 'this_month':
+      from = new Date(y, now.getMonth(), 1);
+      to = new Date(y, now.getMonth() + 1, 0);
+      break;
+    case 'last_month':
+      from = new Date(y, now.getMonth() - 1, 1);
+      to = new Date(y, now.getMonth(), 0);
+      break;
+    case 'this_quarter':
+      const q = Math.floor(now.getMonth() / 3);
+      from = new Date(y, q * 3, 1);
+      to = new Date(y, q * 3 + 3, 0);
+      break;
+    case 'this_year':
+      from = new Date(y, 0, 1);
+      to = new Date(y, 11, 31);
+      break;
+    case 'last_year':
+      from = new Date(y - 1, 0, 1);
+      to = new Date(y - 1, 11, 31);
+      break;
+  }
+  document.getElementById('datev_from').value = from.toISOString().slice(0, 10);
+  document.getElementById('datev_to').value = to.toISOString().slice(0, 10);
+}
+
+function downloadDatevCsv() {
+  const from = document.getElementById('datev_from').value;
+  const to = document.getElementById('datev_to').value;
+  if (!from || !to) { toast('Tarih aralığı gerekli', 'err'); return; }
+  // Auth header gerek — fetch + blob, sonra download link
+  fetch(API + `/api/admin/export/datev?from=${from}&to=${to}`, {
+    headers: { 'Authorization': 'Bearer ' + TOKEN }
+  })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DATEV_${from}_${to}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast('✅ DATEV CSV indirildi', 'ok');
+    })
+    .catch(err => toast('İndirme hatası: ' + err.message, 'err'));
 }
 
 // ============================================================
