@@ -4188,59 +4188,95 @@ function startBelegScanFlow() {
 }
 
 async function createScannedAusgabe(file) {
-  toast('Beleg yükleniyor...', 'info');
+  // OCR önce, sonra eintrag oluştur
+  goto('geldfluss');
+  await new Promise(r => setTimeout(r, 100));
+
+  // OCR loading toast — uzun sürebilir
+  const loadingId = showLoadingToast('🤖 OCR — Beleg analiz ediliyor...');
+
   try {
-    // Step 1: Yeni Ausgabe eintragı oluştur (placeholder values)
-    const today = new Date().toISOString().slice(0, 10);
-    const createData = {
-      type: 'ausgabe',
-      date: today,
-      amount: 0,
-      category: 'sonstige_ausgaben',
-      description: 'Beleg-Scan ' + new Date().toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
-      payment_method: 'bar',
-      notes: 'Scan vom ' + new Date().toLocaleString('de-DE')
-    };
-    const d1 = await api('/api/admin/geldfluss', { method: 'POST', body: createData });
-    if (!d1.success || !d1.entry) {
-      toast('Eintrag oluşturulamadı: ' + (d1.error || 'bilinmeyen'), 'err');
-      return;
-    }
-    const entryId = d1.entry.id;
-
-    // Step 2: Beleg yükle
-    const fd = new FormData();
-    fd.append('file', file);
-    const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/belege', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + TOKEN },
-      body: fd
-    });
-    const d2 = await r.json();
-    if (!d2.success) {
-      toast('Beleg yüklenemedi: ' + (d2.error || 'bilinmeyen'), 'err');
-      return;
-    }
-
-    toast('✅ Beleg kaydedildi — şimdi tutar/açıklamayı düzenle', 'ok');
-
-    // Step 3: Geldfluss sayfasına git ve eintragı düzenleme modal'ında aç
-    goto('geldfluss');
-    await loadGeldfluss();
-
-    // Eintragı düzenleme için modal aç
-    setTimeout(() => {
-      // Geldfluss eintrag düzenleme modal'ı varsa aç, yoksa Beleg Manager aç
-      if (typeof openGeldflussEditModal === 'function') {
-        openGeldflussEditModal(entryId);
-      } else {
-        // Beleg Manager içinden ek context vererek aç
-        openBelegManager(entryId);
+    // 1) Önce OCR (image dosyası için, PDF'i atla)
+    let ocrResult = null;
+    if (file.type && file.type.startsWith('image/')) {
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await fetch(API + '/api/admin/ocr/beleg', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + TOKEN },
+          body: fd
+        });
+        const ocrData = await r.json();
+        if (ocrData.success && ocrData.ocr) {
+          ocrResult = ocrData.ocr;
+        } else if (ocrData.error) {
+          console.warn('OCR fail:', ocrData.error, ocrData.raw_response);
+        }
+      } catch (e) {
+        console.warn('OCR exception:', e);
       }
-    }, 300);
+    }
+
+    hideLoadingToast(loadingId);
+
+    // 2) Modal'ı OCR sonuçlarıyla doldur
+    const today = new Date().toISOString().slice(0, 10);
+    let description = 'Beleg-Scan';
+    if (ocrResult && ocrResult.vendor) {
+      description = ocrResult.vendor;
+      if (ocrResult.invoice_number) description += ' - ' + ocrResult.invoice_number;
+    } else {
+      description = 'Beleg-Scan ' + new Date().toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    const prefill = {
+      date: ocrResult?.date || today,
+      amount: ocrResult?.amount && ocrResult.amount > 0 ? ocrResult.amount.toFixed(2) : '',
+      description,
+      category: ocrResult?.category_hint || 'sonstige_ausgaben',
+      payment_method: 'bar',
+      notes: ocrResult ? `OCR: ${ocrResult.vendor || '?'} · ${new Date().toLocaleString('de-DE')}` : 'Scan vom ' + new Date().toLocaleString('de-DE'),
+      ocrConfidence: ocrResult?.confidence,
+      pendingFile: file  // Save'den sonra upload edilecek
+    };
+
+    if (ocrResult) {
+      toast(`✅ OCR: ${ocrResult.vendor || '?'} · €${ocrResult.amount || '?'}`, 'ok');
+    } else {
+      toast('OCR başarısız - manuel girin', 'info');
+    }
+
+    // 3) Düzenleme modal'ı aç (pre-filled)
+    openGeldflussModal('ausgabe', prefill);
+
   } catch (e) {
+    hideLoadingToast(loadingId);
     toast('Hata: ' + e.message, 'err');
   }
+}
+
+// Loading toast helpers (uzun OCR işlemi için)
+let _toastCounter = 0;
+function showLoadingToast(msg) {
+  const id = 'loading_' + (++_toastCounter);
+  const el = document.createElement('div');
+  el.id = id;
+  el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1e40af;color:white;padding:0.85rem 1.4rem;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.2);z-index:2000;display:flex;align-items:center;gap:0.7rem;font-size:0.9rem';
+  el.innerHTML = `<div style="width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spinIcon 0.8s linear infinite"></div><span>${msg}</span>`;
+  document.body.appendChild(el);
+  if (!document.getElementById('spinIconStyle')) {
+    const s = document.createElement('style');
+    s.id = 'spinIconStyle';
+    s.textContent = '@keyframes spinIcon { to { transform: rotate(360deg); } }';
+    document.head.appendChild(s);
+  }
+  return id;
+}
+
+function hideLoadingToast(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
 }
 
 // ============================================================
@@ -4412,18 +4448,18 @@ function openLieferscheinPdf(lsId) {
     .catch(err => toast('PDF açılamadı: ' + err.message, 'err'));
 }
 
-function openGeldflussModal(type) {
+function openGeldflussModal(type, prefill) {
   document.getElementById('gfm_type').value = type;
   document.getElementById('gfm_title').textContent = type === 'einnahme' ? '+ Einnahme' : '− Ausgabe';
   document.getElementById('gfm_save_btn').style.background = type === 'einnahme' ? '#3d6b2a' : '#c0392b';
 
   // Bugünün tarihi default
-  document.getElementById('gfm_date').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('gfm_amount').value = '';
-  document.getElementById('gfm_description').value = '';
-  document.getElementById('gfm_notes').value = '';
+  document.getElementById('gfm_date').value = (prefill && prefill.date) || new Date().toISOString().slice(0, 10);
+  document.getElementById('gfm_amount').value = (prefill && prefill.amount) ? prefill.amount : '';
+  document.getElementById('gfm_description').value = (prefill && prefill.description) ? prefill.description : '';
+  document.getElementById('gfm_notes').value = (prefill && prefill.notes) ? prefill.notes : '';
   document.getElementById('gfm_beleg_url').value = '';
-  document.getElementById('gfm_payment').value = type === 'einnahme' ? 'ueberweisung' : 'bar';
+  document.getElementById('gfm_payment').value = (prefill && prefill.payment_method) || (type === 'einnahme' ? 'ueberweisung' : 'bar');
 
   // Kategori dropdown
   const cats = (geldflussData.categories && geldflussData.categories[type]) || [];
@@ -4437,6 +4473,37 @@ function openGeldflussModal(type) {
     catSel.innerHTML = fallback.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
   } else {
     catSel.innerHTML = cats.filter(c => c !== 'storno').map(c => `<option value="${c}">${labels[c] || c}</option>`).join('');
+  }
+
+  // Pre-fill kategori (OCR'dan gelen ipucu)
+  if (prefill && prefill.category) {
+    const opt = Array.from(catSel.options).find(o => o.value === prefill.category);
+    if (opt) catSel.value = prefill.category;
+  }
+
+  // Pre-fill için pending beleg dosyası varsa save'den sonra upload edilecek
+  document.getElementById('geldflussModal').dataset.pendingBeleg = (prefill && prefill.pendingFile) ? '1' : '';
+  if (prefill && prefill.pendingFile) {
+    window._pendingBelegFile = prefill.pendingFile;
+  } else {
+    window._pendingBelegFile = null;
+  }
+
+  // OCR confidence göster (varsa)
+  let banner = document.getElementById('gfm_ocr_banner');
+  if (prefill && prefill.ocrConfidence != null) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'gfm_ocr_banner';
+      banner.style.cssText = 'background:#dbeafe;border-left:3px solid #1e40af;padding:0.6rem 0.9rem;border-radius:6px;margin-bottom:1rem;font-size:0.83rem;color:#1e40af';
+      document.querySelector('#geldflussModal .modal-body').prepend(banner);
+    }
+    const conf = Math.round(prefill.ocrConfidence * 100);
+    const confColor = conf >= 80 ? '#16a34a' : (conf >= 50 ? '#ea580c' : '#dc2626');
+    banner.innerHTML = `🤖 <strong>OCR-Erkennung:</strong> Daten automatisch ausgefüllt aus Beleg-Foto · <span style="color:${confColor};font-weight:500">Genauigkeit: ${conf}%</span> · Bitte Werte prüfen!`;
+    banner.style.display = '';
+  } else if (banner) {
+    banner.style.display = 'none';
   }
 
   document.getElementById('geldflussModal').classList.add('show');
@@ -4467,8 +4534,29 @@ async function saveGeldflussEntry() {
   btn.textContent = 'Speichern...';
 
   try {
-    await api('/api/admin/geldfluss', { method: 'POST', body });
-    toast('Eintrag gespeichert', 'ok');
+    const d = await api('/api/admin/geldfluss', { method: 'POST', body });
+
+    // Pending beleg file varsa (OCR scan akışından) → eklenen eintraga upload et
+    const pendingFlag = document.getElementById('geldflussModal').dataset.pendingBeleg;
+    if (pendingFlag === '1' && window._pendingBelegFile && d && d.entry && d.entry.id) {
+      btn.textContent = 'Beleg ekleniyor...';
+      try {
+        const fd = new FormData();
+        fd.append('file', window._pendingBelegFile);
+        await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(d.entry.id) + '/belege', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + TOKEN },
+          body: fd
+        });
+        toast('✅ Eintrag + Beleg gespeichert', 'ok');
+      } catch (e) {
+        toast('Eintrag kaydedildi ama beleg upload başarısız: ' + e.message, 'err');
+      }
+      window._pendingBelegFile = null;
+    } else {
+      toast('Eintrag gespeichert', 'ok');
+    }
+
     closeGeldflussModal();
     await loadGeldfluss();
   } catch (e) {
