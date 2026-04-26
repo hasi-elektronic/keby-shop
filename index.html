@@ -1595,15 +1595,15 @@ body { color: #1a1a14; }
 .nav-mobile-menu {
   display: none;
   position: fixed;
-  top: 60px; left: 0; right: 0; bottom: 0;
-  background: rgba(253,252,249,0.98);
+  top: 84px; left: 0; right: 0; bottom: 0;  /* top bar (28) + nav (56) */
+  background: rgba(253,252,249,0.99);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   z-index: 199;
   flex-direction: column;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem 1.5rem;
   gap: 0;
   overflow-y: auto;
-  min-height: calc(100vh - 56px);
   transform: translateY(-10px);
   opacity: 0;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1884,24 +1884,134 @@ body { color: #1a1a14; }
   /* Top bar — telefon/mail yan yana sığmaz, sadece dil göster */
   .top-bar-left { display: none !important; }
   .top-bar-inner { justify-content: flex-end; padding: 0 1rem; }
-  .top-bar { height: 28px; }
-  /* Ana nav — kompakt */
-  #mainNav { top: 28px; height: 56px; padding: 0 1rem; gap: 0.5rem; }
+  .top-bar { height: 28px; background: var(--olive-dark); }  /* tam opak yeşil */
+  /* Ana nav — kompakt + tam opak (geçiş net) */
+  #mainNav {
+    top: 28px;
+    height: 56px;
+    padding: 0 1rem;
+    gap: 0.5rem;
+    background: rgba(253,252,249,0.98) !important;  /* neredeyse tam opak */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  #mainNav.scrolled { background: rgba(253,252,249,1) !important; }
   .nav-wordmark { display: none !important; }  /* Sadece logo */
   .nav-logo img { width: 34px; height: 34px; }
   .nav-icon-btn { width: 30px; height: 30px; }
   .nav-icon-btn svg { width: 14px; height: 14px; }
+  /* Hamburger — daha görünür */
+  .nav-hamburger {
+    width: 32px !important;
+    height: 32px !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .nav-hamburger span {
+    display: block !important;
+    width: 18px !important;
+    height: 2px !important;
+    background: var(--olive-dark) !important;
+    transition: all 0.25s !important;
+    border-radius: 2px !important;
+  }
   /* Kargo banner */
   .kargo-banner { top: 84px; height: 32px; }
   .kargo-banner.scrolled { top: 56px; }
   .kargo-slide { font-size: 0.66rem; letter-spacing: 0.04em; }
   /* Hero offset */
   #hero-section { margin-top: 116px !important; height: calc(100svh - 116px) !important; }
+
+  /* Mobile menü - search ve düzen */
+  .nav-mobile-menu {
+    top: 84px !important;  /* top bar (28) + nav (56) */
+    padding: 1.2rem 1.5rem !important;
+  }
+  #mainNav.scrolled ~ .nav-mobile-menu { top: 56px !important; }
 }
 @media (max-width: 480px) {
   .top-bar-inner { padding: 0 0.75rem; }
   #mainNav { padding: 0 0.75rem; gap: 0.4rem; }
   .lang-pill-btn { padding: 0 0.45rem; font-size: 0.6rem; }
+  .nav-cart {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.62rem !important;
+  }
+  .nav-cart .nav-desktop-only { display: none !important; }
+}
+
+/* Mobile menü içindeki search ve link bölümleri */
+.nav-mobile-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 0.55rem 0.95rem;
+  margin-bottom: 1.2rem;
+}
+.nav-mobile-search svg { color: var(--muted); flex-shrink: 0; }
+.nav-mobile-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  color: var(--text);
+  min-width: 0;
+}
+.nav-mobile-search-results {
+  margin-bottom: 1rem;
+  max-height: 240px;
+  overflow-y: auto;
+  display: none;
+}
+.nav-mobile-search-results.show { display: block; }
+.nav-mobile-search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.nav-mobile-search-result img {
+  width: 40px; height: 40px;
+  object-fit: contain;
+  background: var(--cream);
+  border-radius: 4px;
+}
+.nav-mobile-search-result-name { font-weight: 500; line-height: 1.3; }
+.nav-mobile-search-result-price { font-size: 0.78rem; color: var(--muted); }
+
+.nav-mobile-divider {
+  margin: 1.2rem 0 0.8rem;
+  border-top: 1px solid var(--border);
+}
+.nav-mobile-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.nav-mobile-contact a {
+  font-size: 0.85rem !important;
+  color: var(--muted) !important;
+  text-decoration: none !important;
+  padding: 0.4rem 0 !important;
 }
 
 </style>
@@ -1978,14 +2088,24 @@ body { color: #1a1a14; }
 
 <!-- Mobil açılır menü -->
 <div id="navMobileMenu" class="nav-mobile-menu">
+  <!-- Mobile arama -->
+  <div class="nav-mobile-search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="navMobileSearchInput" placeholder="Ürün ara..." data-tr-placeholder="Ürün ara..." data-de-placeholder="Suchen..." autocomplete="off">
+  </div>
+  <div class="nav-mobile-search-results" id="navMobileSearchResults"></div>
+
   <a href="index.html#produkte" onclick="closeMobileMenu()" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a>
   <a href="vision.html" onclick="closeMobileMenu()" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a>
   <a href="ueber-uns.html" onclick="closeMobileMenu()" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a>
   <a href="ueber-uns.html#kontakt" onclick="closeMobileMenu()" data-tr="İletişim" data-de="Kontakt">İletişim</a>
-  <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
-    <a href="tel:+4915906342354" style="font-size:0.85rem!important;color:var(--muted)!important">📞 015906342354</a>
-    <a href="https://wa.me/4915906342354" target="_blank" style="font-size:0.85rem!important;color:var(--muted)!important">💬 WhatsApp</a>
-    <a href="mailto:info@keby.shop" style="font-size:0.85rem!important;color:var(--muted)!important">✉️ info@keby.shop</a>
+  <a href="meine-bestellungen.html" onclick="closeMobileMenu()" data-tr="Siparişlerim" data-de="Meine Bestellungen">Siparişlerim</a>
+
+  <div class="nav-mobile-divider"></div>
+  <div class="nav-mobile-contact">
+    <a href="tel:+4915906342354">📞 +49 159 0634 2354</a>
+    <a href="https://wa.me/4915906342354" target="_blank">💬 WhatsApp</a>
+    <a href="mailto:info@keby.shop">✉️ info@keby.shop</a>
   </div>
 </div>
 
@@ -3034,11 +3154,13 @@ function setLang(l) {
   }, 4000);  // 4 saniyede bir döner
 })();
 
-// ════════ HEADER SEARCH (mini) ════════
+// ════════ HEADER SEARCH (desktop + mobile) ════════
 (function() {
   var input = document.getElementById('navSearch');
   var results = document.getElementById('navSearchResults');
-  if (!input || !results) return;
+  var inputM = document.getElementById('navMobileSearchInput');
+  var resultsM = document.getElementById('navMobileSearchResults');
+  if (!input && !inputM) return;
 
   // Ürün listesi (R2'den products.json yüklenir)
   var products = [];
@@ -3057,11 +3179,35 @@ function setLang(l) {
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  function search(q) {
+  function renderResults(matches, container, isMobile) {
+    if (matches.length === 0) {
+      container.innerHTML = '<div class="' + (isMobile ? 'nav-mobile-search-result' : 'nav-search-empty') + '" style="text-align:center;color:var(--muted);padding:0.8rem">' +
+        (_lang === 'tr' ? 'Ürün bulunamadı' : 'Keine Produkte gefunden') +
+        '</div>';
+      container.classList.add('show');
+      return;
+    }
+    var cls = isMobile ? 'nav-mobile-search-result' : 'nav-search-result';
+    container.innerHTML = matches.map(p => {
+      var name = _lang === 'de' ? (p.nameDe || p.name_de || p.name) : (p.name || p.nameDe);
+      var url = p.url || p.link || ('produkt-' + (p.slug || (p.artikel_nr||'').toLowerCase()) + '.html');
+      var img = p.image || p.img || p.thumbnail || '';
+      var price = (p.price || p.preis || 0).toFixed(2).replace('.', ',');
+      return '<a href="' + escHtml(url) + '" class="' + cls + '">' +
+        (img ? '<img src="' + escHtml(img) + '" alt="" loading="lazy">' : '<div style="width:36px;height:36px;background:var(--cream);border-radius:4px"></div>') +
+        '<div class="' + (isMobile ? 'nav-mobile-search-result-name' : 'nav-search-result-info') + '">' +
+        '<div class="' + (isMobile ? '' : 'nav-search-result-name') + '">' + escHtml(name) + '</div>' +
+        '<div class="' + (isMobile ? 'nav-mobile-search-result-price' : 'nav-search-result-price') + '">' + price + ' €</div>' +
+        '</div></a>';
+    }).join('');
+    container.classList.add('show');
+  }
+
+  function search(q, container, isMobile) {
     q = (q || '').trim().toLowerCase();
     if (!q || q.length < 2) {
-      results.classList.remove('show');
-      results.innerHTML = '';
+      container.classList.remove('show');
+      container.innerHTML = '';
       return;
     }
     var matches = products.filter(p => {
@@ -3071,47 +3217,29 @@ function setLang(l) {
       var artNr = (p.artikel_nr || p.sku || '').toLowerCase();
       return name.includes(q) || nameDe.includes(q) || desc.includes(q) || artNr.includes(q);
     }).slice(0, 6);
-
-    if (matches.length === 0) {
-      results.innerHTML = '<div class="nav-search-empty">' +
-        (_lang === 'tr' ? 'Ürün bulunamadı' : 'Keine Produkte gefunden') +
-        '</div>';
-      results.classList.add('show');
-      return;
-    }
-
-    results.innerHTML = matches.map(p => {
-      var name = _lang === 'de' ? (p.nameDe || p.name_de || p.name) : (p.name || p.nameDe);
-      var url = p.url || p.link || ('produkt-' + (p.slug || (p.artikel_nr||'').toLowerCase()) + '.html');
-      var img = p.image || p.img || p.thumbnail || '';
-      var price = (p.price || p.preis || 0).toFixed(2).replace('.', ',');
-      return '<a href="' + escHtml(url) + '" class="nav-search-result">' +
-        (img ? '<img src="' + escHtml(img) + '" alt="" loading="lazy">' : '<div style="width:36px;height:36px;background:var(--cream);border-radius:4px"></div>') +
-        '<div class="nav-search-result-info">' +
-        '<div class="nav-search-result-name">' + escHtml(name) + '</div>' +
-        '<div class="nav-search-result-price">' + price + ' €</div>' +
-        '</div></a>';
-    }).join('');
-    results.classList.add('show');
+    renderResults(matches, container, isMobile);
   }
 
-  var searchTimer = null;
-  input.addEventListener('input', function() {
-    clearTimeout(searchTimer);
-    var v = this.value;
-    searchTimer = setTimeout(function() { search(v); }, 180);
-  });
+  function bindSearch(el, container, isMobile) {
+    if (!el || !container) return;
+    var timer = null;
+    el.addEventListener('input', function() {
+      clearTimeout(timer);
+      var v = this.value;
+      timer = setTimeout(function() { search(v, container, isMobile); }, 180);
+    });
+    el.addEventListener('focus', function() {
+      if (this.value && this.value.length >= 2) search(this.value, container, isMobile);
+    });
+  }
 
-  // Dışarıya tıklayınca kapan
+  bindSearch(input, results, false);
+  bindSearch(inputM, resultsM, true);
+
+  // Dışarıya tıklayınca desktop search kapan
   document.addEventListener('click', function(e) {
-    if (!input.contains(e.target) && !results.contains(e.target)) {
+    if (input && results && !input.contains(e.target) && !results.contains(e.target)) {
       results.classList.remove('show');
-    }
-  });
-
-  input.addEventListener('focus', function() {
-    if (this.value && this.value.length >= 2) {
-      search(this.value);
     }
   });
 })();
