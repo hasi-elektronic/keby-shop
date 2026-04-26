@@ -827,6 +827,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ===== BELEG MANAGER MODAL (Çoklu beleg + Mobile camera scanner) ===== -->
+<div class="modal-backdrop" id="belegModal">
+  <div class="modal" style="max-width:760px;max-height:92vh;overflow-y:auto">
+    <div class="modal-head">
+      <div class="modal-title">📎 Belegerfassung</div>
+      <button class="modal-close" onclick="closeBelegManager()">✕</button>
+    </div>
+    <div class="modal-body" id="belegModalBody">
+      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor...</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== EÜR / DATEV EXPORT MODAL ===== -->
 <div class="modal-backdrop" id="exportModal">
   <div class="modal" style="max-width:780px">
@@ -3693,16 +3706,23 @@ function renderGeldfluss() {
       actions = `<span style="font-size:0.7rem;color:#888">storniert</span>`;
     }
 
-    // Beleg butonu (sadece Ausgabe için ve voided değilse)
+    // Belege — hem Einnahme hem Ausgabe için
     let belegBtn = '';
-    if (e.type === 'ausgabe' && !isVoided && !isAuto) {
-      if (e.beleg && e.beleg.r2_key) {
-        belegBtn = `<button onclick="viewBeleg('${escapeHtml(e.id)}')" title="Beleg ansehen" style="background:#dbeafe;border:none;cursor:pointer;color:#1e40af;font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.3rem">📎 Beleg</button>`;
-      } else {
-        belegBtn = `<button onclick="uploadBeleg('${escapeHtml(e.id)}')" title="Beleg hochladen (Rechnung PDF)" style="background:none;border:1px dashed #c0392b;cursor:pointer;color:#c0392b;font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:4px;margin-right:0.3rem">+ Beleg</button>`;
+    if (!isVoided) {
+      // Eski tek beleg + yeni belege array birleştir
+      const allBelege = [...(e.belege || [])];
+      if (e.beleg && !allBelege.find(b => b.r2_key === e.beleg.r2_key)) {
+        allBelege.push({ ...e.beleg, id: 'legacy' });
       }
-    } else if (e.beleg && e.beleg.r2_key) {
-      belegBtn = `<button onclick="viewBeleg('${escapeHtml(e.id)}')" title="Beleg ansehen" style="background:#f0f0f0;border:none;cursor:pointer;color:#666;font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.3rem">📎</button>`;
+      const count = allBelege.length;
+      if (count > 0) {
+        const color = e.type === 'einnahme' ? '#3d6b2a' : '#1e40af';
+        const bg = e.type === 'einnahme' ? '#dcfce7' : '#dbeafe';
+        belegBtn = `<button onclick="openBelegManager('${escapeHtml(e.id)}')" title="Belege ansehen / verwalten" style="background:${bg};border:none;cursor:pointer;color:${color};font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.3rem">📎 ${count}</button>`;
+      } else if (!isAuto) {
+        const dashColor = e.type === 'einnahme' ? '#3d6b2a' : '#c0392b';
+        belegBtn = `<button onclick="openBelegManager('${escapeHtml(e.id)}')" title="Beleg hochladen / fotografieren" style="background:none;border:1px dashed ${dashColor};cursor:pointer;color:${dashColor};font-size:0.7rem;padding:0.15rem 0.45rem;border-radius:4px;margin-right:0.3rem">+ Beleg</button>`;
+      }
     }
 
     return `
@@ -3719,50 +3739,227 @@ function renderGeldfluss() {
   }).join('');
 }
 
-// Belegerfassung — gizli file input + R2 upload
-function uploadBeleg(entryId) {
-  // Gizli file input oluştur
+// ============================================================
+// BELEG MANAGER — Mobile camera scanner + multi upload + gallery
+// ============================================================
+
+let _belegEntryId = null;
+
+function openBelegManager(entryId) {
+  _belegEntryId = entryId;
+  const entry = (geldflussData.entries || []).find(e => e.id === entryId);
+  if (!entry) { toast('Eintrag bulunamadı', 'err'); return; }
+  renderBelegManager(entry);
+  document.getElementById('belegModal').classList.add('show');
+}
+
+function closeBelegManager() {
+  document.getElementById('belegModal').classList.remove('show');
+  _belegEntryId = null;
+}
+
+function renderBelegManager(entry) {
+  // Eski tek + yeni çoklu birleştir
+  const belege = [...(entry.belege || [])];
+  if (entry.beleg && !belege.find(b => b.r2_key === entry.beleg.r2_key)) {
+    belege.push({ ...entry.beleg, id: 'legacy' });
+  }
+
+  const isMobile = window.innerWidth <= 768 || /iPhone|iPad|Android/i.test(navigator.userAgent);
+  const typeColor = entry.type === 'einnahme' ? '#3d6b2a' : '#c0392b';
+  const typeLabel = entry.type === 'einnahme' ? 'Einnahme' : 'Ausgabe';
+
+  let html = `
+    <!-- Eintrag özeti -->
+    <div style="background:#f7f4ee;border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div>
+          <span style="background:${typeColor};color:white;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:500">${typeLabel}</span>
+          <strong style="margin-left:0.5rem">${escapeHtml(entry.description)}</strong>
+        </div>
+        <div style="font-size:1.1rem;font-weight:600;color:${typeColor}">€${(entry.amount || 0).toFixed(2).replace('.', ',')}</div>
+      </div>
+      <div style="margin-top:0.4rem;font-size:0.78rem;color:#666">
+        ${entry.date} · ${entry.ref_number || entry.id}
+      </div>
+    </div>
+
+    <!-- Yeni beleg ekleme -->
+    <div style="background:white;border:2px dashed #c4a24a;border-radius:8px;padding:1.2rem;margin-bottom:1rem;text-align:center">
+      <div style="font-weight:500;margin-bottom:0.7rem;font-size:0.95rem">Beleg ekle</div>
+
+      ${isMobile ? `
+        <!-- Mobile: kamera + galeri -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;max-width:400px;margin:0 auto">
+          <button onclick="startBelegCamera()" class="btn btn-primary" style="background:#0369a1;padding:0.85rem 0.5rem;font-size:0.92rem">
+            📷 Kamera ile Çek
+          </button>
+          <button onclick="startBelegGallery()" class="btn btn-secondary" style="background:#f0f0eb;color:#333;padding:0.85rem 0.5rem;font-size:0.92rem">
+            🖼️ Galeriden Seç
+          </button>
+        </div>
+        <div style="margin-top:0.6rem;font-size:0.75rem;color:#666">PDF · JPG · PNG · HEIC · max 10MB her dosya</div>
+      ` : `
+        <!-- Desktop: dosya seç -->
+        <button onclick="startBelegFiles()" class="btn btn-primary" style="background:#3d6b2a;padding:0.85rem 1.5rem;font-size:0.92rem">
+          📁 Dosya Seç (çoklu destekli)
+        </button>
+        <div style="margin-top:0.6rem;font-size:0.75rem;color:#666">PDF · JPG · PNG · WEBP · max 10MB her dosya</div>
+      `}
+
+      <div id="belegUploadProgress" style="margin-top:0.8rem;display:none">
+        <div style="background:#e5e5e0;border-radius:4px;height:6px;overflow:hidden">
+          <div id="belegProgressBar" style="background:#3d6b2a;height:100%;width:0%;transition:width 0.3s"></div>
+        </div>
+        <div id="belegProgressText" style="font-size:0.75rem;color:#666;margin-top:0.4rem">Hochlade läuft...</div>
+      </div>
+    </div>
+
+    <!-- Mevcut belegler galeri -->
+    <div style="font-weight:500;margin-bottom:0.6rem;font-size:0.92rem">
+      Mevcut Belegler <span style="color:#888;font-weight:400">(${belege.length})</span>
+    </div>
+  `;
+
+  if (belege.length === 0) {
+    html += `<div style="background:white;border:1px solid #e5e5e0;border-radius:8px;padding:2rem;text-align:center;color:#888">Henüz beleg yok</div>`;
+  } else {
+    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.7rem">`;
+    for (const b of belege) {
+      const isPdf = b.content_type === 'application/pdf';
+      const sizeKb = (b.size / 1024).toFixed(0);
+      const dateStr = b.uploaded_at ? new Date(b.uploaded_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '';
+
+      html += `
+        <div style="background:white;border:1px solid #e5e5e0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:140px;background:#f7f4ee;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" onclick="viewBelegImage('${escapeHtml(_belegEntryId)}', '${escapeHtml(b.id)}')">
+            ${isPdf
+              ? `<div style="text-align:center;color:#666"><div style="font-size:2rem">📄</div><div style="font-size:0.75rem;margin-top:0.3rem">PDF</div></div>`
+              : `<img id="belegthumb_${escapeHtml(b.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in" data-beleg-id="${escapeHtml(b.id)}">`
+            }
+          </div>
+          <div style="padding:0.55rem 0.7rem">
+            <div style="font-size:0.75rem;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(b.filename)}">${escapeHtml(b.filename)}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.3rem">
+              <div style="font-size:0.7rem;color:#888">${sizeKb} KB · ${dateStr}</div>
+              <button onclick="deleteBelegItem('${escapeHtml(_belegEntryId)}', '${escapeHtml(b.id)}')" title="Sil" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:0.85rem;padding:0.1rem 0.3rem">🗑</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    html += `</div>`;
+  }
+
+  document.getElementById('belegModalBody').innerHTML = html;
+
+  // Resim thumbnaillerini fetch + blob ile yükle (auth header gerek)
+  setTimeout(() => {
+    document.querySelectorAll('img[data-beleg-id]').forEach(img => {
+      const bId = img.dataset.belegId;
+      fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(_belegEntryId) + '/belege/' + encodeURIComponent(bId), {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      })
+        .then(r => r.blob())
+        .then(blob => {
+          img.src = URL.createObjectURL(blob);
+        })
+        .catch(() => { img.alt = '!'; });
+    });
+  }, 50);
+}
+
+// Mobile: kamera tetikle
+function startBelegCamera() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';  // arka kamera
+  input.style.display = 'none';
+  input.onchange = (e) => uploadBelegFiles(e.target.files);
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(() => input.remove(), 300);
+}
+
+// Mobile: galeriden seç (capture yok)
+function startBelegGallery() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,application/pdf';
+  input.multiple = true;
+  input.style.display = 'none';
+  input.onchange = (e) => uploadBelegFiles(e.target.files);
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(() => input.remove(), 300);
+}
+
+// Desktop: çoklu dosya
+function startBelegFiles() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.pdf,.jpg,.jpeg,.png,.webp';
+  input.multiple = true;
   input.style.display = 'none';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast('Dosya çok büyük (max 10MB)', 'err');
-      return;
-    }
-    const fd = new FormData();
-    fd.append('file', file);
-    toast('Beleg yükleniyor...', 'info');
-    try {
-      const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + TOKEN },
-        body: fd
-      });
-      const d = await r.json();
-      if (d.success) {
-        toast('✅ Beleg kaydedildi', 'ok');
-        await loadGeldfluss();
-      } else {
-        toast('Hata: ' + (d.error || 'bilinmeyen'), 'err');
-      }
-    } catch (err) {
-      toast('Hata: ' + err.message, 'err');
-    } finally {
-      input.remove();
-    }
-  };
+  input.onchange = (e) => uploadBelegFiles(e.target.files);
   document.body.appendChild(input);
   input.click();
+  setTimeout(() => input.remove(), 300);
 }
 
-function viewBeleg(entryId) {
-  // Yeni sekmede aç (Authorization header eklenmiyor — backend cookie veya alternatif lazım)
-  // Çözüm: blob URL olarak indir, sonra aç
-  fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', {
+// Çoklu dosya upload (kamera/galeri/dosya hepsi buradan geçer)
+async function uploadBelegFiles(files) {
+  if (!files || files.length === 0) return;
+  if (!_belegEntryId) return;
+
+  const progressBar = document.getElementById('belegProgressBar');
+  const progressText = document.getElementById('belegProgressText');
+  const progressBox = document.getElementById('belegUploadProgress');
+  if (progressBox) progressBox.style.display = 'block';
+
+  const fd = new FormData();
+  for (const f of files) {
+    if (f.size > 10 * 1024 * 1024) {
+      toast(`"${f.name}" çok büyük (max 10MB)`, 'err');
+      continue;
+    }
+    fd.append('file', f);
+  }
+
+  try {
+    if (progressText) progressText.textContent = `${files.length} dosya yükleniyor...`;
+    if (progressBar) progressBar.style.width = '30%';
+
+    const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(_belegEntryId) + '/belege', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN },
+      body: fd
+    });
+
+    if (progressBar) progressBar.style.width = '100%';
+    const d = await r.json();
+
+    if (d.success) {
+      toast(`✅ ${d.added} beleg yüklendi`, 'ok');
+      // Geldfluss'u yeniden yükle
+      await loadGeldfluss();
+      // Modal'da güncel veriyi göster
+      const updated = (geldflussData.entries || []).find(e => e.id === _belegEntryId);
+      if (updated) renderBelegManager(updated);
+    } else {
+      toast('Hata: ' + (d.error || 'bilinmeyen'), 'err');
+      if (progressBox) progressBox.style.display = 'none';
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+    if (progressBox) progressBox.style.display = 'none';
+  }
+}
+
+// Beleg görüntüle (büyük lightbox veya yeni sekme)
+function viewBelegImage(entryId, belegId) {
+  fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/belege/' + encodeURIComponent(belegId), {
     headers: { 'Authorization': 'Bearer ' + TOKEN }
   })
     .then(r => {
@@ -3771,25 +3968,37 @@ function viewBeleg(entryId) {
     })
     .then(blob => {
       const url = URL.createObjectURL(blob);
-      const w = window.open(url, '_blank');
-      // 1 dk sonra revoke (popup açıldıysa)
+      window.open(url, '_blank');
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     })
     .catch(err => toast('Beleg açılamadı: ' + err.message, 'err'));
 }
 
-async function deleteBeleg(entryId) {
-  if (!confirm('Beleg silinsin mi? (R2\'den kalıcı silinir)')) return;
+// Tek beleg sil
+async function deleteBelegItem(entryId, belegId) {
+  if (!confirm('Bu beleg silinsin mi? (R2\'den kalıcı silinir)')) return;
   try {
-    const d = await api('/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/beleg', { method: 'DELETE' });
+    const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/belege/' + encodeURIComponent(belegId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
     if (d.success) {
       toast('✓ Beleg silindi', 'ok');
       await loadGeldfluss();
+      const updated = (geldflussData.entries || []).find(e => e.id === _belegEntryId);
+      if (updated) renderBelegManager(updated);
+    } else {
+      toast('Hata: ' + (d.error || 'bilinmeyen'), 'err');
     }
   } catch (e) {
     toast('Hata: ' + e.message, 'err');
   }
 }
+
+// Eski uyumluluk - tek beleg fonksiyonları (legacy)
+function uploadBeleg(entryId) { _belegEntryId = entryId; openBelegManager(entryId); }
+function viewBeleg(entryId) { openBelegManager(entryId); }
 
 function openGeldflussModal(type) {
   document.getElementById('gfm_type').value = type;
