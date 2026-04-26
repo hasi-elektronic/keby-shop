@@ -3388,36 +3388,22 @@ function closeStripeModal() {
 // LEGACY (Payment Element modal) — artık kullanılmıyor ama eski referanslar olabilir
 async function redirectToStripeCheckout() { return openStripeEmbeddedCheckout(); }
 
-// === STRIPE CHECKOUT SUCCESS handler ===
-// Stripe Checkout'tan dönerken ?stripe_checkout_success=cs_xxx parametresi gelir
+// === STRIPE CHECKOUT RETURN handler ===
+// Stripe Checkout'tan dönüşte session status'u kontrol et — başarılı/iptal/beklemede ayır
 (function() {
   var url = new URL(window.location.href);
   var sessionId = url.searchParams.get('stripe_checkout_success');
   var cancelled = url.searchParams.get('stripe_checkout_cancel');
 
   if (sessionId) {
-    // URL temizle
+    // URL'i temizle (geri tıklayınca tekrar tetiklenmesin)
     if (window.history.replaceState) {
       window.history.replaceState({}, '', window.location.pathname);
     }
-    // Sepeti temizle
-    try {
-      if (typeof cart !== 'undefined') {
-        cart = [];
-        if (typeof saveCart === 'function') saveCart();
-        if (typeof renderCart === 'function') renderCart();
-        if (typeof syncCartCount === 'function') syncCartCount();
-      }
-    } catch(e) {}
 
-    // Başarı mesajı (DOM hazır olunca)
+    // DOM hazır olunca status check + uygun mesaj
     document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        showStripeReturnMessage('success',
-          'Ödemeniz başarıyla tamamlandı! Onay e-postasını yakında alacaksınız.',
-          'Zahlung erfolgreich! Sie erhalten in Kürze eine Bestellbestätigung per E-Mail.',
-          sessionId.slice(-12));
-      }, 300);
+      checkStripeSessionStatus(sessionId);
     });
   }
 
@@ -3435,6 +3421,56 @@ async function redirectToStripeCheckout() { return openStripeEmbeddedCheckout();
     });
   }
 })();
+
+async function checkStripeSessionStatus(sessionId) {
+  try {
+    var r = await fetch('https://keby-api.hguencavdi.workers.dev/api/stripe/checkout-session/' + encodeURIComponent(sessionId), {
+      method: 'GET'
+    });
+    var d = await r.json();
+    var session = d.session || {};
+    var paymentStatus = session.payment_status; // 'paid' | 'unpaid' | 'no_payment_required'
+    var status = session.status; // 'open' | 'complete' | 'expired'
+
+    setTimeout(function() {
+      if (paymentStatus === 'paid' || status === 'complete') {
+        // Başarılı
+        try {
+          if (typeof cart !== 'undefined') {
+            cart = [];
+            if (typeof saveCart === 'function') saveCart();
+            if (typeof renderCart === 'function') renderCart();
+            if (typeof syncCartCount === 'function') syncCartCount();
+          }
+        } catch(e) {}
+
+        showStripeReturnMessage('success',
+          'Ödemeniz başarıyla tamamlandı! Onay e-postasını yakında alacaksınız.',
+          'Zahlung erfolgreich! Sie erhalten in Kürze eine Bestellbestätigung per E-Mail.',
+          sessionId.slice(-12));
+      } else if (status === 'expired') {
+        showStripeReturnMessage('info',
+          'Ödeme oturumu süresi doldu. Sepetinizdeki ürünler kayıtlı kaldı.',
+          'Zahlungssitzung abgelaufen. Ihre Artikel sind weiterhin im Warenkorb.',
+          null);
+      } else {
+        // payment_status unpaid + status open → ödeme tamamlanmamış (iptal/abandoned)
+        showStripeReturnMessage('info',
+          'Ödeme tamamlanmadı. Sepetinizdeki ürünler kayıtlı kaldı, dilediğiniz zaman tekrar deneyebilirsiniz.',
+          'Zahlung wurde nicht abgeschlossen. Ihre Artikel sind weiterhin im Warenkorb.',
+          null);
+      }
+    }, 300);
+  } catch (e) {
+    // Status check başarısızsa nötr mesaj
+    setTimeout(function() {
+      showStripeReturnMessage('info',
+        'Ödeme durumu doğrulanamadı. Eğer ödemeniz başarılıysa onay e-postası alacaksınız.',
+        'Zahlungsstatus konnte nicht verifiziert werden. Falls erfolgreich, erhalten Sie eine Bestätigungs-E-Mail.',
+        null);
+    }, 300);
+  }
+}
 
 function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   var lang = (typeof _lang !== 'undefined' && _lang === 'tr') ? 'tr' : 'de';
