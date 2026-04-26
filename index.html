@@ -281,7 +281,7 @@ footer {
 @media (max-width: 860px) {
   /* NAV */
   .nav-links { display: none; }
-  nav { padding: 0 1rem; height: 60px; }
+  #mainNav { padding: 0 1rem; height: 60px; }
   .nav-logo img { width: 36px; height: 36px; }
   .lang-btn { padding: 0.22rem 0.5rem; font-size: 0.66rem; }
   .nav-cart { padding: 0.4rem 0.75rem; font-size: 0.7rem; }
@@ -513,7 +513,7 @@ img, video { max-width: 100%; height: auto; }
 @media (max-width: 860px) {
 
   /* ── NAV ── */
-  nav { padding: 0 0.75rem !important; gap: 0.5rem; }
+  #mainNav { padding: 0 0.75rem !important; gap: 0.5rem; }
   .nav-links { display: none !important; }
   .nav-logo img { width: 32px !important; height: 32px !important; }
   #cartBtn { padding: 0.4rem 0.7rem !important; font-size: 0.7rem !important; }
@@ -678,7 +678,7 @@ img, video { max-width: 100%; height: auto; }
 
 /* Çok küçük ekranlar */
 @media (max-width: 380px) {
-  nav { padding: 0 0.5rem !important; }
+  #mainNav { padding: 0 0.5rem !important; }
   .kalite-serit-inner,
   div[style*="grid-template-columns:repeat(6,1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -713,7 +713,7 @@ img, video { max-width: 100%; height: auto; }
   }
 
   /* ── NAV ── */
-  nav {
+  #mainNav {
     padding: 0 1rem !important;
     height: 56px !important;
     background: rgba(253,252,249,0.96) !important;
@@ -1672,7 +1672,7 @@ body { color: #1a1a14; }
 
 
 @media (max-width: 860px) {
-  nav { padding: 0 1rem; height: 56px; }
+  #mainNav { padding: 0 1rem; height: 56px; }
   .nav-links { display: none !important; }
   #navRight { display: none !important; }
   
@@ -1865,7 +1865,7 @@ body { color: #1a1a14; }
   .nav-desktop-only { display: none !important; }
   .nav-mobile-only { display: flex !important; }
   .nav-links { display: none !important; }
-  nav { padding: 0 1rem; height: 56px; }
+  #mainNav { padding: 0 1rem; height: 56px; }
 }
 
 
@@ -1884,23 +1884,32 @@ body { color: #1a1a14; }
   /* Top bar — telefon/mail yan yana sığmaz, sadece dil göster */
   .top-bar-left { display: none !important; }
   .top-bar-inner { justify-content: flex-end; padding: 0 1rem; }
-  .top-bar { height: 28px; background: var(--olive-dark); }  /* tam opak yeşil */
+  .top-bar {
+    height: 36px !important;
+    background: var(--olive-dark) !important;
+    padding: 0 !important;
+  }
+  .top-bar-inner { height: 36px !important; }
   /* Ana nav — kompakt + tam opak (geçiş net) */
   #mainNav {
-    top: 28px;
-    height: 56px;
-    padding: 0 1rem;
-    gap: 0.5rem;
-    background: rgba(253,252,249,0.98) !important;  /* neredeyse tam opak */
+    top: 36px !important;
+    height: 56px !important;
+    padding: 0 1rem !important;
+    gap: 0.5rem !important;
+    background: rgba(253,252,249,0.98) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border) !important;
     box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    margin: 0 !important;
   }
-  #mainNav.scrolled { background: rgba(253,252,249,1) !important; }
-  .nav-wordmark { display: none !important; }  /* Sadece logo */
-  .nav-logo img { width: 34px; height: 34px; }
-  .nav-icon-btn { width: 30px; height: 30px; }
+  #mainNav.scrolled {
+    top: 0 !important;
+    background: rgba(253,252,249,1) !important;
+  }
+  .nav-wordmark { display: none !important; }
+  .nav-logo img { width: 34px !important; height: 34px !important; }
+  .nav-icon-btn { width: 30px !important; height: 30px !important; }
   .nav-icon-btn svg { width: 14px; height: 14px; }
   /* Hamburger — daha görünür */
   .nav-hamburger {
@@ -1926,15 +1935,21 @@ body { color: #1a1a14; }
     border-radius: 2px !important;
   }
   /* Kargo banner */
-  .kargo-banner { top: 84px; height: 32px; }
-  .kargo-banner.scrolled { top: 56px; }
+  .kargo-banner {
+    top: 92px !important;  /* top bar (36) + nav (56) = 92 */
+    height: 32px !important;
+  }
+  .kargo-banner.scrolled { top: 56px !important; }
   .kargo-slide { font-size: 0.66rem; letter-spacing: 0.04em; }
   /* Hero offset */
-  #hero-section { margin-top: 116px !important; height: calc(100svh - 116px) !important; }
+  #hero-section {
+    margin-top: 124px !important;  /* 36 + 56 + 32 = 124 */
+    height: calc(100svh - 124px) !important;
+  }
 
   /* Mobile menü - search ve düzen */
   .nav-mobile-menu {
-    top: 84px !important;  /* top bar (28) + nav (56) */
+    top: 92px !important;  /* top bar (36) + nav (56) */
     padding: 1.2rem 1.5rem !important;
   }
   #mainNav.scrolled ~ .nav-mobile-menu { top: 56px !important; }
@@ -4206,32 +4221,6 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   </svg>
 </a>
 
-
-<!-- SABİT DİL DEĞİŞTİRİCİ — SADECE MOBİL -->
-<div id="langFooter" style="display:none;position:fixed;bottom:1.5rem;left:1.5rem;background:white;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:0.5rem 0.75rem;z-index:998;gap:0.5rem">
-  <button onclick="setLang('tr')" id="lf-tr" style="border:none;border-radius:25px;padding:0.55rem 1.5rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:var(--olive-dark);color:white;transition:all 0.2s">🇹🇷 TR</button>
-  <button onclick="setLang('de')" id="lf-de" style="border:none;border-radius:25px;padding:0.55rem 1.5rem;font-family:'Jost',sans-serif;font-size:0.78rem;cursor:pointer;background:none;color:var(--muted);transition:all 0.2s">🇩🇪 DE</button>
-</div>
-<script>
-// Mobil dil footer
-if (window.innerWidth <= 860) {
-  var lf = document.getElementById('langFooter');
-  if (lf) lf.style.display = 'flex';
-}
-window.addEventListener('resize', function() {
-  var lf = document.getElementById('langFooter');
-  if (lf) lf.style.display = window.innerWidth <= 860 ? 'flex' : 'none';
-});
-// setLang'ı genişlet — lf butonlarını da güncelle
-var _origSetLang = window.setLang;
-window.setLang = function(l) {
-  if (_origSetLang) _origSetLang(l);
-  var lfTr = document.getElementById('lf-tr');
-  var lfDe = document.getElementById('lf-de');
-  if (lfTr) { lfTr.style.background = l==='tr' ? 'var(--olive-dark)' : 'none'; lfTr.style.color = l==='tr' ? 'white' : 'var(--muted)'; }
-  if (lfDe) { lfDe.style.background = l==='de' ? 'var(--olive-dark)' : 'none'; lfDe.style.color = l==='de' ? 'white' : 'var(--muted)'; }
-};
-</script>
 
 <script src="/index-sync.js?v=3"></script>
 <script src="/cookie-banner.js" defer></script>
