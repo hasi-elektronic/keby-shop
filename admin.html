@@ -3857,6 +3857,80 @@ function renderGeldfluss() {
 // BELEG MANAGER — Mobile camera scanner + multi upload + gallery
 // ============================================================
 
+// Image compression — Canvas API ile JPEG sıkıştırma
+// File girer, sıkıştırılmış File döner. PDF/non-image olduğu gibi geri verilir.
+async function compressImage(file, options = {}) {
+  // Sadece resimleri sıkıştır
+  if (!file || !file.type || !file.type.startsWith('image/')) return file;
+  // Zaten küçükse atla (< 600 KB)
+  if (file.size < 600 * 1024) return file;
+
+  const maxDim = options.maxDim || 2000;
+  const quality = options.quality || 0.85;
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        // Uzun kenarı maxDim'e ölçekle
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round(height * maxDim / width);
+            width = maxDim;
+          } else {
+            width = Math.round(width * maxDim / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        // Beyaz arka plan (PNG'lerde transparency olursa)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // JPEG output
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            resolve(file);  // fallback
+            return;
+          }
+          // Sıkıştırılmış orijinalden büyükse, orijinali döndür
+          if (blob.size >= file.size) {
+            resolve(file);
+            return;
+          }
+          // Yeni File oluştur (orijinal isim korunur, .jpg uzantısı)
+          const origName = file.name || 'beleg.jpg';
+          const baseName = origName.replace(/\.(png|webp|heic|heif|jpe?g|bmp|gif)$/i, '');
+          const newName = baseName + '.jpg';
+          const compressed = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
+          resolve(compressed);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);  // hata durumunda orijinal
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Çoklu dosya sıkıştırma + progress
+async function compressFiles(files, onProgress) {
+  const out = [];
+  for (let i = 0; i < files.length; i++) {
+    if (onProgress) onProgress(i, files.length, files[i]);
+    const compressed = await compressImage(files[i]);
+    out.push(compressed);
+  }
+  return out;
+}
+
 let _belegEntryId = null;
 
 function openBelegManager(entryId) {
@@ -4032,8 +4106,27 @@ async function uploadBelegFiles(files) {
   const progressBox = document.getElementById('belegUploadProgress');
   if (progressBox) progressBox.style.display = 'block';
 
+  // Step 1: Compression (sadece resimler, paralel değil ama hızlı)
+  if (progressText) progressText.textContent = '🗜️ Resimler sıkıştırılıyor...';
+  if (progressBar) progressBar.style.width = '10%';
+
+  const filesArr = Array.from(files);
+  let totalOrigSize = 0;
+  let totalNewSize = 0;
+  const compressed = [];
+  for (let i = 0; i < filesArr.length; i++) {
+    const f = filesArr[i];
+    totalOrigSize += f.size;
+    if (progressText) progressText.textContent = `🗜️ Sıkıştırılıyor (${i+1}/${filesArr.length})...`;
+    const c = await compressImage(f);
+    totalNewSize += c.size;
+    compressed.push(c);
+  }
+  const savings = totalOrigSize > 0 ? Math.round((1 - totalNewSize / totalOrigSize) * 100) : 0;
+
+  // Step 2: Upload
   const fd = new FormData();
-  for (const f of files) {
+  for (const f of compressed) {
     if (f.size > 10 * 1024 * 1024) {
       toast(`"${f.name}" çok büyük (max 10MB)`, 'err');
       continue;
@@ -4042,8 +4135,9 @@ async function uploadBelegFiles(files) {
   }
 
   try {
-    if (progressText) progressText.textContent = `${files.length} dosya yükleniyor...`;
-    if (progressBar) progressBar.style.width = '30%';
+    const sizeKb = Math.round(totalNewSize / 1024);
+    if (progressText) progressText.textContent = `📤 ${filesArr.length} dosya yükleniyor (${sizeKb} KB${savings > 0 ? `, %${savings} tasarruf` : ''})...`;
+    if (progressBar) progressBar.style.width = '50%';
 
     const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(_belegEntryId) + '/belege', {
       method: 'POST',
@@ -4055,7 +4149,10 @@ async function uploadBelegFiles(files) {
     const d = await r.json();
 
     if (d.success) {
-      toast(`✅ ${d.added} beleg yüklendi`, 'ok');
+      const msg = savings > 10
+        ? `✅ ${d.added} beleg yüklendi (%${savings} sıkıştırma)`
+        : `✅ ${d.added} beleg yüklendi`;
+      toast(msg, 'ok');
       // Geldfluss'u yeniden yükle
       await loadGeldfluss();
       // Modal'da güncel veriyi göster
@@ -4192,16 +4289,31 @@ async function createScannedAusgabe(file) {
   goto('geldfluss');
   await new Promise(r => setTimeout(r, 100));
 
+  // Image compression önce — hem OCR hem upload daha hızlı olur
+  const loadingId = showLoadingToast('🗜️ Resim sıkıştırılıyor...');
+  const origSize = file.size;
+  let processedFile = file;
+  if (file.type && file.type.startsWith('image/')) {
+    processedFile = await compressImage(file);
+  }
+  const newSize = processedFile.size;
+  const savings = origSize > 0 ? Math.round((1 - newSize / origSize) * 100) : 0;
+  hideLoadingToast(loadingId);
+
+  if (savings > 10) {
+    toast(`🗜️ ${Math.round(origSize/1024)} KB → ${Math.round(newSize/1024)} KB (%${savings})`, 'info');
+  }
+
   // OCR loading toast — uzun sürebilir
-  const loadingId = showLoadingToast('🤖 OCR — Beleg analiz ediliyor...');
+  const ocrLoadingId = showLoadingToast('🤖 OCR — Beleg analiz ediliyor...');
 
   try {
-    // 1) Önce OCR (image dosyası için, PDF'i atla)
+    // 1) OCR (compressed image)
     let ocrResult = null;
-    if (file.type && file.type.startsWith('image/')) {
+    if (processedFile.type && processedFile.type.startsWith('image/')) {
       try {
         const fd = new FormData();
-        fd.append('file', file);
+        fd.append('file', processedFile);
         const r = await fetch(API + '/api/admin/ocr/beleg', {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + TOKEN },
@@ -4218,7 +4330,7 @@ async function createScannedAusgabe(file) {
       }
     }
 
-    hideLoadingToast(loadingId);
+    hideLoadingToast(ocrLoadingId);
 
     // 2) Modal'ı OCR sonuçlarıyla doldur
     const today = new Date().toISOString().slice(0, 10);
@@ -4238,7 +4350,7 @@ async function createScannedAusgabe(file) {
       payment_method: 'bar',
       notes: ocrResult ? `OCR: ${ocrResult.vendor || '?'} · ${new Date().toLocaleString('de-DE')}` : 'Scan vom ' + new Date().toLocaleString('de-DE'),
       ocrConfidence: ocrResult?.confidence,
-      pendingFile: file  // Save'den sonra upload edilecek
+      pendingFile: processedFile  // Sıkıştırılmış olan upload edilecek
     };
 
     if (ocrResult) {
@@ -4251,7 +4363,7 @@ async function createScannedAusgabe(file) {
     openGeldflussModal('ausgabe', prefill);
 
   } catch (e) {
-    hideLoadingToast(loadingId);
+    hideLoadingToast(ocrLoadingId);
     toast('Hata: ' + e.message, 'err');
   }
 }
