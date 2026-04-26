@@ -3,7 +3,23 @@
 // TDDDG §25: notwendig-only → Einwilligung nicht erforderlich, Information ausreichend.
 (function() {
   const STORAGE_KEY = 'keby_cookie_info_dismissed';
-  const lang = (document.documentElement.lang || 'tr').toLowerCase().startsWith('de') ? 'de' : 'tr';
+
+  // Dil tespiti: 1) localStorage.keby_lang (kullanıcı ayarı)
+  //              2) navigator.language (tarayıcı dili)
+  //              3) html lang attribute (fallback)
+  function detectLang() {
+    try {
+      const stored = localStorage.getItem('keby_lang');
+      if (stored === 'de' || stored === 'tr') return stored;
+    } catch(e) {}
+    const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    if (nav.startsWith('tr')) return 'tr';
+    if (nav.startsWith('de')) return 'de';
+    const htmlLang = (document.documentElement.lang || '').toLowerCase();
+    if (htmlLang.startsWith('tr')) return 'tr';
+    return 'de';
+  }
+  const lang = detectLang();
 
   // Show only if not dismissed before
   if (localStorage.getItem(STORAGE_KEY) === '1') return;
