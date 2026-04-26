@@ -2532,8 +2532,8 @@ document.addEventListener('DOMContentLoaded', function() {
       <span class="cart-total-price" id="cartTotal">0,00 €</span>
     </div>
     
-    <!-- TEK ÖDEME BUTONU — Stripe modal'da hepsi (Karte + Klarna + PayPal + Apple/Google Pay) -->
-    <button class="btn-checkout" onclick="checkoutStripe()" style="background:#635bff;margin-bottom:0;border-radius:6px 6px 0 0;font-size:0.84rem;padding:0.95rem" data-tr="Bezahlen" data-de="Bezahlen">Bezahlen</button>
+    <!-- TEK ÖDEME BUTONU — yeni sayfaya gider, hepsi orada liste halinde -->
+    <button class="btn-checkout" onclick="goToCheckout()" style="background:#635bff;margin-bottom:0;border-radius:6px 6px 0 0;font-size:0.84rem;padding:0.95rem" data-tr="Zur Kasse" data-de="Zur Kasse">Zur Kasse</button>
     <!-- Alt logo şeridi: hangi yöntemleri kabul ediyoruz -->
     <div style="background:#fff;border:1px solid #e8e3d6;border-top:none;border-radius:0 0 6px 6px;padding:0.65rem 0.7rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.35rem">
       <span style="background:white;border:1px solid #e8e3d6;border-radius:3px;padding:2px 5px;font-family:Arial,sans-serif;font-size:0.62rem;font-weight:700;color:#1a1f71;letter-spacing:-0.02em">VISA</span>
@@ -2708,6 +2708,17 @@ function checkout() {
 }
 
 // === YENİ: 3 ayrı checkout yolu (modal'sız, direkt) ===
+function goToCheckout() {
+  if (!cart.length) return;
+  // Sepeti localStorage'a yaz (checkout.html oradan okur)
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e) {}
+  // Sepet drawer'ı kapat
+  document.querySelectorAll('.cart-drawer').forEach(d => d.classList.remove('open'));
+  document.body.classList.remove('cart-open');
+  // Yeni sayfaya git
+  window.location.href = '/checkout.html';
+}
+
 function checkoutStripe() {
   if (!cart.length) return;
   // Sepet kapat (drawer)
