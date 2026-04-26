@@ -425,7 +425,7 @@ html, body {
   /* Hero */
   #hero-section{width:100%!important;max-width:100vw!important;}
   .hero-slide{width:100%!important;}
-  .hero-slide img{width:100%!important;height:100%!important;object-fit:cover!important;}
+  /* .hero-slide img : inline style kullanır (blur arka + contain ön) */
   
   /* Kargo bandı */
   #kargo-band, div[style*="letter-spacing:0.06em"]{
@@ -1700,12 +1700,27 @@ nav {
 <!-- HERO -->
 <section id="hero-section" style="position:relative;height:calc(100svh - 100px);width:100%;max-width:100vw;min-height:520px;overflow:hidden;margin-top:114px;display:block">
 
-  <!-- SLIDES -->
-        <div class="kslide" style="position:absolute;inset:0;opacity:1;transition:opacity 1s;z-index:1"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="Keby 750ml Zeytinyağı" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="eager"></div>
-    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="Keby Tanıtım" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
-    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="Keby Ürünler" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
-    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="Keby Kahvaltı" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
-    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="Keby Zeytin" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="lazy"></div>
+  <!-- SLIDES (her slide: blur arka plan + contain ön plan) -->
+        <div class="kslide" style="position:absolute;inset:0;opacity:1;transition:opacity 1s;z-index:1;background:#1a2818">
+          <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="eager">
+          <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="Keby 750ml Zeytinyağı" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="eager">
+        </div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0;background:#1a2818">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="lazy">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg" alt="Keby Tanıtım" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="lazy">
+    </div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0;background:#1a2818">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="lazy">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg" alt="Keby Ürünler" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="lazy">
+    </div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0;background:#1a2818">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="lazy">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg" alt="Keby Kahvaltı" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="lazy">
+    </div>
+    <div class="kslide" style="position:absolute;inset:0;opacity:0;transition:opacity 1s;z-index:0;background:#1a2818">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="lazy">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg" alt="Keby Zeytin" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="lazy">
+    </div>
   <!-- OVERLAY -->
   <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(42,74,26,0.78) 0%,rgba(42,74,26,0.4) 60%,rgba(0,0,0,0.1) 100%);z-index:1;pointer-events:none"></div>
 
