@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zahlung · Keby</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --olive: #3d6b2a;
+  --olive-dark: #2a4a1a;
+  --gold: #c4a24a;
+  --cream: #faf7f0;
+  --border: #e8e3d6;
+  --muted: #6b6b5a;
+  --text: #2a2a22;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f7f4ed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+/* Header */
+header.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--olive-dark);
+}
+.brand img { height: 36px; }
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--olive-dark);
+}
+.back-btn {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.back-btn:hover { color: var(--olive-dark); }
+
+/* Title */
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--olive-dark);
+  margin-bottom: 0.3rem;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-bottom: 2rem;
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2rem;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .layout { grid-template-columns: 1fr; }
+  .order-summary { order: -1; }
+}
+
+/* Sticky right summary */
+.order-summary {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+  position: sticky;
+  top: 1rem;
+}
+.order-summary h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--olive-dark);
+  margin-bottom: 0.85rem;
+}
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.summary-item:last-of-type { border-bottom: none; margin-bottom: 0.6rem; }
+.summary-name { color: var(--text); }
+.summary-qty { color: var(--muted); margin-left: 0.3rem; font-size: 0.78rem; }
+.summary-price { font-weight: 500; color: var(--text); }
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.85rem 0 0;
+  border-top: 2px solid var(--olive-dark);
+  margin-top: 0.7rem;
+}
+.summary-total-lbl {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.summary-total-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 500;
+  color: var(--olive-dark);
+}
+.summary-note {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Checkout form area */
+.checkout-form {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.6rem 1.4rem;
+}
+.checkout-form h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--olive-dark);
+  margin-bottom: 1rem;
+}
+
+/* Stripe mount */
+#stripe-checkout-mount { min-height: 600px; }
+.loading {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.loading-spinner {
+  font-size: 2.5rem;
+  margin-bottom: 0.6rem;
+  animation: spin 2s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.error-box {
+  background: #fdeaea;
+  color: #a02525;
+  border-left: 3px solid #c0392b;
+  padding: 1rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+/* Trust bar */
+.trust-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.trust-bar svg { width: 14px; height: 14px; }
+.trust-bar span { display: flex; align-items: center; gap: 0.3rem; }
+
+footer.foot {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+footer.foot a { color: var(--olive-dark); text-decoration: none; margin: 0 0.5rem; }
+footer.foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <a href="/" class="brand">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+      <span class="brand-name">Keby</span>
+    </a>
+    <button class="back-btn" onclick="goBack()">← <span data-tr="Sepete dön" data-de="Zurück zum Warenkorb">Zurück</span></button>
+  </header>
+
+  <h1 data-tr="Ödeme" data-de="Zahlung">Zahlung</h1>
+  <p class="subtitle" data-tr="Sicher bezahlen — Karte, PayPal, Klarna ve daha fazlası." data-de="Sicher bezahlen — Karte, PayPal, Klarna und mehr.">Sicher bezahlen — Karte, PayPal, Klarna und mehr.</p>
+
+  <div class="layout">
+    <!-- Sol: Stripe checkout form -->
+    <div class="checkout-form">
+      <h2 data-tr="Zahlungsmethode wählen" data-de="Zahlungsmethode wählen">Zahlungsmethode wählen</h2>
+
+      <div id="stripe-checkout-mount"></div>
+
+      <div id="error-box" class="error-box" style="display:none"></div>
+
+      <div id="loading-state" class="loading">
+        <div class="loading-spinner">⏳</div>
+        <div data-tr="Zahlung wird vorbereitet..." data-de="Zahlung wird vorbereitet...">Zahlung wird vorbereitet...</div>
+      </div>
+
+      <div class="trust-bar">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          256-bit SSL
+        </span>
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          PCI-DSS
+        </span>
+        <span>Powered by <strong style="color:#635bff">Stripe</strong></span>
+      </div>
+    </div>
+
+    <!-- Sağ: Sipariş özeti -->
+    <aside class="order-summary">
+      <h2 data-tr="Bestellübersicht" data-de="Bestellübersicht">Bestellübersicht</h2>
+      <div id="summary-items"></div>
+      <div class="summary-total">
+        <span class="summary-total-lbl" data-tr="Gesamt" data-de="Gesamt">Gesamt</span>
+        <span class="summary-total-val" id="summary-total">0,00 €</span>
+      </div>
+      <div class="summary-note" data-tr="Versandkostenfrei ab 120 €" data-de="Versandkostenfrei ab 120 €">Versandkostenfrei ab 120 €</div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <a href="/impressum.html">Impressum</a> ·
+    <a href="/datenschutz.html">Datenschutz</a> ·
+    <a href="/kargo.html">Versand</a> ·
+    <a href="mailto:info@keby.shop">Kontakt</a>
+  </footer>
+</div>
+
+<script>
+const API = 'https://keby-api.hguencavdi.workers.dev';
+const STRIPE_PK = 'pk_live_51RGtcIPjzcd25CIMagy3DdiqbjCJlj0YIUJI7oDuaTCdKrhCWIsmVRmVHnJrGIRnyTH9NjJp6pIIYL6MepQk6jnj00OhmLE6NV';
+
+let cart = [];
+let _stripeCheckout = null;
+
+// Sepeti localStorage'tan yükle
+function loadCart() {
+  try {
+    const raw = localStorage.getItem('keby_cart');
+    if (raw) cart = JSON.parse(raw);
+  } catch(e) {}
+  if (!cart || cart.length === 0) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('stripe-checkout-mount').innerHTML =
+      '<div class="error-box">Sepet boş. <a href="/" style="color:#3d6b2a;font-weight:600">Alışverişe dön →</a></div>';
+    return false;
+  }
+  return true;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmt(n) { return (n||0).toFixed(2).replace('.', ',') + ' €'; }
+
+function renderSummary() {
+  const items = document.getElementById('summary-items');
+  const total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+  items.innerHTML = cart.map(i => `
+    <div class="summary-item">
+      <span class="summary-name">${escHtml(i.name)}<span class="summary-qty">× ${i.qty}</span></span>
+      <span class="summary-price">${fmt(i.qty * i.price)}</span>
+    </div>
+  `).join('');
+  document.getElementById('summary-total').textContent = fmt(total);
+}
+
+function goBack() {
+  window.location.href = '/';
+}
+
+async function initCheckout() {
+  if (!loadCart()) return;
+  renderSummary();
+
+  try {
+    const items = cart.map(i => ({
+      productId: i.id || i.name,
+      name: i.name,
+      qty: i.qty,
+      price: i.price,
+      artikel_nr: i.artikel_nr || ''
+    }));
+
+    const r = await fetch(API + '/api/stripe/create-checkout-session', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ items, locale: 'de' })
+    });
+    const d = await r.json();
+
+    if (!d.success || !d.clientSecret) {
+      throw new Error(d.error || 'Session konnte nicht erstellt werden');
+    }
+
+    // Stripe.js yükle
+    if (!window.Stripe) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    const stripe = window.Stripe(STRIPE_PK);
+    const checkout = await stripe.initEmbeddedCheckout({
+      clientSecret: d.clientSecret
+    });
+
+    document.getElementById('loading-state').style.display = 'none';
+    checkout.mount('#stripe-checkout-mount');
+    _stripeCheckout = checkout;
+  } catch (e) {
+    document.getElementById('loading-state').style.display = 'none';
+    const errBox = document.getElementById('error-box');
+    errBox.style.display = 'block';
+    errBox.innerHTML = '❌ ' + escHtml(e.message) +
+      '<br><br><a href="/" style="color:#3d6b2a;font-weight:600">← Zurück zum Shop</a>';
+  }
+}
+
+// Kullanıcı sayfayı kapatırken/dışarı tıkladığında temizle
+window.addEventListener('beforeunload', () => {
+  if (_stripeCheckout) {
+    try { _stripeCheckout.destroy(); } catch(e) {}
+  }
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', initCheckout);
+</script>
+</body>
+</html>
