@@ -497,6 +497,70 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ============ FLOATING ACTION BUTTON (Lexware-style) ============ -->
+<div id="fabContainer" style="position:fixed;bottom:24px;right:24px;z-index:900;display:none;flex-direction:column;align-items:flex-end;gap:12px">
+  <!-- Sub-buttons (gizli, açılınca görünür) -->
+  <div id="fabMenu" style="display:none;flex-direction:column;gap:10px;align-items:flex-end;animation:fabSlideUp 0.2s ease">
+    <div class="fab-action" onclick="fabAction('rechnung')">
+      <span class="fab-action-label">Neue Rechnung</span>
+      <button class="fab-mini" style="background:#3d6b2a">📋</button>
+    </div>
+    <div class="fab-action" onclick="fabAction('scan')">
+      <span class="fab-action-label">Beleg scannen</span>
+      <button class="fab-mini" style="background:#0369a1">📷</button>
+    </div>
+    <div class="fab-action" onclick="fabAction('einnahme')">
+      <span class="fab-action-label">Einnahme</span>
+      <button class="fab-mini" style="background:#16a34a">+ €</button>
+    </div>
+    <div class="fab-action" onclick="fabAction('ausgabe')">
+      <span class="fab-action-label">Ausgabe</span>
+      <button class="fab-mini" style="background:#dc2626">− €</button>
+    </div>
+    <div class="fab-action" onclick="fabAction('lieferschein')">
+      <span class="fab-action-label">Neuer Lieferschein</span>
+      <button class="fab-mini" style="background:#c4a24a">📦</button>
+    </div>
+    <div class="fab-action" onclick="fabAction('kunde')">
+      <span class="fab-action-label">Neuer Kunde</span>
+      <button class="fab-mini" style="background:#7c3aed">👤</button>
+    </div>
+  </div>
+
+  <!-- Ana + butonu -->
+  <button id="fabMain" onclick="toggleFab()" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2a4a1a,#3d6b2a);color:white;border:none;box-shadow:0 4px 14px rgba(0,0,0,0.25);cursor:pointer;font-size:28px;font-weight:300;line-height:1;transition:transform 0.25s,box-shadow 0.25s;display:flex;align-items:center;justify-content:center">
+    <span id="fabIcon" style="transition:transform 0.25s">+</span>
+  </button>
+
+  <!-- Backdrop overlay (tıklanınca kapanır) -->
+  <div id="fabBackdrop" onclick="toggleFab()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:-1;animation:fabFadeIn 0.2s ease"></div>
+</div>
+
+<style>
+  .fab-action { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .fab-action-label {
+    background: white; color: #1a1a1a; padding: 6px 12px; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    white-space: nowrap;
+  }
+  .fab-mini {
+    width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+    color: white; font-size: 18px; font-weight: 600; box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transition: transform 0.15s; display: flex; align-items: center; justify-content: center;
+  }
+  .fab-mini:hover { transform: scale(1.08); }
+  #fabMain.open { transform: rotate(45deg); }
+  #fabMain.open #fabIcon { transform: rotate(0); }
+  @keyframes fabSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fabFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* Mobile bigger button + smaller offset */
+  @media (max-width: 768px) {
+    #fabContainer { bottom: 18px; right: 18px; }
+    #fabMain { width: 56px; height: 56px; font-size: 26px; }
+    .fab-mini { width: 44px; height: 44px; font-size: 16px; }
+  }
+</style>
+
 <!-- ============ PRODUCT MODAL ============ -->
 <div class="modal-backdrop" id="prodModal">
   <div class="modal wide">
@@ -827,6 +891,23 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   </div>
 </div>
 
+<!-- ===== LIEFERSCHEIN MODAL ===== -->
+<div class="modal-backdrop" id="lsModal">
+  <div class="modal" style="max-width:760px;max-height:92vh;overflow-y:auto">
+    <div class="modal-head">
+      <div class="modal-title">📦 Neuer Lieferschein</div>
+      <button class="modal-close" onclick="closeLieferscheinModal()">✕</button>
+    </div>
+    <div class="modal-body" id="lsBody">
+      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor...</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeLieferscheinModal()">İptal</button>
+      <button class="btn btn-primary" style="background:#3d6b2a" onclick="saveLieferschein()">📦 Erstellen + PDF öffnen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== BELEG MANAGER MODAL (Çoklu beleg + Mobile camera scanner) ===== -->
 <div class="modal-backdrop" id="belegModal">
   <div class="modal" style="max-width:760px;max-height:92vh;overflow-y:auto">
@@ -1088,11 +1169,13 @@ function logout() {
   document.getElementById('adminWrap').style.display = 'none';
   document.getElementById('loginWrap').style.display = 'flex';
   document.getElementById('loginPw').value = '';
+  document.getElementById('fabContainer').style.display = 'none';
 }
 
 function showApp() {
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('adminWrap').style.display = 'block';
+  document.getElementById('fabContainer').style.display = 'flex';
   loadAll();
 }
 
@@ -1510,7 +1593,10 @@ function renderOrders() {
       <td>${statusBadge(o.status)}</td>
       <td>${invoiceCell}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
-      <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button></td>
+      <td>
+        <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;font-size:0.7rem;margin-right:0.3rem" onclick="event.stopPropagation();createLieferscheinFromOrder('${o.id}')" title="Lieferschein erstellen">📦 LS</button>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button>
+      </td>
     </tr>`;
   }).join('') || '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
 }
@@ -3999,6 +4085,304 @@ async function deleteBelegItem(entryId, belegId) {
 // Eski uyumluluk - tek beleg fonksiyonları (legacy)
 function uploadBeleg(entryId) { _belegEntryId = entryId; openBelegManager(entryId); }
 function viewBeleg(entryId) { openBelegManager(entryId); }
+
+// ============================================================
+// FAB — Floating Action Button (Lexware-style)
+// ============================================================
+let _fabOpen = false;
+
+function toggleFab() {
+  _fabOpen = !_fabOpen;
+  document.getElementById('fabMenu').style.display = _fabOpen ? 'flex' : 'none';
+  document.getElementById('fabBackdrop').style.display = _fabOpen ? 'block' : 'none';
+  document.getElementById('fabMain').classList.toggle('open', _fabOpen);
+  document.getElementById('fabIcon').textContent = _fabOpen ? '✕' : '+';
+}
+
+function closeFab() {
+  if (_fabOpen) toggleFab();
+}
+
+function fabAction(action) {
+  closeFab();
+  switch (action) {
+    case 'rechnung':
+      // Manuel fatura modal'ı aç
+      goto('orders');
+      setTimeout(() => {
+        if (typeof openManualInvoiceModal === 'function') openManualInvoiceModal();
+      }, 100);
+      break;
+    case 'scan':
+      // Beleg scan akışı: kamera aç → otomatik Ausgabe eintragı + beleg
+      startBelegScanFlow();
+      break;
+    case 'einnahme':
+      goto('geldfluss');
+      setTimeout(() => openGeldflussModal('einnahme'), 100);
+      break;
+    case 'ausgabe':
+      goto('geldfluss');
+      setTimeout(() => openGeldflussModal('ausgabe'), 100);
+      break;
+    case 'lieferschein':
+      openLieferscheinModal();
+      break;
+    case 'kunde':
+      goto('customers');
+      setTimeout(() => openCustomerModal(), 100);
+      break;
+  }
+}
+
+// ============================================================
+// BELEG SCAN FLOW — Kamera ile çek → otomatik Ausgabe + beleg
+// ============================================================
+function startBelegScanFlow() {
+  const isMobile = window.innerWidth <= 768 || /iPhone|iPad|Android/i.test(navigator.userAgent);
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,application/pdf';
+  if (isMobile) input.capture = 'environment';
+  input.style.display = 'none';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast('Dosya çok büyük (max 10MB)', 'err');
+      return;
+    }
+    await createScannedAusgabe(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(() => input.remove(), 300);
+}
+
+async function createScannedAusgabe(file) {
+  toast('Beleg yükleniyor...', 'info');
+  try {
+    // Step 1: Yeni Ausgabe eintragı oluştur (placeholder values)
+    const today = new Date().toISOString().slice(0, 10);
+    const createData = {
+      type: 'ausgabe',
+      date: today,
+      amount: 0,
+      category: 'sonstige_ausgaben',
+      description: 'Beleg-Scan ' + new Date().toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      payment_method: 'bar',
+      notes: 'Scan vom ' + new Date().toLocaleString('de-DE')
+    };
+    const d1 = await api('/api/admin/geldfluss', { method: 'POST', body: createData });
+    if (!d1.success || !d1.entry) {
+      toast('Eintrag oluşturulamadı: ' + (d1.error || 'bilinmeyen'), 'err');
+      return;
+    }
+    const entryId = d1.entry.id;
+
+    // Step 2: Beleg yükle
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch(API + '/api/admin/geldfluss/' + encodeURIComponent(entryId) + '/belege', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN },
+      body: fd
+    });
+    const d2 = await r.json();
+    if (!d2.success) {
+      toast('Beleg yüklenemedi: ' + (d2.error || 'bilinmeyen'), 'err');
+      return;
+    }
+
+    toast('✅ Beleg kaydedildi — şimdi tutar/açıklamayı düzenle', 'ok');
+
+    // Step 3: Geldfluss sayfasına git ve eintragı düzenleme modal'ında aç
+    goto('geldfluss');
+    await loadGeldfluss();
+
+    // Eintragı düzenleme için modal aç
+    setTimeout(() => {
+      // Geldfluss eintrag düzenleme modal'ı varsa aç, yoksa Beleg Manager aç
+      if (typeof openGeldflussEditModal === 'function') {
+        openGeldflussEditModal(entryId);
+      } else {
+        // Beleg Manager içinden ek context vererek aç
+        openBelegManager(entryId);
+      }
+    }, 300);
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
+}
+
+// ============================================================
+// LIEFERSCHEIN MODAL — Manuel + sipariş'ten otomatik
+// ============================================================
+let _lsItems = [{ name: '', sku: '', qty: 1 }];
+let _lsCustomer = null;
+
+function openLieferscheinModal(orderId) {
+  _lsItems = [{ name: '', sku: '', qty: 1 }];
+  _lsCustomer = null;
+
+  if (orderId) {
+    // Online sipariş'ten otomatik üret
+    createLieferscheinFromOrder(orderId);
+    return;
+  }
+
+  // Manuel: müşteri + ürün listesi formu
+  renderLieferscheinModal();
+  document.getElementById('lsModal').classList.add('show');
+}
+
+function closeLieferscheinModal() {
+  document.getElementById('lsModal').classList.remove('show');
+  _lsItems = [];
+  _lsCustomer = null;
+}
+
+function renderLieferscheinModal() {
+  const customerOpts = customers.map(c =>
+    `<option value="${c.id}">${escapeHtml(c.company_name || c.name)}${c.email ? ' · ' + c.email : ''}</option>`
+  ).join('');
+
+  const itemsHtml = _lsItems.map((it, idx) => `
+    <div class="ls-item-row" style="display:grid;grid-template-columns:80px 1fr 140px auto;gap:0.4rem;margin-bottom:0.5rem;align-items:center">
+      <input type="number" class="finput" placeholder="Adet" value="${it.qty || 1}" min="1" oninput="lsUpdateItem(${idx}, 'qty', this.value)" style="font-size:0.85rem">
+      <input type="text" class="finput" placeholder="Ürün adı *" value="${escapeHtml(it.name || '')}" oninput="lsUpdateItem(${idx}, 'name', this.value)" style="font-size:0.85rem">
+      <input type="text" class="finput" placeholder="Artikel-Nr" value="${escapeHtml(it.sku || '')}" oninput="lsUpdateItem(${idx}, 'sku', this.value)" style="font-size:0.85rem">
+      <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;font-size:0.7rem" onclick="lsRemoveItem(${idx})" ${_lsItems.length === 1 ? 'disabled' : ''}>🗑</button>
+    </div>
+  `).join('');
+
+  document.getElementById('lsBody').innerHTML = `
+    <div style="background:#fffaf0;border-left:3px solid #c4a24a;padding:0.7rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.83rem">
+      <strong>Lieferschein:</strong> Sadece teslimat bilgisi içerir, fiyat/ödeme bilgisi yoktur. Müşteriye paketle birlikte verilir, imza için kullanılır.
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+      <div>
+        <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Kunde *</label>
+        <select id="ls_customer_id" class="finput" onchange="lsCustomerChange()">
+          <option value="">— Seçin —</option>
+          ${customerOpts}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Lieferdatum</label>
+        <input type="date" id="ls_delivery_date" class="finput" value="${new Date().toISOString().slice(0, 10)}">
+      </div>
+    </div>
+
+    <div id="ls_customer_preview" style="display:none;background:#f7f4ee;border-radius:6px;padding:0.7rem 0.9rem;margin-bottom:1rem;font-size:0.85rem"></div>
+
+    <div style="font-weight:500;margin-bottom:0.5rem;font-size:0.92rem">Pozisyonlar</div>
+    <div id="ls_items_list">${itemsHtml}</div>
+
+    <button class="btn btn-secondary btn-sm" onclick="lsAddItem()" style="margin-top:0.4rem;border:1px dashed #999;background:transparent">+ Pozisyon ekle</button>
+
+    <div style="margin-top:1rem">
+      <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Notizen (opsiyonel)</label>
+      <textarea id="ls_notes" class="ftextarea" rows="2" placeholder="Bsp.: Empfindliche Ware, vorsichtig handhaben"></textarea>
+    </div>
+  `;
+}
+
+function lsAddItem() {
+  _lsItems.push({ name: '', sku: '', qty: 1 });
+  renderLieferscheinModal();
+}
+
+function lsRemoveItem(idx) {
+  if (_lsItems.length === 1) return;
+  _lsItems.splice(idx, 1);
+  renderLieferscheinModal();
+}
+
+function lsUpdateItem(idx, field, value) {
+  if (_lsItems[idx]) {
+    _lsItems[idx][field] = field === 'qty' ? (parseInt(value) || 1) : value;
+  }
+}
+
+function lsCustomerChange() {
+  const id = document.getElementById('ls_customer_id').value;
+  const preview = document.getElementById('ls_customer_preview');
+  if (!id) {
+    _lsCustomer = null;
+    preview.style.display = 'none';
+    return;
+  }
+  const c = customers.find(x => x.id === id);
+  if (!c) { preview.style.display = 'none'; return; }
+  _lsCustomer = c;
+  const a = c.address || {};
+  preview.style.display = '';
+  preview.innerHTML = `
+    <div style="font-weight:500">${escapeHtml(c.company_name || c.name)}</div>
+    ${c.company_name ? `<div style="font-size:0.8rem;color:#666">${escapeHtml(c.name)}</div>` : ''}
+    ${a.line1 ? `<div style="margin-top:0.3rem">${escapeHtml(a.line1)}</div>` : ''}
+    ${a.postal_code || a.city ? `<div>${escapeHtml(a.postal_code || '')} ${escapeHtml(a.city || '')}</div>` : ''}
+    ${(!a.line1 && !a.city) ? `<div style="color:#dc2626;font-size:0.8rem;margin-top:0.3rem">⚠️ Müşteride adres yok — Lieferschein için adres zorunlu</div>` : ''}
+  `;
+}
+
+async function saveLieferschein() {
+  const customerId = document.getElementById('ls_customer_id').value;
+  if (!customerId) { toast('Müşteri seçin', 'err'); return; }
+  const items = _lsItems.filter(i => i.name && i.name.trim());
+  if (items.length === 0) { toast('En az 1 ürün gerekli', 'err'); return; }
+
+  const data = {
+    customer_id: customerId,
+    items,
+    delivery_date: document.getElementById('ls_delivery_date').value,
+    notes: document.getElementById('ls_notes').value
+  };
+
+  try {
+    const d = await api('/api/admin/lieferscheine', { method: 'POST', body: data });
+    if (d.success) {
+      toast('✅ Lieferschein erstellt: ' + d.lieferschein.number, 'ok');
+      closeLieferscheinModal();
+      // PDF aç
+      openLieferscheinPdf(d.lieferschein.id);
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
+}
+
+async function createLieferscheinFromOrder(orderId) {
+  toast('Lieferschein erstellen...', 'info');
+  try {
+    const d = await api('/api/admin/orders/' + encodeURIComponent(orderId) + '/lieferschein', { method: 'POST' });
+    if (d.success) {
+      toast('✅ Lieferschein erstellt: ' + d.lieferschein.number, 'ok');
+      openLieferscheinPdf(d.lieferschein.id);
+    }
+  } catch (e) {
+    toast('Hata: ' + e.message, 'err');
+  }
+}
+
+function openLieferscheinPdf(lsId) {
+  fetch(API + '/api/admin/lieferscheine/' + encodeURIComponent(lsId) + '/pdf', {
+    headers: { 'Authorization': 'Bearer ' + TOKEN }
+  })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(html => {
+      const w = window.open('', '_blank');
+      if (!w) { toast('Popup engellendi — pop-up\'a izin verin', 'err'); return; }
+      w.document.write(html);
+      w.document.close();
+    })
+    .catch(err => toast('PDF açılamadı: ' + err.message, 'err'));
+}
 
 function openGeldflussModal(type) {
   document.getElementById('gfm_type').value = type;
