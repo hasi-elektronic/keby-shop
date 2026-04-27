@@ -5113,62 +5113,62 @@ function setupCornerEditorEvents(img) {
   if (canvas._cornerHandlersAttached) return;
   canvas._cornerHandlersAttached = true;
 
-  // Magnifier oluştur
+  // Magnifier — modal içinde, absolute pozisyon, doğrudan canvas ölçeğine bağlı
   let magnifier = document.getElementById('cornerMagnifier');
   if (!magnifier) {
+    const modal = document.getElementById('cornerEditorModal');
     magnifier = document.createElement('canvas');
     magnifier.id = 'cornerMagnifier';
-    magnifier.width = 220;
-    magnifier.height = 220;
-    magnifier.style.cssText = 'position:fixed;width:140px;height:140px;border-radius:50%;border:3px solid #22c55e;background:#000;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none;display:none;z-index:3200';
-    document.body.appendChild(magnifier);
+    magnifier.width = 200;
+    magnifier.height = 200;
+    magnifier.style.cssText = 'position:fixed;width:130px;height:130px;border-radius:50%;border:3px solid #22c55e;background:#000;box-shadow:0 4px 24px rgba(0,0,0,0.7);pointer-events:none;display:none;z-index:3300;left:0;top:0';
+    modal.appendChild(magnifier);  // modal içine ekle, body'ye değil
   }
 
-  function showMagnifier(canvasX, canvasY, clientX, clientY) {
-    const ZOOM = 2.5;  // büyütme faktörü
-    const M_SIZE = 220;  // magnifier internal canvas size
+  function showMagnifier(canvasPxX, canvasPxY, clientX, clientY) {
+    const ZOOM = 2.5;
+    const M_INTERNAL = 200;  // canvas internal size
+    const M_DISPLAY = 130;   // CSS display size
     const m = magnifier;
     const mctx = m.getContext('2d');
 
-    // Magnifier konumu — parmak/cursor üstünde 100px yukarı
-    let mx = clientX - 70;  // -70 (display 140px / 2)
-    let my = clientY - 180;  // 180px yukarı (parmak engellemez)
+    // Magnifier ekran konumu: parmağın üstünde (mobilde kullanıcı parmağı görmesin)
+    let mx = clientX - M_DISPLAY / 2;
+    let my = clientY - M_DISPLAY - 30;  // 30px yukarı
 
-    // Ekran sınırları
+    // Üstte yer yoksa alta koy
+    if (my < 10) my = clientY + 30;
+    // Yatay sınır
     if (mx < 10) mx = 10;
-    if (mx > window.innerWidth - 150) mx = window.innerWidth - 150;
-    if (my < 10) my = clientY + 60;  // üstte yer yok → alta koy
+    if (mx > window.innerWidth - M_DISPLAY - 10) mx = window.innerWidth - M_DISPLAY - 10;
 
     m.style.left = mx + 'px';
     m.style.top = my + 'px';
     m.style.display = 'block';
 
-    // Canvas'tan büyütülmüş bölgeyi çiz
-    const srcSize = M_SIZE / ZOOM;
-    let srcX = canvasX - srcSize / 2;
-    let srcY = canvasY - srcSize / 2;
+    // Canvas'tan büyütülmüş bölgeyi kopyala
+    const srcSize = M_INTERNAL / ZOOM;
+    let srcX = canvasPxX - srcSize / 2;
+    let srcY = canvasPxY - srcSize / 2;
     srcX = Math.max(0, Math.min(canvas.width - srcSize, srcX));
     srcY = Math.max(0, Math.min(canvas.height - srcSize, srcY));
 
     mctx.fillStyle = '#000';
-    mctx.fillRect(0, 0, M_SIZE, M_SIZE);
-    mctx.drawImage(canvas, srcX, srcY, srcSize, srcSize, 0, 0, M_SIZE, M_SIZE);
+    mctx.fillRect(0, 0, M_INTERNAL, M_INTERNAL);
+    mctx.drawImage(canvas, srcX, srcY, srcSize, srcSize, 0, 0, M_INTERNAL, M_INTERNAL);
 
     // Crosshair (orta)
+    const cx = M_INTERNAL / 2, cy = M_INTERNAL / 2;
     mctx.strokeStyle = '#22c55e';
     mctx.lineWidth = 2;
     mctx.beginPath();
-    mctx.moveTo(M_SIZE / 2 - 18, M_SIZE / 2);
-    mctx.lineTo(M_SIZE / 2 - 6, M_SIZE / 2);
-    mctx.moveTo(M_SIZE / 2 + 6, M_SIZE / 2);
-    mctx.lineTo(M_SIZE / 2 + 18, M_SIZE / 2);
-    mctx.moveTo(M_SIZE / 2, M_SIZE / 2 - 18);
-    mctx.lineTo(M_SIZE / 2, M_SIZE / 2 - 6);
-    mctx.moveTo(M_SIZE / 2, M_SIZE / 2 + 6);
-    mctx.lineTo(M_SIZE / 2, M_SIZE / 2 + 18);
+    mctx.moveTo(cx - 16, cy); mctx.lineTo(cx - 4, cy);
+    mctx.moveTo(cx + 4, cy); mctx.lineTo(cx + 16, cy);
+    mctx.moveTo(cx, cy - 16); mctx.lineTo(cx, cy - 4);
+    mctx.moveTo(cx, cy + 4); mctx.lineTo(cx, cy + 16);
     mctx.stroke();
     mctx.beginPath();
-    mctx.arc(M_SIZE / 2, M_SIZE / 2, 3, 0, Math.PI * 2);
+    mctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
     mctx.fillStyle = '#22c55e';
     mctx.fill();
   }
@@ -5177,23 +5177,28 @@ function setupCornerEditorEvents(img) {
     if (magnifier) magnifier.style.display = 'none';
   }
 
+  // CSS-pixel cinsinden canvas pozisyonu (büyüteç için)
+  // ve canvas internal-pixel cinsinden pozisyon (köşe hesabı için)
   function getCanvasPos(ev) {
     const rect = canvas.getBoundingClientRect();
     const t = ev.touches ? ev.touches[0] : ev;
+    // Canvas internal pixel
+    const ix = (t.clientX - rect.left) * (canvas.width / rect.width);
+    const iy = (t.clientY - rect.top) * (canvas.height / rect.height);
     return {
-      x: (t.clientX - rect.left) * (canvas.width / rect.width),
-      y: (t.clientY - rect.top) * (canvas.height / rect.height),
+      x: ix,
+      y: iy,
       clientX: t.clientX,
-      clientY: t.clientY
+      clientY: t.clientY,
+      rect
     };
   }
 
   function findClosestCorner(canvasX, canvasY) {
     const c = _cornerEditorState.corners;
     const scale = _cornerEditorState.canvasScale;
-    const dpr = 1; // canvas already scaled
     let closest = null;
-    let minDist = 50;  // büyük hit radius (touch friendly)
+    let minDist = 60;  // büyük hit area
     for (const key of ['tl', 'tr', 'bl', 'br']) {
       const p = c[key];
       const dx = canvasX - p.x * scale;
@@ -5213,7 +5218,7 @@ function setupCornerEditorEvents(img) {
     const corner = findClosestCorner(pos.x, pos.y);
     if (corner) {
       _cornerEditorState.draggingCorner = corner;
-      // Magnifier'ı hemen göster
+      // Magnifier'ı tutulan köşede göster
       const c = _cornerEditorState.corners[corner];
       const scale = _cornerEditorState.canvasScale;
       showMagnifier(c.x * scale, c.y * scale, pos.clientX, pos.clientY);
@@ -5231,7 +5236,7 @@ function setupCornerEditorEvents(img) {
     let imgY = Math.max(0, Math.min(_cornerEditorState.imageH, pos.y / scale));
     c[_cornerEditorState.draggingCorner] = { x: imgX, y: imgY };
     drawCornerEditor(_cornerEditorState.image);
-    // Magnifier güncelle (drawCornerEditor'dan SONRA, son canvas durumunu yansıtmak için)
+    // drawCornerEditor'dan SONRA magnifier güncelle (canvas yenilendi)
     showMagnifier(imgX * scale, imgY * scale, pos.clientX, pos.clientY);
   }
 
