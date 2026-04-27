@@ -189,6 +189,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 </style>
 <!-- SheetJS for XLSX export (EÜR) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+
+<!-- jscanify (OpenCV.js wrapper) for document edge detection + auto-crop -->
+<script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="window._opencvLoaded = true"></script>
+<script src="https://cdn.jsdelivr.net/gh/puffinsoft/jscanify@master/src/jscanify.min.js" defer></script>
 </head>
 <body>
 
@@ -407,8 +411,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <button onclick="syncInvoicesToGeldfluss()" class="btn btn-secondary" style="margin-left:0.5rem;padding:0.3rem 0.8rem;font-size:0.8rem">🔄 Faturaları Senkronize Et</button>
         </div>
 
-        <!-- Tablo -->
-        <div class="card" style="padding:0">
+        <!-- Tablo (desktop) -->
+        <div class="card gf-table-wrap" style="padding:0">
           <div style="overflow-x:auto">
             <table id="gfTable" style="width:100%;border-collapse:collapse;font-size:0.88rem">
               <thead>
@@ -428,6 +432,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
             </table>
           </div>
         </div>
+
+        <!-- Mobile cards -->
+        <div id="gfMobileCards" class="gf-mobile-cards"></div>
+
+        <style>
+          /* Desktop'ta sadece tablo, mobilde sadece cards */
+          .gf-mobile-cards { display: none; }
+          @media (max-width: 768px) {
+            .gf-table-wrap { display: none; }
+            .gf-mobile-cards { display: block; padding: 0.2rem 0; }
+          }
+        </style>
       </section>
 
       <!-- ===== CUSTOMERS ===== -->
@@ -3786,6 +3802,9 @@ function renderGeldfluss() {
   const tbody = document.getElementById('gfTbody');
   if (entries.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="padding:2.5rem;text-align:center;color:#888">Bu dönem için kayıt yok</td></tr>';
+    // Mobile cards de boşalt
+    const mobWrap = document.getElementById('gfMobileCards');
+    if (mobWrap) mobWrap.innerHTML = '<div style="padding:2.5rem;text-align:center;color:#888">Bu dönem için kayıt yok</div>';
     return;
   }
 
@@ -3851,11 +3870,155 @@ function renderGeldfluss() {
       </tr>
     `;
   }).join('');
+
+  // Mobile card render (paralel — CSS ile birini gösterir)
+  const mobWrap = document.getElementById('gfMobileCards');
+  if (mobWrap) {
+    mobWrap.innerHTML = entries.map(e => {
+      const isVoided = !!e.voided_by;
+      const isAuto = e.created_by === 'auto';
+      const cardStyle = isVoided ? 'opacity:0.5' : '';
+      const typeColor = e.type === 'einnahme' ? '#16a34a' : '#dc2626';
+      const typeBg = e.type === 'einnahme' ? '#dcfce7' : '#fee2e2';
+      const typeIcon = e.type === 'einnahme' ? '+' : '−';
+      const catLabel = labels[e.category] || e.category;
+
+      // Belege
+      const allBelege = [...(e.belege || [])];
+      if (e.beleg && !allBelege.find(b => b.r2_key === e.beleg.r2_key)) {
+        allBelege.push({ ...e.beleg, id: 'legacy' });
+      }
+      const belegCount = allBelege.length;
+      let belegBtn = '';
+      if (!isVoided) {
+        if (belegCount > 0) {
+          const c = e.type === 'einnahme' ? '#3d6b2a' : '#1e40af';
+          const bg = e.type === 'einnahme' ? '#dcfce7' : '#dbeafe';
+          belegBtn = `<button onclick="event.stopPropagation();openBelegManager('${escapeHtml(e.id)}')" style="background:${bg};border:none;color:${c};font-size:0.78rem;padding:0.4rem 0.7rem;border-radius:6px;cursor:pointer;min-height:36px">📎 ${belegCount} Beleg${belegCount > 1 ? 'e' : ''}</button>`;
+        } else if (!isAuto) {
+          const dashColor = e.type === 'einnahme' ? '#3d6b2a' : '#c0392b';
+          belegBtn = `<button onclick="event.stopPropagation();openBelegManager('${escapeHtml(e.id)}')" style="background:none;border:1px dashed ${dashColor};color:${dashColor};font-size:0.78rem;padding:0.4rem 0.7rem;border-radius:6px;cursor:pointer;min-height:36px">+ Beleg ekle</button>`;
+        }
+      }
+
+      // Storno button
+      let stornoBtn = '';
+      if (!isVoided && !isAuto) {
+        stornoBtn = `<button onclick="event.stopPropagation();voidGeldflussEntry('${escapeHtml(e.id)}')" style="background:none;border:1px solid #fee2e2;color:#c0392b;font-size:0.75rem;padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer">↩ Storno</button>`;
+      } else if (isVoided) {
+        stornoBtn = `<span style="font-size:0.72rem;color:#888;font-style:italic">storniert</span>`;
+      } else if (isAuto) {
+        stornoBtn = `<span style="font-size:0.72rem;color:#888;font-style:italic">auto</span>`;
+      }
+
+      return `
+        <div style="background:white;border:1px solid #e8e3d6;border-radius:10px;padding:0.95rem 1rem;margin-bottom:0.7rem;${cardStyle}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.7rem;margin-bottom:0.6rem">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+                <span style="background:${typeBg};color:${typeColor};font-weight:700;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">${typeIcon}</span>
+                <span style="font-size:0.78rem;color:#666;white-space:nowrap">${fmtDate(e.date)}</span>
+                ${e.ref_number ? `<span style="font-family:monospace;font-size:0.72rem;color:#888;margin-left:auto">${escapeHtml(e.ref_number)}</span>` : ''}
+              </div>
+              <div style="font-weight:500;font-size:0.95rem;line-height:1.3;color:#1a1a1a">${escapeHtml(e.description)}</div>
+              ${e.notes ? `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem">${escapeHtml(e.notes)}</div>` : ''}
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="color:${typeColor};font-weight:700;font-size:1.15rem;white-space:nowrap">${fmt(e.amount)}</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap">
+              <span style="background:#f5f1e8;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.72rem;color:#6b6b5a">${escapeHtml(catLabel)}</span>
+              <span style="font-size:0.78rem;color:#888">${payIcons[e.payment_method] || ''}</span>
+            </div>
+            <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">${belegBtn}${stornoBtn}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 }
 
 // ============================================================
 // BELEG MANAGER — Mobile camera scanner + multi upload + gallery
 // ============================================================
+
+// ============================================================
+// DOCUMENT SCANNER — jscanify ile edge detection + auto-crop
+// ============================================================
+
+// jscanify hazır mı?
+function isScannerReady() {
+  return !!(window._opencvLoaded && window.cv && window.jscanify && window.cv.Mat);
+}
+
+// OpenCV.js yüklemesini bekle (max 8 sn)
+async function waitForScanner(maxMs = 8000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    if (isScannerReady()) return true;
+    await new Promise(r => setTimeout(r, 200));
+  }
+  return false;
+}
+
+// File'a doc scanner uygula → otomatik crop + perspective correct
+// Başarısız olursa orijinali döner (sessizce)
+async function processWithScanner(file) {
+  if (!file || !file.type || !file.type.startsWith('image/')) return file;
+
+  // Scanner hazır değilse bekle
+  const ready = await waitForScanner(5000);
+  if (!ready) {
+    console.warn('jscanify yüklenemedi, ham foto kullanılıyor');
+    return file;
+  }
+
+  try {
+    // File → HTMLImageElement
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = e => resolve(e.target.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUrl;
+    });
+
+    // jscanify ile extract et
+    const scanner = new jscanify();
+    const resultCanvas = scanner.extractPaper(img, img.width, img.height);
+
+    if (!resultCanvas) {
+      console.warn('Belge kenarı bulunamadı, ham foto kullanılıyor');
+      return file;
+    }
+
+    // Canvas → Blob → File
+    return await new Promise((resolve) => {
+      resultCanvas.toBlob((blob) => {
+        if (!blob) {
+          resolve(file);  // fallback
+          return;
+        }
+        const baseName = (file.name || 'beleg.jpg').replace(/\.\w+$/, '');
+        const newFile = new File([blob], baseName + '_scanned.jpg', {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        resolve(newFile);
+      }, 'image/jpeg', 0.92);
+    });
+  } catch (e) {
+    console.warn('Scanner exception:', e);
+    return file;  // hata durumunda orijinal
+  }
+}
 
 // Image compression — Canvas API ile JPEG sıkıştırma
 // File girer, sıkıştırılmış File döner. PDF/non-image olduğu gibi geri verilir.
@@ -4106,25 +4269,41 @@ async function uploadBelegFiles(files) {
   const progressBox = document.getElementById('belegUploadProgress');
   if (progressBox) progressBox.style.display = 'block';
 
-  // Step 1: Compression (sadece resimler, paralel değil ama hızlı)
-  if (progressText) progressText.textContent = '🗜️ Resimler sıkıştırılıyor...';
-  if (progressBar) progressBar.style.width = '10%';
-
   const filesArr = Array.from(files);
+
+  // Step 1: Document scanner (auto-crop) — sadece resimler
+  if (progressText) progressText.textContent = '🔍 Belge tespit ediliyor...';
+  if (progressBar) progressBar.style.width = '5%';
+  const scanned = [];
+  for (let i = 0; i < filesArr.length; i++) {
+    const f = filesArr[i];
+    if (f.type && f.type.startsWith('image/')) {
+      if (progressText) progressText.textContent = `🔍 Belge tespit ediliyor (${i+1}/${filesArr.length})...`;
+      const s = await processWithScanner(f);
+      scanned.push(s);
+    } else {
+      scanned.push(f);
+    }
+  }
+
+  // Step 2: Compression
+  if (progressText) progressText.textContent = '🗜️ Resimler sıkıştırılıyor...';
+  if (progressBar) progressBar.style.width = '20%';
+
   let totalOrigSize = 0;
   let totalNewSize = 0;
   const compressed = [];
-  for (let i = 0; i < filesArr.length; i++) {
-    const f = filesArr[i];
-    totalOrigSize += f.size;
-    if (progressText) progressText.textContent = `🗜️ Sıkıştırılıyor (${i+1}/${filesArr.length})...`;
+  for (let i = 0; i < scanned.length; i++) {
+    const f = scanned[i];
+    totalOrigSize += filesArr[i].size;  // orijinal boyutu say
+    if (progressText) progressText.textContent = `🗜️ Sıkıştırılıyor (${i+1}/${scanned.length})...`;
     const c = await compressImage(f);
     totalNewSize += c.size;
     compressed.push(c);
   }
   const savings = totalOrigSize > 0 ? Math.round((1 - totalNewSize / totalOrigSize) * 100) : 0;
 
-  // Step 2: Upload
+  // Step 3: Upload
   const fd = new FormData();
   for (const f of compressed) {
     if (f.size > 10 * 1024 * 1024) {
@@ -4289,12 +4468,23 @@ async function createScannedAusgabe(file) {
   goto('geldfluss');
   await new Promise(r => setTimeout(r, 100));
 
-  // Image compression önce — hem OCR hem upload daha hızlı olur
-  const loadingId = showLoadingToast('🗜️ Resim sıkıştırılıyor...');
-  const origSize = file.size;
+  // Step 1: Document scanner (magnet) - kenar tespiti + auto-crop
   let processedFile = file;
   if (file.type && file.type.startsWith('image/')) {
-    processedFile = await compressImage(file);
+    const scanLoadingId = showLoadingToast('🔍 Belge tespit ediliyor...');
+    const scanned = await processWithScanner(file);
+    hideLoadingToast(scanLoadingId);
+    if (scanned !== file) {
+      toast('✂️ Belge otomatik kırpıldı', 'ok');
+      processedFile = scanned;
+    }
+  }
+
+  // Step 2: Image compression
+  const loadingId = showLoadingToast('🗜️ Resim sıkıştırılıyor...');
+  const origSize = processedFile.size;
+  if (processedFile.type && processedFile.type.startsWith('image/')) {
+    processedFile = await compressImage(processedFile);
   }
   const newSize = processedFile.size;
   const savings = origSize > 0 ? Math.round((1 - newSize / origSize) * 100) : 0;
@@ -4304,11 +4494,11 @@ async function createScannedAusgabe(file) {
     toast(`🗜️ ${Math.round(origSize/1024)} KB → ${Math.round(newSize/1024)} KB (%${savings})`, 'info');
   }
 
-  // OCR loading toast — uzun sürebilir
+  // Step 3: OCR loading toast — uzun sürebilir
   const ocrLoadingId = showLoadingToast('🤖 OCR — Beleg analiz ediliyor...');
 
   try {
-    // 1) OCR (compressed image)
+    // OCR (compressed + scanned image)
     let ocrResult = null;
     if (processedFile.type && processedFile.type.startsWith('image/')) {
       try {
