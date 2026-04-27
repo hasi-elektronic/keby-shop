@@ -4590,7 +4590,7 @@ async function openLiveScannerModal() {
         <button id="liveCaptureBtn" onclick="captureLiveScannerPhoto()" style="width:74px;height:74px;border-radius:50%;background:white;border:5px solid rgba(255,255,255,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:transform 0.1s" title="Çek"></button>
         <div style="flex:1;display:flex;justify-content:flex-start">
           <label style="color:rgba(255,255,255,0.7);font-size:0.78rem;display:flex;align-items:center;gap:0.4rem;cursor:pointer">
-            <input type="checkbox" id="liveAutoCapture" checked style="width:16px;height:16px;cursor:pointer">
+            <input type="checkbox" id="liveAutoCapture" style="width:16px;height:16px;cursor:pointer">
             Otomatik
           </label>
         </div>
@@ -4664,14 +4664,16 @@ function startLiveScannerLoop() {
   const captureBtn = document.getElementById('liveCaptureBtn');
   const ctx = overlay.getContext('2d');
 
-  // Debug panel ekle (geçici - sorun çözülünce kaldırılabilir)
+  // Debug panel ekle (sadece ?debug=1 query param ile gösterilir)
+  const debugEnabled = new URLSearchParams(location.search).get('debug') === '1';
   let debugPanel = document.getElementById('liveDebug');
-  if (!debugPanel) {
+  if (debugEnabled && !debugPanel) {
     debugPanel = document.createElement('div');
     debugPanel.id = 'liveDebug';
-    debugPanel.style.cssText = 'position:absolute;top:70px;left:10px;right:10px;background:rgba(0,0,0,0.6);color:#0f0;padding:0.4rem 0.6rem;font-family:monospace;font-size:0.65rem;border-radius:6px;z-index:10;pointer-events:none;line-height:1.3;display:none';
+    debugPanel.style.cssText = 'position:absolute;top:70px;left:10px;right:10px;background:rgba(0,0,0,0.6);color:#0f0;padding:0.4rem 0.6rem;font-family:monospace;font-size:0.65rem;border-radius:6px;z-index:10;pointer-events:none;line-height:1.3';
     document.querySelector('#liveCameraModal > div:nth-child(2)').appendChild(debugPanel);
   }
+  // updateDebug() çağrılırsa debugPanel null kontrolü yap
 
   let lastDetectTime = 0;
   let stableDetectionFrames = 0;
@@ -4688,6 +4690,7 @@ function startLiveScannerLoop() {
   const DETECTION_TIMEOUT = 600;  // 600ms tespit yoksa çerçeveyi kaldır
 
   function updateDebug() {
+    if (!debugPanel) return;
     const cvOk = typeof cv !== 'undefined' && !!cv.Mat;
     const jsOk = typeof jscanify !== 'undefined';
     const ready = window._opencvReady;
@@ -4957,19 +4960,433 @@ async function captureLiveScannerPhoto() {
   const ctx = captureCanvas.getContext('2d');
   ctx.drawImage(video, 0, 0);
 
-  // Blob'a çevir
-  const blob = await new Promise(r => captureCanvas.toBlob(r, 'image/jpeg', 0.95));
-  if (!blob) {
-    toast('Foto alınamadı', 'err');
+  // Mevcut algılanan köşeleri kaydet (önizleme için varsayılan)
+  let detectedCorners = null;
+  if (isScannerReady()) {
+    try {
+      const scanner = new jscanify();
+      const mat = cv.imread(captureCanvas);
+      const contour = scanner.findPaperContour(mat);
+      if (contour) {
+        detectedCorners = scanner.getCornerPoints(contour);
+      }
+      mat.delete();
+    } catch (e) {
+      console.warn('[Capture] köşe tespit:', e);
+    }
+  }
+
+  // Kamera durdur (animasyon frame'i kapat ama stream'i tut — yeniden çekim için)
+  if (_liveCameraAnimationId) {
+    cancelAnimationFrame(_liveCameraAnimationId);
+    _liveCameraAnimationId = null;
+  }
+
+  // Önizleme aç
+  openCornerEditor(captureCanvas, detectedCorners);
+}
+
+// ============================================================
+// CORNER EDITOR — önizleme + manuel köşe ayarı
+// ============================================================
+let _cornerEditorState = {
+  imageDataUrl: null,
+  imageW: 0,
+  imageH: 0,
+  corners: null,    // { tl: {x,y}, tr, bl, br } — image pixel coords
+  draggingCorner: null,
+  canvasScale: 1
+};
+
+function openCornerEditor(sourceCanvas, autoDetectedCorners) {
+  const dataUrl = sourceCanvas.toDataURL('image/jpeg', 0.95);
+  _cornerEditorState.imageDataUrl = dataUrl;
+  _cornerEditorState.imageW = sourceCanvas.width;
+  _cornerEditorState.imageH = sourceCanvas.height;
+
+  // Köşeleri image pixel koordinatına çevir
+  if (autoDetectedCorners) {
+    _cornerEditorState.corners = {
+      tl: { x: autoDetectedCorners.topLeftCorner.x, y: autoDetectedCorners.topLeftCorner.y },
+      tr: { x: autoDetectedCorners.topRightCorner.x, y: autoDetectedCorners.topRightCorner.y },
+      bl: { x: autoDetectedCorners.bottomLeftCorner.x, y: autoDetectedCorners.bottomLeftCorner.y },
+      br: { x: autoDetectedCorners.bottomRightCorner.x, y: autoDetectedCorners.bottomRightCorner.y }
+    };
+  } else {
+    // Tespit yoksa varsayılan: %10 inset
+    const w = sourceCanvas.width, h = sourceCanvas.height;
+    const ix = w * 0.1, iy = h * 0.1;
+    _cornerEditorState.corners = {
+      tl: { x: ix, y: iy },
+      tr: { x: w - ix, y: iy },
+      bl: { x: ix, y: h - iy },
+      br: { x: w - ix, y: h - iy }
+    };
+  }
+
+  // Modal oluştur (bir kez)
+  if (!document.getElementById('cornerEditorModal')) {
+    const m = document.createElement('div');
+    m.id = 'cornerEditorModal';
+    m.style.cssText = 'position:fixed;inset:0;background:#000;z-index:3100;display:none;flex-direction:column';
+    m.innerHTML = `
+      <!-- Top bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1rem;background:#111;color:white">
+        <button onclick="closeCornerEditor()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;padding:0.3rem 0.6rem">←</button>
+        <div style="font-size:0.95rem;font-weight:500">Köşeleri Ayarla</div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Hint -->
+      <div style="background:#1a1a1a;color:rgba(255,255,255,0.7);padding:0.6rem 1rem;font-size:0.8rem;text-align:center;border-bottom:1px solid #222">
+        💡 Yeşil noktaları sürükleyerek köşeleri ayarlayın
+      </div>
+
+      <!-- Canvas area -->
+      <div id="cornerEditorCanvasWrap" style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;padding:0.5rem">
+        <canvas id="cornerEditorCanvas" style="touch-action:none;max-width:100%;max-height:100%;display:block"></canvas>
+      </div>
+
+      <!-- Bottom buttons -->
+      <div style="background:#111;padding:1rem;display:flex;gap:0.7rem">
+        <button onclick="cornerEditorRetake()" style="flex:1;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.92rem">🔄 Yeniden çek</button>
+        <button onclick="cornerEditorAutoDetect()" style="flex:0;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:0.85rem 0.9rem;border-radius:10px;cursor:pointer;font-size:0.92rem" title="Otomatik tespit et">🪄</button>
+        <button onclick="cornerEditorAccept()" style="flex:1.5;background:#22c55e;color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.95rem;font-weight:500">✓ Kullan</button>
+      </div>
+    `;
+    document.body.appendChild(m);
+  }
+
+  document.getElementById('cornerEditorModal').style.display = 'flex';
+
+  // Image yükle ve canvas'a çiz
+  const img = new Image();
+  img.onload = () => {
+    drawCornerEditor(img);
+    setupCornerEditorEvents(img);
+  };
+  img.src = dataUrl;
+  _cornerEditorState.image = img;
+}
+
+function closeCornerEditor() {
+  document.getElementById('cornerEditorModal').style.display = 'none';
+  _cornerEditorState.image = null;
+  _cornerEditorState.imageDataUrl = null;
+  _cornerEditorState.draggingCorner = null;
+}
+
+function cornerEditorRetake() {
+  closeCornerEditor();
+  // Live scanner zaten açık, sadece loop'u yeniden başlat
+  if (_liveCameraStream) {
+    startLiveScannerLoop();
+  } else {
+    // Stream kapalıysa baştan aç
+    closeLiveScannerModal();
+    setTimeout(() => openLiveScannerModal(), 100);
+  }
+}
+
+async function cornerEditorAutoDetect() {
+  if (!isScannerReady()) {
+    toast('Tarayıcı henüz hazır değil', 'err');
     return;
   }
-  const file = new File([blob], 'live-scan-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+  const img = _cornerEditorState.image;
+  if (!img) return;
+  try {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = _cornerEditorState.imageW;
+    tempCanvas.height = _cornerEditorState.imageH;
+    tempCanvas.getContext('2d').drawImage(img, 0, 0);
+    const scanner = new jscanify();
+    const mat = cv.imread(tempCanvas);
+    const contour = scanner.findPaperContour(mat);
+    if (contour) {
+      const cp = scanner.getCornerPoints(contour);
+      _cornerEditorState.corners = {
+        tl: { x: cp.topLeftCorner.x, y: cp.topLeftCorner.y },
+        tr: { x: cp.topRightCorner.x, y: cp.topRightCorner.y },
+        bl: { x: cp.bottomLeftCorner.x, y: cp.bottomLeftCorner.y },
+        br: { x: cp.bottomRightCorner.x, y: cp.bottomRightCorner.y }
+      };
+      drawCornerEditor(img);
+      toast('🪄 Köşeler otomatik tespit edildi', 'ok');
+    } else {
+      toast('Köşeler tespit edilemedi', 'info');
+    }
+    mat.delete();
+  } catch (e) {
+    toast('Tespit hatası: ' + e.message, 'err');
+  }
+}
 
-  // Modal kapat
+function drawCornerEditor(img) {
+  const canvas = document.getElementById('cornerEditorCanvas');
+  const wrap = document.getElementById('cornerEditorCanvasWrap');
+  const ctx = canvas.getContext('2d');
+
+  // Canvas boyutu: wrap'a sığdır, oranı koru
+  const wrapRect = wrap.getBoundingClientRect();
+  const maxW = wrapRect.width - 16;
+  const maxH = wrapRect.height - 16;
+  const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+  const dispW = Math.round(img.width * scale);
+  const dispH = Math.round(img.height * scale);
+  canvas.width = dispW;
+  canvas.height = dispH;
+  canvas.style.width = dispW + 'px';
+  canvas.style.height = dispH + 'px';
+  _cornerEditorState.canvasScale = scale;
+
+  // Image çiz
+  ctx.drawImage(img, 0, 0, dispW, dispH);
+
+  // 4 köşe + çerçeve (image px → canvas px)
+  const c = _cornerEditorState.corners;
+  const tx = p => p.x * scale;
+  const ty = p => p.y * scale;
+
+  // Çerçeve
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 3;
+  ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+  ctx.beginPath();
+  ctx.moveTo(tx(c.tl), ty(c.tl));
+  ctx.lineTo(tx(c.tr), ty(c.tr));
+  ctx.lineTo(tx(c.br), ty(c.br));
+  ctx.lineTo(tx(c.bl), ty(c.bl));
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Köşeler - büyük tutamak (touch-friendly)
+  for (const key of ['tl', 'tr', 'bl', 'br']) {
+    const p = c[key];
+    const x = tx(p), y = ty(p);
+    // Dış halka (touch zone visualize)
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(34, 197, 94, 0.25)';
+    ctx.fill();
+    // İç nokta
+    ctx.beginPath();
+    ctx.arc(x, y, 11, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e';
+    ctx.fill();
+    // Beyaz iç
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+  }
+}
+
+function setupCornerEditorEvents(img) {
+  const canvas = document.getElementById('cornerEditorCanvas');
+  if (canvas._cornerHandlersAttached) return;  // bir kez bağla
+  canvas._cornerHandlersAttached = true;
+
+  function getCanvasPos(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const t = ev.touches ? ev.touches[0] : ev;
+    return {
+      x: (t.clientX - rect.left) * (canvas.width / rect.width),
+      y: (t.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function findClosestCorner(canvasX, canvasY) {
+    const c = _cornerEditorState.corners;
+    const scale = _cornerEditorState.canvasScale;
+    let closest = null;
+    let minDist = 35;  // min hit radius (touch friendly)
+    for (const key of ['tl', 'tr', 'bl', 'br']) {
+      const p = c[key];
+      const dx = canvasX - p.x * scale;
+      const dy = canvasY - p.y * scale;
+      const d = Math.hypot(dx, dy);
+      if (d < minDist) {
+        minDist = d;
+        closest = key;
+      }
+    }
+    return closest;
+  }
+
+  function onStart(ev) {
+    ev.preventDefault();
+    const pos = getCanvasPos(ev);
+    const corner = findClosestCorner(pos.x, pos.y);
+    if (corner) {
+      _cornerEditorState.draggingCorner = corner;
+    }
+  }
+
+  function onMove(ev) {
+    if (!_cornerEditorState.draggingCorner) return;
+    ev.preventDefault();
+    const pos = getCanvasPos(ev);
+    const scale = _cornerEditorState.canvasScale;
+    const c = _cornerEditorState.corners;
+    // Image piksel koordinatına çevir + sınır kontrol
+    let imgX = Math.max(0, Math.min(_cornerEditorState.imageW, pos.x / scale));
+    let imgY = Math.max(0, Math.min(_cornerEditorState.imageH, pos.y / scale));
+    c[_cornerEditorState.draggingCorner] = { x: imgX, y: imgY };
+    drawCornerEditor(_cornerEditorState.image);
+  }
+
+  function onEnd(ev) {
+    _cornerEditorState.draggingCorner = null;
+  }
+
+  canvas.addEventListener('mousedown', onStart);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onEnd);
+  canvas.addEventListener('mouseleave', onEnd);
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  canvas.addEventListener('touchend', onEnd);
+  canvas.addEventListener('touchcancel', onEnd);
+}
+
+async function cornerEditorAccept() {
+  const corners = _cornerEditorState.corners;
+  if (!corners) return;
+
+  // Manuel köşelerden crop yapan kendi fonksiyonumu çağır
+  // (jscanify extractPaper cornerPoints argümanını kabul ediyor)
+  const img = _cornerEditorState.image;
+  if (!img) return;
+
+  let resultBlob;
+  try {
+    if (isScannerReady()) {
+      // jscanify.extractPaper(image, w, h, cornerPoints)
+      const widthTop = Math.hypot(corners.tr.x - corners.tl.x, corners.tr.y - corners.tl.y);
+      const widthBot = Math.hypot(corners.br.x - corners.bl.x, corners.br.y - corners.bl.y);
+      const heightL = Math.hypot(corners.bl.x - corners.tl.x, corners.bl.y - corners.tl.y);
+      const heightR = Math.hypot(corners.br.x - corners.tr.x, corners.br.y - corners.tr.y);
+      const targetW = Math.round(Math.max(widthTop, widthBot));
+      const targetH = Math.round(Math.max(heightL, heightR));
+
+      const cornerPointsForJscanify = {
+        topLeftCorner: corners.tl,
+        topRightCorner: corners.tr,
+        bottomLeftCorner: corners.bl,
+        bottomRightCorner: corners.br
+      };
+
+      const scanner = new jscanify();
+      const resultCanvas = scanner.extractPaper(img, targetW, targetH, cornerPointsForJscanify);
+      if (resultCanvas) {
+        resultBlob = await new Promise(r => resultCanvas.toBlob(r, 'image/jpeg', 0.92));
+      }
+    }
+  } catch (e) {
+    console.warn('[CornerEditor] extractPaper failed, fallback to crop:', e);
+  }
+
+  // Fallback: jscanify yoksa veya hata olduysa, bounding-box crop yap
+  if (!resultBlob) {
+    const minX = Math.min(corners.tl.x, corners.bl.x);
+    const maxX = Math.max(corners.tr.x, corners.br.x);
+    const minY = Math.min(corners.tl.y, corners.tr.y);
+    const maxY = Math.max(corners.bl.y, corners.br.y);
+    const cw = Math.round(maxX - minX);
+    const ch = Math.round(maxY - minY);
+    const c = document.createElement('canvas');
+    c.width = cw;
+    c.height = ch;
+    c.getContext('2d').drawImage(img, minX, minY, cw, ch, 0, 0, cw, ch);
+    resultBlob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+  }
+
+  if (!resultBlob) {
+    toast('İşlenemedi', 'err');
+    return;
+  }
+
+  const file = new File([resultBlob], 'scan-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+
+  // Modal'ları kapat
+  closeCornerEditor();
   closeLiveScannerModal();
 
-  // OCR akışına yolla
-  await createScannedAusgabe(file);
+  // OCR akışına yolla — ama processWithScanner'ı atla (zaten manuel kırpıldı)
+  await createScannedAusgabeFromCropped(file);
+}
+
+// Cropped file için akış — scanner adımını atla, direkt compression + OCR
+async function createScannedAusgabeFromCropped(file) {
+  goto('geldfluss');
+  await new Promise(r => setTimeout(r, 100));
+
+  // Compression
+  const loadingId = showLoadingToast('🗜️ Resim sıkıştırılıyor...');
+  const origSize = file.size;
+  let processedFile = file;
+  if (file.type && file.type.startsWith('image/')) {
+    processedFile = await compressImage(file);
+  }
+  const newSize = processedFile.size;
+  const savings = origSize > 0 ? Math.round((1 - newSize / origSize) * 100) : 0;
+  hideLoadingToast(loadingId);
+  if (savings > 10) {
+    toast(`🗜️ ${Math.round(origSize/1024)} KB → ${Math.round(newSize/1024)} KB (%${savings})`, 'info');
+  }
+
+  // OCR
+  const ocrLoadingId = showLoadingToast('🤖 OCR — Beleg analiz ediliyor...');
+  try {
+    let ocrResult = null;
+    try {
+      const fd = new FormData();
+      fd.append('file', processedFile);
+      const r = await fetch(API + '/api/admin/ocr/beleg', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN },
+        body: fd
+      });
+      const ocrData = await r.json();
+      if (ocrData.success && ocrData.ocr) ocrResult = ocrData.ocr;
+    } catch (e) { console.warn('OCR exc:', e); }
+
+    hideLoadingToast(ocrLoadingId);
+
+    // Modal pre-fill
+    const today = new Date().toISOString().slice(0, 10);
+    let description = 'Beleg-Scan';
+    if (ocrResult && ocrResult.vendor) {
+      description = ocrResult.vendor;
+      if (ocrResult.invoice_number) description += ' - ' + ocrResult.invoice_number;
+    } else {
+      description = 'Beleg-Scan ' + new Date().toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    const prefill = {
+      date: ocrResult?.date || today,
+      amount: ocrResult?.amount && ocrResult.amount > 0 ? ocrResult.amount.toFixed(2) : '',
+      description,
+      category: ocrResult?.category_hint || 'sonstige_ausgaben',
+      payment_method: 'bar',
+      notes: ocrResult ? `OCR: ${ocrResult.vendor || '?'} · ${new Date().toLocaleString('de-DE')}` : 'Scan vom ' + new Date().toLocaleString('de-DE'),
+      ocrConfidence: ocrResult?.confidence,
+      pendingFile: processedFile
+    };
+
+    if (ocrResult) {
+      toast(`✅ OCR: ${ocrResult.vendor || '?'} · €${ocrResult.amount || '?'}`, 'ok');
+    } else {
+      toast('OCR başarısız - manuel girin', 'info');
+    }
+
+    openGeldflussModal('ausgabe', prefill);
+  } catch (e) {
+    hideLoadingToast(ocrLoadingId);
+    toast('Hata: ' + e.message, 'err');
+  }
 }
 
 async function createScannedAusgabe(file) {
