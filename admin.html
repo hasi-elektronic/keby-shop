@@ -4374,8 +4374,8 @@ function fabAction(action) {
 // BELEG SCAN FLOW — Kamera ile çek → otomatik Ausgabe + beleg
 // ============================================================
 function startBelegScanFlow() {
-  // Telefonun native kamerasını kullan (en iyi görüntü kalitesi + odak + ışık)
-  // getUserMedia / OpenCV / AI hepsini bıraktık — telefon kamera donanımı zaten optimal
+  // Telefonun native kamerasını kullan + sonra manuel köşe ayarı
+  // Bu Keby'nin kendi scan fonksiyonu — harici app'e bağımlı değil
   const isMobile = window.innerWidth <= 768 || /iPhone|iPad|Android/i.test(navigator.userAgent);
   const input = document.createElement('input');
   input.type = 'file';
@@ -4390,8 +4390,8 @@ function startBelegScanFlow() {
       return;
     }
 
-    // PDF veya küçük resim → direkt OCR akışı (köşe ayarına gerek yok)
-    if (!file.type.startsWith('image/') || file.size < 200 * 1024) {
+    // PDF → direkt OCR akışı (köşe ayarı yapılamaz)
+    if (!file.type.startsWith('image/')) {
       await createScannedAusgabe(file);
       return;
     }
@@ -4922,8 +4922,9 @@ function openCornerEditor(sourceCanvas, autoDetectedCorners) {
       </div>
 
       <!-- Hint -->
-      <div style="background:#1a1a1a;color:rgba(255,255,255,0.7);padding:0.6rem 1rem;font-size:0.8rem;text-align:center;border-bottom:1px solid #222">
-        💡 Yeşil noktaları belgenin köşelerine sürükleyin
+      <div style="background:#1a1a1a;color:rgba(255,255,255,0.75);padding:0.6rem 1rem;font-size:0.78rem;text-align:center;border-bottom:1px solid #222;line-height:1.4">
+        Yeşil noktaları belgenin köşelerine sürükleyin<br>
+        <span style="font-size:0.7rem;opacity:0.7">🔍 Sürüklerken büyüteç açılır — hassas ayar için</span>
       </div>
 
       <!-- Canvas area -->
@@ -4959,6 +4960,9 @@ function closeCornerEditor() {
   _cornerEditorState.image = null;
   _cornerEditorState.imageDataUrl = null;
   _cornerEditorState.draggingCorner = null;
+  // Magnifier kaldır
+  const mag = document.getElementById('cornerMagnifier');
+  if (mag) mag.style.display = 'none';
 }
 
 function cornerEditorRetake() {
@@ -5106,23 +5110,90 @@ function drawCornerEditor(img) {
 
 function setupCornerEditorEvents(img) {
   const canvas = document.getElementById('cornerEditorCanvas');
-  if (canvas._cornerHandlersAttached) return;  // bir kez bağla
+  if (canvas._cornerHandlersAttached) return;
   canvas._cornerHandlersAttached = true;
+
+  // Magnifier oluştur
+  let magnifier = document.getElementById('cornerMagnifier');
+  if (!magnifier) {
+    magnifier = document.createElement('canvas');
+    magnifier.id = 'cornerMagnifier';
+    magnifier.width = 220;
+    magnifier.height = 220;
+    magnifier.style.cssText = 'position:fixed;width:140px;height:140px;border-radius:50%;border:3px solid #22c55e;background:#000;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none;display:none;z-index:3200';
+    document.body.appendChild(magnifier);
+  }
+
+  function showMagnifier(canvasX, canvasY, clientX, clientY) {
+    const ZOOM = 2.5;  // büyütme faktörü
+    const M_SIZE = 220;  // magnifier internal canvas size
+    const m = magnifier;
+    const mctx = m.getContext('2d');
+
+    // Magnifier konumu — parmak/cursor üstünde 100px yukarı
+    let mx = clientX - 70;  // -70 (display 140px / 2)
+    let my = clientY - 180;  // 180px yukarı (parmak engellemez)
+
+    // Ekran sınırları
+    if (mx < 10) mx = 10;
+    if (mx > window.innerWidth - 150) mx = window.innerWidth - 150;
+    if (my < 10) my = clientY + 60;  // üstte yer yok → alta koy
+
+    m.style.left = mx + 'px';
+    m.style.top = my + 'px';
+    m.style.display = 'block';
+
+    // Canvas'tan büyütülmüş bölgeyi çiz
+    const srcSize = M_SIZE / ZOOM;
+    let srcX = canvasX - srcSize / 2;
+    let srcY = canvasY - srcSize / 2;
+    srcX = Math.max(0, Math.min(canvas.width - srcSize, srcX));
+    srcY = Math.max(0, Math.min(canvas.height - srcSize, srcY));
+
+    mctx.fillStyle = '#000';
+    mctx.fillRect(0, 0, M_SIZE, M_SIZE);
+    mctx.drawImage(canvas, srcX, srcY, srcSize, srcSize, 0, 0, M_SIZE, M_SIZE);
+
+    // Crosshair (orta)
+    mctx.strokeStyle = '#22c55e';
+    mctx.lineWidth = 2;
+    mctx.beginPath();
+    mctx.moveTo(M_SIZE / 2 - 18, M_SIZE / 2);
+    mctx.lineTo(M_SIZE / 2 - 6, M_SIZE / 2);
+    mctx.moveTo(M_SIZE / 2 + 6, M_SIZE / 2);
+    mctx.lineTo(M_SIZE / 2 + 18, M_SIZE / 2);
+    mctx.moveTo(M_SIZE / 2, M_SIZE / 2 - 18);
+    mctx.lineTo(M_SIZE / 2, M_SIZE / 2 - 6);
+    mctx.moveTo(M_SIZE / 2, M_SIZE / 2 + 6);
+    mctx.lineTo(M_SIZE / 2, M_SIZE / 2 + 18);
+    mctx.stroke();
+    mctx.beginPath();
+    mctx.arc(M_SIZE / 2, M_SIZE / 2, 3, 0, Math.PI * 2);
+    mctx.fillStyle = '#22c55e';
+    mctx.fill();
+  }
+
+  function hideMagnifier() {
+    if (magnifier) magnifier.style.display = 'none';
+  }
 
   function getCanvasPos(ev) {
     const rect = canvas.getBoundingClientRect();
     const t = ev.touches ? ev.touches[0] : ev;
     return {
       x: (t.clientX - rect.left) * (canvas.width / rect.width),
-      y: (t.clientY - rect.top) * (canvas.height / rect.height)
+      y: (t.clientY - rect.top) * (canvas.height / rect.height),
+      clientX: t.clientX,
+      clientY: t.clientY
     };
   }
 
   function findClosestCorner(canvasX, canvasY) {
     const c = _cornerEditorState.corners;
     const scale = _cornerEditorState.canvasScale;
+    const dpr = 1; // canvas already scaled
     let closest = null;
-    let minDist = 35;  // min hit radius (touch friendly)
+    let minDist = 50;  // büyük hit radius (touch friendly)
     for (const key of ['tl', 'tr', 'bl', 'br']) {
       const p = c[key];
       const dx = canvasX - p.x * scale;
@@ -5142,6 +5213,11 @@ function setupCornerEditorEvents(img) {
     const corner = findClosestCorner(pos.x, pos.y);
     if (corner) {
       _cornerEditorState.draggingCorner = corner;
+      // Magnifier'ı hemen göster
+      const c = _cornerEditorState.corners[corner];
+      const scale = _cornerEditorState.canvasScale;
+      showMagnifier(c.x * scale, c.y * scale, pos.clientX, pos.clientY);
+      if (navigator.vibrate) navigator.vibrate(10);
     }
   }
 
@@ -5151,14 +5227,19 @@ function setupCornerEditorEvents(img) {
     const pos = getCanvasPos(ev);
     const scale = _cornerEditorState.canvasScale;
     const c = _cornerEditorState.corners;
-    // Image piksel koordinatına çevir + sınır kontrol
     let imgX = Math.max(0, Math.min(_cornerEditorState.imageW, pos.x / scale));
     let imgY = Math.max(0, Math.min(_cornerEditorState.imageH, pos.y / scale));
     c[_cornerEditorState.draggingCorner] = { x: imgX, y: imgY };
     drawCornerEditor(_cornerEditorState.image);
+    // Magnifier güncelle (drawCornerEditor'dan SONRA, son canvas durumunu yansıtmak için)
+    showMagnifier(imgX * scale, imgY * scale, pos.clientX, pos.clientY);
   }
 
   function onEnd(ev) {
+    if (_cornerEditorState.draggingCorner) {
+      hideMagnifier();
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
     _cornerEditorState.draggingCorner = null;
   }
 
