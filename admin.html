@@ -4664,41 +4664,77 @@ function startLiveScannerLoop() {
   const captureBtn = document.getElementById('liveCaptureBtn');
   const ctx = overlay.getContext('2d');
 
+  // Debug panel ekle (geçici - sorun çözülünce kaldırılabilir)
+  let debugPanel = document.getElementById('liveDebug');
+  if (!debugPanel) {
+    debugPanel = document.createElement('div');
+    debugPanel.id = 'liveDebug';
+    debugPanel.style.cssText = 'position:absolute;top:70px;left:10px;right:10px;background:rgba(0,0,0,0.7);color:#0f0;padding:0.5rem 0.7rem;font-family:monospace;font-size:0.7rem;border-radius:6px;z-index:10;pointer-events:none;line-height:1.4';
+    document.querySelector('#liveCameraModal > div:nth-child(2)').appendChild(debugPanel);
+  }
+
   let lastDetectTime = 0;
-  let stableDetectionFrames = 0;  // arka arkaya kaç frame'de tespit edildi
+  let stableDetectionFrames = 0;
   let processingFrame = false;
-  let scannerCheckedReady = false;
+  let frameCount = 0;
+  let lastErr = '';
+  let lastCornerInfo = '';
+
+  function updateDebug() {
+    const cvOk = typeof cv !== 'undefined' && !!cv.Mat;
+    const jsOk = typeof jscanify !== 'undefined';
+    const ready = window._opencvReady;
+    debugPanel.innerHTML = `
+      Frame: ${frameCount} | Video: ${video.videoWidth}x${video.videoHeight}<br>
+      OpenCV: ${cvOk?'✓':'✗'} | jscanify: ${jsOk?'✓':'✗'} | Ready: ${ready?'✓':'✗'}<br>
+      Stable: ${stableDetectionFrames} | ${lastCornerInfo}<br>
+      ${lastErr ? '<span style="color:#f44">'+lastErr+'</span>' : ''}
+    `;
+  }
 
   function tick() {
     _liveCameraAnimationId = requestAnimationFrame(tick);
+    frameCount++;
 
-    if (!video.videoWidth) return;  // henüz ready değil
-
-    // Overlay boyutu video ile senkron
-    const rect = video.getBoundingClientRect();
-    if (overlay.width !== rect.width || overlay.height !== rect.height) {
-      overlay.width = rect.width;
-      overlay.height = rect.height;
+    if (!video.videoWidth) {
+      updateDebug();
+      return;
     }
 
-    // Çok sık tespit yapma — her 250ms'de bir (CPU tasarrufu)
+    // Overlay boyutu video DOM rect ile senkron (CSS box, gerçek ekran piksellerini al)
+    const rect = video.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const overlayPxW = Math.round(rect.width * dpr);
+    const overlayPxH = Math.round(rect.height * dpr);
+    if (overlay.width !== overlayPxW || overlay.height !== overlayPxH) {
+      overlay.width = overlayPxW;
+      overlay.height = overlayPxH;
+      overlay.style.width = rect.width + 'px';
+      overlay.style.height = rect.height + 'px';
+    }
+
+    // Çok sık tespit yapma — her 200ms'de bir
     const now = Date.now();
-    if (now - lastDetectTime < 250 || processingFrame) return;
+    if (now - lastDetectTime < 200 || processingFrame) {
+      updateDebug();
+      return;
+    }
     lastDetectTime = now;
 
     // Scanner hazır mı?
-    if (!scannerCheckedReady) {
-      if (!isScannerReady()) {
-        status.textContent = '⏳ Tarayıcı yükleniyor...';
-        return;
-      }
-      scannerCheckedReady = true;
+    if (!isScannerReady()) {
+      status.textContent = '⏳ Tarayıcı yükleniyor... (' + (frameCount) + ')';
+      lastErr = 'OpenCV/jscanify hazır değil';
+      updateDebug();
+      return;
     }
+    lastErr = '';
 
     processingFrame = true;
+    let mat = null;
     try {
-      // Geçici canvas'a video frame al (daha küçük boyutta — hız için)
-      const detectScale = 0.4;  // 40% boyutta tespit yap, hızlı
+      // Geçici canvas'a video frame al — daha küçük (hız + hafıza)
+      const detectScale = 0.4;
       const dw = Math.round(video.videoWidth * detectScale);
       const dh = Math.round(video.videoHeight * detectScale);
       const tempCanvas = document.createElement('canvas');
@@ -4709,39 +4745,49 @@ function startLiveScannerLoop() {
 
       // jscanify ile köşe bul
       const scanner = new jscanify();
-      const mat = cv.imread(tempCanvas);
+      mat = cv.imread(tempCanvas);
       const contour = scanner.findPaperContour(mat);
       let cornerPoints = null;
       if (contour) {
         cornerPoints = scanner.getCornerPoints(contour);
       }
-      mat.delete();
 
-      // Overlay temizle + köşeleri çiz
       ctx.clearRect(0, 0, overlay.width, overlay.height);
 
       if (cornerPoints && validateCorners(cornerPoints, dw, dh)) {
-        // Algılanan köşeleri overlay koordinatlarına ölçekle
-        // video render boyutu (CSS) ≠ video.videoWidth — object-fit:cover dikkate al
-        const renderScale = Math.max(overlay.width / video.videoWidth, overlay.height / video.videoHeight);
-        const rw = video.videoWidth * renderScale;
-        const rh = video.videoHeight * renderScale;
-        const offsetX = (overlay.width - rw) / 2;
-        const offsetY = (overlay.height - rh) / 2;
-        const sx = (rw / dw);
-        const sy = (rh / dh);
-        const tx = p => p.x * sx + offsetX;
-        const ty = p => p.y * sy + offsetY;
+        // Detection canvas (dw x dh) → video pixel (videoWidth x videoHeight)
+        // → CSS rect (rect.width x rect.height, object-fit: cover)
+        const videoPxW = video.videoWidth;
+        const videoPxH = video.videoHeight;
+        const cssW = rect.width;
+        const cssH = rect.height;
+
+        // object-fit:cover hesabı: video'yu container'ı tam doldurmak için ölçekler ve kırpar
+        const scaleX = cssW / videoPxW;
+        const scaleY = cssH / videoPxH;
+        const scale = Math.max(scaleX, scaleY);
+        const renderW = videoPxW * scale;
+        const renderH = videoPxH * scale;
+        const offsetX = (cssW - renderW) / 2;
+        const offsetY = (cssH - renderH) / 2;
+
+        // Detection canvas → video pixel oranı
+        const detScale = 1 / detectScale;  // 0.4 → 2.5
+        // p (detection canvas) → CSS px
+        const tx = p => (p.x * detScale * scale + offsetX) * dpr;
+        const ty = p => (p.y * detScale * scale + offsetY) * dpr;
 
         const tl = cornerPoints.topLeftCorner;
         const tr = cornerPoints.topRightCorner;
         const bl = cornerPoints.bottomLeftCorner;
         const br = cornerPoints.bottomRightCorner;
 
+        lastCornerInfo = `corners detected: TL(${Math.round(tl.x)},${Math.round(tl.y)})`;
+
         // Yeşil çerçeve çiz
         ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 4;
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+        ctx.lineWidth = 5 * dpr;
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.25)';
         ctx.beginPath();
         ctx.moveTo(tx(tl), ty(tl));
         ctx.lineTo(tx(tr), ty(tr));
@@ -4754,23 +4800,22 @@ function startLiveScannerLoop() {
         // Köşe noktaları
         for (const p of [tl, tr, br, bl]) {
           ctx.beginPath();
-          ctx.arc(tx(p), ty(p), 8, 0, Math.PI * 2);
+          ctx.arc(tx(p), ty(p), 10 * dpr, 0, Math.PI * 2);
           ctx.fillStyle = '#22c55e';
           ctx.fill();
           ctx.fillStyle = 'white';
           ctx.beginPath();
-          ctx.arc(tx(p), ty(p), 4, 0, Math.PI * 2);
+          ctx.arc(tx(p), ty(p), 5 * dpr, 0, Math.PI * 2);
           ctx.fill();
         }
 
         stableDetectionFrames++;
         _liveCameraDetected = true;
-        status.style.opacity = '0';  // status'u gizle, çerçeve yeterli
+        status.style.opacity = '0';
 
-        // Auto-capture: 8 frame stabil tespit (~2 saniye) → otomatik çek
+        // Auto-capture
         const autoCheck = document.getElementById('liveAutoCapture');
         if (autoCheck && autoCheck.checked && stableDetectionFrames === 8) {
-          // Hafif vibrate (mobilde)
           if (navigator.vibrate) navigator.vibrate(50);
           captureLiveScannerPhoto();
           stableDetectionFrames = 0;
@@ -4780,15 +4825,20 @@ function startLiveScannerLoop() {
         _liveCameraDetected = false;
         status.style.opacity = '1';
         status.textContent = '📄 Belgeyi kameraya tutun';
+        lastCornerInfo = cornerPoints ? 'corners invalid (too small)' : 'no contour';
       }
     } catch (e) {
+      lastErr = 'Err: ' + e.message;
       console.warn('[LiveScanner]', e);
     } finally {
+      if (mat) {
+        try { mat.delete(); } catch(e) {}
+      }
       processingFrame = false;
+      updateDebug();
     }
   }
 
-  // İlk başla
   status.textContent = '📷 Kamera başlatılıyor...';
   tick();
 }
@@ -4798,13 +4848,13 @@ function validateCorners(c, w, h) {
   if (!c) return false;
   const tl = c.topLeftCorner, tr = c.topRightCorner, bl = c.bottomLeftCorner, br = c.bottomRightCorner;
   if (!tl || !tr || !bl || !br) return false;
-  // Min alan: video alanının %15'i
+  // Min alan: video alanının %5'i (gevşek tutalım)
   const widthTop = Math.hypot(tr.x - tl.x, tr.y - tl.y);
   const heightL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
   const area = widthTop * heightL;
   const totalArea = w * h;
-  if (area < totalArea * 0.15) return false;
-  if (widthTop < w * 0.3 || heightL < h * 0.3) return false;
+  if (area < totalArea * 0.05) return false;
+  if (widthTop < w * 0.15 || heightL < h * 0.15) return false;
   return true;
 }
 
