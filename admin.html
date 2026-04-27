@@ -4520,6 +4520,17 @@ function fabAction(action) {
 // BELEG SCAN FLOW — Kamera ile çek → otomatik Ausgabe + beleg
 // ============================================================
 function startBelegScanFlow() {
+  // Canlı kamera modal aç (CamScanner-style magnet)
+  // getUserMedia desteği yoksa native input fallback
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    // Eski tarayıcı veya secure context değilse — native fallback
+    return startBelegScanFlowFallback();
+  }
+  openLiveScannerModal();
+}
+
+// Native fallback (eski cihazlar / file picker yolu)
+function startBelegScanFlowFallback() {
   const isMobile = window.innerWidth <= 768 || /iPhone|iPad|Android/i.test(navigator.userAgent);
   const input = document.createElement('input');
   input.type = 'file';
@@ -4538,6 +4549,299 @@ function startBelegScanFlow() {
   document.body.appendChild(input);
   input.click();
   setTimeout(() => input.remove(), 300);
+}
+
+// ============================================================
+// LIVE CAMERA SCANNER (magnet — CamScanner-style)
+// ============================================================
+let _liveCameraStream = null;
+let _liveCameraAnimationId = null;
+let _liveCameraFacingMode = 'environment';
+let _liveCameraDetected = false;  // belge tespit edildi mi (auto-capture için)
+
+async function openLiveScannerModal() {
+  // Modal yoksa oluştur
+  if (!document.getElementById('liveCameraModal')) {
+    const modal = document.createElement('div');
+    modal.id = 'liveCameraModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:#000;z-index:3000;display:none;flex-direction:column';
+    modal.innerHTML = `
+      <!-- Top bar -->
+      <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:1rem;z-index:5;background:linear-gradient(rgba(0,0,0,0.5),transparent)">
+        <button onclick="closeLiveScannerModal()" style="background:rgba(0,0,0,0.5);color:white;border:none;width:40px;height:40px;border-radius:50%;font-size:1.4rem;cursor:pointer">✕</button>
+        <button onclick="flipLiveCamera()" style="background:rgba(0,0,0,0.5);color:white;border:none;width:40px;height:40px;border-radius:50%;font-size:1.2rem;cursor:pointer" title="Kamera değiştir">🔁</button>
+      </div>
+
+      <!-- Camera area -->
+      <div style="flex:1;position:relative;overflow:hidden;background:#000">
+        <video id="liveVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <canvas id="liveOverlay" style="position:absolute;inset:0;pointer-events:none"></canvas>
+        <canvas id="liveCapture" style="display:none"></canvas>
+
+        <!-- Status text -->
+        <div id="liveStatus" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:white;padding:0.6rem 1rem;border-radius:8px;font-size:0.9rem;text-align:center;pointer-events:none;transition:opacity 0.3s">
+          📷 Kamera başlatılıyor...
+        </div>
+      </div>
+
+      <!-- Bottom controls -->
+      <div style="background:#000;padding:1.2rem;display:flex;justify-content:center;align-items:center;gap:1.5rem">
+        <div style="flex:1"></div>
+        <button id="liveCaptureBtn" onclick="captureLiveScannerPhoto()" style="width:74px;height:74px;border-radius:50%;background:white;border:5px solid rgba(255,255,255,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:transform 0.1s" title="Çek"></button>
+        <div style="flex:1;display:flex;justify-content:flex-start">
+          <label style="color:rgba(255,255,255,0.7);font-size:0.78rem;display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+            <input type="checkbox" id="liveAutoCapture" checked style="width:16px;height:16px;cursor:pointer">
+            Otomatik
+          </label>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById('liveCameraModal').style.display = 'flex';
+  await startLiveCameraStream();
+  startLiveScannerLoop();
+}
+
+async function startLiveCameraStream() {
+  try {
+    // Mevcut stream varsa durdur
+    if (_liveCameraStream) {
+      _liveCameraStream.getTracks().forEach(t => t.stop());
+      _liveCameraStream = null;
+    }
+    const constraints = {
+      video: {
+        facingMode: _liveCameraFacingMode,
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
+      audio: false
+    };
+    _liveCameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('liveVideo');
+    video.srcObject = _liveCameraStream;
+    await new Promise(r => {
+      video.onloadedmetadata = () => { video.play(); r(); };
+    });
+    document.getElementById('liveStatus').textContent = '📄 Belgeyi kameraya tutun';
+  } catch (e) {
+    console.error('[LiveCamera]', e);
+    document.getElementById('liveStatus').innerHTML = '❌ Kamera erişimi reddedildi<br><small style="opacity:0.7">Tarayıcı izinlerini kontrol edin</small>';
+    setTimeout(() => {
+      closeLiveScannerModal();
+      // Fallback: native picker
+      startBelegScanFlowFallback();
+    }, 2000);
+  }
+}
+
+async function flipLiveCamera() {
+  _liveCameraFacingMode = _liveCameraFacingMode === 'environment' ? 'user' : 'environment';
+  await startLiveCameraStream();
+}
+
+function closeLiveScannerModal() {
+  if (_liveCameraAnimationId) {
+    cancelAnimationFrame(_liveCameraAnimationId);
+    _liveCameraAnimationId = null;
+  }
+  if (_liveCameraStream) {
+    _liveCameraStream.getTracks().forEach(t => t.stop());
+    _liveCameraStream = null;
+  }
+  const modal = document.getElementById('liveCameraModal');
+  if (modal) modal.style.display = 'none';
+  _liveCameraDetected = false;
+}
+
+// Her video frame'de 4 köşeyi tespit et + overlay'a çiz
+function startLiveScannerLoop() {
+  const video = document.getElementById('liveVideo');
+  const overlay = document.getElementById('liveOverlay');
+  const status = document.getElementById('liveStatus');
+  const captureBtn = document.getElementById('liveCaptureBtn');
+  const ctx = overlay.getContext('2d');
+
+  let lastDetectTime = 0;
+  let stableDetectionFrames = 0;  // arka arkaya kaç frame'de tespit edildi
+  let processingFrame = false;
+  let scannerCheckedReady = false;
+
+  function tick() {
+    _liveCameraAnimationId = requestAnimationFrame(tick);
+
+    if (!video.videoWidth) return;  // henüz ready değil
+
+    // Overlay boyutu video ile senkron
+    const rect = video.getBoundingClientRect();
+    if (overlay.width !== rect.width || overlay.height !== rect.height) {
+      overlay.width = rect.width;
+      overlay.height = rect.height;
+    }
+
+    // Çok sık tespit yapma — her 250ms'de bir (CPU tasarrufu)
+    const now = Date.now();
+    if (now - lastDetectTime < 250 || processingFrame) return;
+    lastDetectTime = now;
+
+    // Scanner hazır mı?
+    if (!scannerCheckedReady) {
+      if (!isScannerReady()) {
+        status.textContent = '⏳ Tarayıcı yükleniyor...';
+        return;
+      }
+      scannerCheckedReady = true;
+    }
+
+    processingFrame = true;
+    try {
+      // Geçici canvas'a video frame al (daha küçük boyutta — hız için)
+      const detectScale = 0.4;  // 40% boyutta tespit yap, hızlı
+      const dw = Math.round(video.videoWidth * detectScale);
+      const dh = Math.round(video.videoHeight * detectScale);
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = dw;
+      tempCanvas.height = dh;
+      const tctx = tempCanvas.getContext('2d');
+      tctx.drawImage(video, 0, 0, dw, dh);
+
+      // jscanify ile köşe bul
+      const scanner = new jscanify();
+      const mat = cv.imread(tempCanvas);
+      const contour = scanner.findPaperContour(mat);
+      let cornerPoints = null;
+      if (contour) {
+        cornerPoints = scanner.getCornerPoints(contour);
+      }
+      mat.delete();
+
+      // Overlay temizle + köşeleri çiz
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+      if (cornerPoints && validateCorners(cornerPoints, dw, dh)) {
+        // Algılanan köşeleri overlay koordinatlarına ölçekle
+        // video render boyutu (CSS) ≠ video.videoWidth — object-fit:cover dikkate al
+        const renderScale = Math.max(overlay.width / video.videoWidth, overlay.height / video.videoHeight);
+        const rw = video.videoWidth * renderScale;
+        const rh = video.videoHeight * renderScale;
+        const offsetX = (overlay.width - rw) / 2;
+        const offsetY = (overlay.height - rh) / 2;
+        const sx = (rw / dw);
+        const sy = (rh / dh);
+        const tx = p => p.x * sx + offsetX;
+        const ty = p => p.y * sy + offsetY;
+
+        const tl = cornerPoints.topLeftCorner;
+        const tr = cornerPoints.topRightCorner;
+        const bl = cornerPoints.bottomLeftCorner;
+        const br = cornerPoints.bottomRightCorner;
+
+        // Yeşil çerçeve çiz
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 4;
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+        ctx.beginPath();
+        ctx.moveTo(tx(tl), ty(tl));
+        ctx.lineTo(tx(tr), ty(tr));
+        ctx.lineTo(tx(br), ty(br));
+        ctx.lineTo(tx(bl), ty(bl));
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Köşe noktaları
+        for (const p of [tl, tr, br, bl]) {
+          ctx.beginPath();
+          ctx.arc(tx(p), ty(p), 8, 0, Math.PI * 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fill();
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.arc(tx(p), ty(p), 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        stableDetectionFrames++;
+        _liveCameraDetected = true;
+        status.style.opacity = '0';  // status'u gizle, çerçeve yeterli
+
+        // Auto-capture: 8 frame stabil tespit (~2 saniye) → otomatik çek
+        const autoCheck = document.getElementById('liveAutoCapture');
+        if (autoCheck && autoCheck.checked && stableDetectionFrames === 8) {
+          // Hafif vibrate (mobilde)
+          if (navigator.vibrate) navigator.vibrate(50);
+          captureLiveScannerPhoto();
+          stableDetectionFrames = 0;
+        }
+      } else {
+        stableDetectionFrames = Math.max(0, stableDetectionFrames - 1);
+        _liveCameraDetected = false;
+        status.style.opacity = '1';
+        status.textContent = '📄 Belgeyi kameraya tutun';
+      }
+    } catch (e) {
+      console.warn('[LiveScanner]', e);
+    } finally {
+      processingFrame = false;
+    }
+  }
+
+  // İlk başla
+  status.textContent = '📷 Kamera başlatılıyor...';
+  tick();
+}
+
+// Köşelerin makul olup olmadığını kontrol et (çok dar / dejenere değilse)
+function validateCorners(c, w, h) {
+  if (!c) return false;
+  const tl = c.topLeftCorner, tr = c.topRightCorner, bl = c.bottomLeftCorner, br = c.bottomRightCorner;
+  if (!tl || !tr || !bl || !br) return false;
+  // Min alan: video alanının %15'i
+  const widthTop = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+  const heightL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
+  const area = widthTop * heightL;
+  const totalArea = w * h;
+  if (area < totalArea * 0.15) return false;
+  if (widthTop < w * 0.3 || heightL < h * 0.3) return false;
+  return true;
+}
+
+async function captureLiveScannerPhoto() {
+  const video = document.getElementById('liveVideo');
+  const captureCanvas = document.getElementById('liveCapture');
+  if (!video || !video.videoWidth) {
+    toast('Kamera hazır değil', 'err');
+    return;
+  }
+
+  // Buton animasyonu
+  const btn = document.getElementById('liveCaptureBtn');
+  if (btn) {
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(() => { btn.style.transform = ''; }, 150);
+  }
+
+  // Tam çözünürlüklü frame al
+  captureCanvas.width = video.videoWidth;
+  captureCanvas.height = video.videoHeight;
+  const ctx = captureCanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  // Blob'a çevir
+  const blob = await new Promise(r => captureCanvas.toBlob(r, 'image/jpeg', 0.95));
+  if (!blob) {
+    toast('Foto alınamadı', 'err');
+    return;
+  }
+  const file = new File([blob], 'live-scan-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+
+  // Modal kapat
+  closeLiveScannerModal();
+
+  // OCR akışına yolla
+  await createScannedAusgabe(file);
 }
 
 async function createScannedAusgabe(file) {
