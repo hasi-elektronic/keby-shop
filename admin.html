@@ -4834,7 +4834,7 @@ function startLiveScannerLoop() {
     processingFrame = true;
     let mat = null;
     try {
-      const detectScale = 0.4;
+      const detectScale = 0.5;  // Daha iyi tespit için biraz daha büyük
       const dw = Math.round(video.videoWidth * detectScale);
       const dh = Math.round(video.videoHeight * detectScale);
       const tempCanvas = document.createElement('canvas');
@@ -4843,13 +4843,9 @@ function startLiveScannerLoop() {
       const tctx = tempCanvas.getContext('2d');
       tctx.drawImage(video, 0, 0, dw, dh);
 
-      const scanner = new jscanify();
       mat = cv.imread(tempCanvas);
-      const contour = scanner.findPaperContour(mat);
-      let cornerPoints = null;
-      if (contour) {
-        cornerPoints = scanner.getCornerPoints(contour);
-      }
+      // Profesyonel detector — multi-pass + scoring
+      let cornerPoints = professionalDetectDocument(mat, dw, dh);
 
       if (cornerPoints && validateCorners(cornerPoints, dw, dh)) {
         // Smoothing
@@ -4890,6 +4886,208 @@ function startLiveScannerLoop() {
 
   status.textContent = '📷 Kamera başlatılıyor...';
   tick();
+}
+
+// ============================================================
+// PROFESSIONAL DOCUMENT DETECTOR (CamScanner-quality)
+// Multi-pass: gaussian blur → multiple Canny → contour scoring
+// ============================================================
+function professionalDetectDocument(srcMat, w, h) {
+  if (typeof cv === 'undefined' || !cv.Mat) return null;
+
+  const gray = new cv.Mat();
+  const blurred = new cv.Mat();
+  const edges = new cv.Mat();
+  const contours = new cv.MatVector();
+  const hierarchy = new cv.Mat();
+
+  let bestQuad = null;
+  let bestScore = 0;
+  const totalArea = w * h;
+
+  try {
+    // 1) Grayscale
+    cv.cvtColor(srcMat, gray, cv.COLOR_RGBA2GRAY);
+
+    // 2) Gaussian blur — gürültüyü siler
+    const ksize = new cv.Size(5, 5);
+    cv.GaussianBlur(gray, blurred, ksize, 0);
+
+    // 3) Multiple Canny passes — farklı eşiklerle dene (loş ışık vs. yüksek kontrast)
+    const cannyParams = [
+      [50, 150],   // standart
+      [30, 100],   // agresif (loş ışık)
+      [75, 200]    // sıkı (yüksek kontrast)
+    ];
+
+    for (const [low, high] of cannyParams) {
+      cv.Canny(blurred, edges, low, high);
+
+      // Dilate — kırık kenarları birleştir
+      const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+      cv.dilate(edges, edges, kernel);
+      kernel.delete();
+
+      // Find contours (external only)
+      cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      for (let i = 0; i < contours.size(); i++) {
+        const cnt = contours.get(i);
+        const area = cv.contourArea(cnt);
+
+        // Çok küçük (% 8 altı) veya çok büyük (% 95 üstü) atla
+        if (area < totalArea * 0.08 || area > totalArea * 0.95) {
+          cnt.delete();
+          continue;
+        }
+
+        // Approxim polygon — 4 köşe arıyoruz
+        const perimeter = cv.arcLength(cnt, true);
+        let foundQuad = null;
+
+        for (const epsRatio of [0.02, 0.03, 0.04, 0.015]) {
+          const approx = new cv.Mat();
+          cv.approxPolyDP(cnt, approx, epsRatio * perimeter, true);
+          if (approx.rows === 4) {
+            foundQuad = approx;
+            break;
+          }
+          approx.delete();
+        }
+
+        if (!foundQuad) {
+          cnt.delete();
+          continue;
+        }
+
+        // 4 köşeyi al
+        const points = [];
+        for (let p = 0; p < 4; p++) {
+          points.push({
+            x: foundQuad.data32S[p * 2],
+            y: foundQuad.data32S[p * 2 + 1]
+          });
+        }
+        foundQuad.delete();
+
+        // Konvekslik kontrolü
+        const cntPoints = cv.matFromArray(4, 1, cv.CV_32SC2, points.flatMap(p => [p.x, p.y]));
+        const isConvex = cv.isContourConvex(cntPoints);
+        cntPoints.delete();
+        if (!isConvex) {
+          cnt.delete();
+          continue;
+        }
+
+        // Köşeleri sırala (TL, TR, BR, BL)
+        const sorted = sortQuadCorners(points);
+
+        // Aspect ratio (kâğıt 0.3 - 3.5 arası)
+        const widthTop = Math.hypot(sorted.tr.x - sorted.tl.x, sorted.tr.y - sorted.tl.y);
+        const widthBot = Math.hypot(sorted.br.x - sorted.bl.x, sorted.br.y - sorted.bl.y);
+        const heightL = Math.hypot(sorted.bl.x - sorted.tl.x, sorted.bl.y - sorted.tl.y);
+        const heightR = Math.hypot(sorted.br.x - sorted.tr.x, sorted.br.y - sorted.tr.y);
+        const avgW = (widthTop + widthBot) / 2;
+        const avgH = (heightL + heightR) / 2;
+        const ratio = avgW / avgH;
+        if (ratio < 0.3 || ratio > 3.5) {
+          cnt.delete();
+          continue;
+        }
+
+        // Köşe açıları — 90°'ye yakınlık
+        const corners = [sorted.tl, sorted.tr, sorted.br, sorted.bl];
+        let angleDeviation = 0;
+        for (let k = 0; k < 4; k++) {
+          const prev = corners[(k + 3) % 4];
+          const cur = corners[k];
+          const next = corners[(k + 1) % 4];
+          const v1x = prev.x - cur.x, v1y = prev.y - cur.y;
+          const v2x = next.x - cur.x, v2y = next.y - cur.y;
+          const dot = v1x * v2x + v1y * v2y;
+          const mag = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y);
+          const angle = Math.acos(Math.max(-1, Math.min(1, dot / mag))) * 180 / Math.PI;
+          angleDeviation += Math.abs(angle - 90);
+        }
+
+        // Çok eğik dörtgenler (90°'den toplam 100°+ sapma) atla
+        if (angleDeviation > 120) {
+          cnt.delete();
+          continue;
+        }
+
+        // Merkezilik
+        const centerX = (sorted.tl.x + sorted.tr.x + sorted.bl.x + sorted.br.x) / 4;
+        const centerY = (sorted.tl.y + sorted.tr.y + sorted.bl.y + sorted.br.y) / 4;
+        const distFromCenter = Math.hypot(centerX - w / 2, centerY - h / 2);
+        const maxDist = Math.hypot(w / 2, h / 2);
+        const centerScore = 1 - (distFromCenter / maxDist);
+
+        // Skorlama
+        const areaScore = Math.min(1, area / (totalArea * 0.6));
+        const angleScore = Math.max(0, 1 - angleDeviation / 180);
+        const idealRatio = 1.41;  // A4
+        const ratioScore = 1 - Math.min(1, Math.abs(Math.log(ratio / idealRatio)) / 1.5);
+
+        const score = (areaScore * 0.4) + (angleScore * 0.3) + (centerScore * 0.15) + (ratioScore * 0.15);
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestQuad = sorted;
+        }
+
+        cnt.delete();
+      }
+
+      // İyi bir match bulduysa diğer canny pass'leri atla
+      if (bestScore > 0.7) break;
+    }
+  } catch (e) {
+    console.warn('[detector]', e);
+  } finally {
+    gray.delete();
+    blurred.delete();
+    edges.delete();
+    contours.delete();
+    hierarchy.delete();
+  }
+
+  if (!bestQuad) return null;
+
+  // Yüksek skor şartı — emin olmadığı tespitleri reddet
+  if (bestScore < 0.45) return null;
+
+  // jscanify formatına dönüştür
+  return {
+    topLeftCorner: bestQuad.tl,
+    topRightCorner: bestQuad.tr,
+    bottomLeftCorner: bestQuad.bl,
+    bottomRightCorner: bestQuad.br
+  };
+}
+
+// 4 köşeyi sırala: TL, TR, BR, BL (centroid bazlı)
+function sortQuadCorners(points) {
+  const cx = (points[0].x + points[1].x + points[2].x + points[3].x) / 4;
+  const cy = (points[0].y + points[1].y + points[2].y + points[3].y) / 4;
+
+  let tl, tr, bl, br;
+  for (const p of points) {
+    if (p.x < cx && p.y < cy) tl = p;
+    else if (p.x > cx && p.y < cy) tr = p;
+    else if (p.x < cx && p.y > cy) bl = p;
+    else br = p;
+  }
+
+  // Edge case: aynı kuadrantta birden çok → fallback
+  if (!tl || !tr || !bl || !br) {
+    const sorted = [...points].sort((a, b) => a.y - b.y);
+    const top = sorted.slice(0, 2).sort((a, b) => a.x - b.x);
+    const bot = sorted.slice(2, 4).sort((a, b) => a.x - b.x);
+    tl = top[0]; tr = top[1]; bl = bot[0]; br = bot[1];
+  }
+
+  return { tl, tr, bl, br };
 }
 
 // Köşelerin makul olup olmadığını kontrol et
