@@ -457,7 +457,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </div>
           <div style="display:flex;gap:0.5rem;align-items:center">
             <select id="bilanzYear" onchange="loadBilanz()" style="padding:0.5rem 0.8rem;border:1px solid #d4cfc0;border-radius:8px;background:white;font-size:0.9rem;cursor:pointer"></select>
-            <button onclick="loadBilanz()" class="btn btn-secondary" style="padding:0.5rem 0.9rem;font-size:0.85rem">🔄</button>
+            <button onclick="loadBilanz()" class="btn btn-secondary" style="padding:0.5rem 0.9rem;font-size:0.85rem" title="Aktualisieren">🔄</button>
+            <button onclick="downloadBilanzPdf()" class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.85rem;font-weight:500" title="PDF-Bericht für Steuerberater herunterladen">📄 PDF</button>
           </div>
         </div>
 
@@ -3571,6 +3572,54 @@ function initBilanz() {
     }
   }
   loadBilanz();
+}
+
+// PDF Bilanz raporu indir (Steuerberater için)
+async function downloadBilanzPdf() {
+  const year = document.getElementById('bilanzYear').value;
+  const btn = event.target;
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ PDF wird erstellt...';
+
+  try {
+    const r = await fetch(API + `/api/admin/bilanz/pdf?year=${year}`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+
+    if (!r.ok) {
+      const errText = await r.text();
+      let errMsg = 'HTTP ' + r.status;
+      try {
+        const errJson = JSON.parse(errText);
+        errMsg = errJson.error || errMsg;
+      } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('pdf')) {
+      const errText = await r.text();
+      throw new Error('PDF nicht erhalten: ' + errText.slice(0, 200));
+    }
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bilanz_${year}_Keby.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    toast(`✅ Bilanz ${year}.pdf heruntergeladen`, 'ok');
+  } catch (e) {
+    toast('PDF-Fehler: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origText;
+  }
 }
 
 async function loadBilanz() {
