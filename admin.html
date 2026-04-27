@@ -4669,7 +4669,7 @@ function startLiveScannerLoop() {
   if (!debugPanel) {
     debugPanel = document.createElement('div');
     debugPanel.id = 'liveDebug';
-    debugPanel.style.cssText = 'position:absolute;top:70px;left:10px;right:10px;background:rgba(0,0,0,0.7);color:#0f0;padding:0.5rem 0.7rem;font-family:monospace;font-size:0.7rem;border-radius:6px;z-index:10;pointer-events:none;line-height:1.4';
+    debugPanel.style.cssText = 'position:absolute;top:70px;left:10px;right:10px;background:rgba(0,0,0,0.6);color:#0f0;padding:0.4rem 0.6rem;font-family:monospace;font-size:0.65rem;border-radius:6px;z-index:10;pointer-events:none;line-height:1.3;display:none';
     document.querySelector('#liveCameraModal > div:nth-child(2)').appendChild(debugPanel);
   }
 
@@ -4680,30 +4680,57 @@ function startLiveScannerLoop() {
   let lastErr = '';
   let lastCornerInfo = '';
 
+  // Smoothing: son N tespit edilen köşelerin EMA ortalaması
+  const SMOOTH_HISTORY = 5;
+  let cornerHistory = [];  // [{tl, tr, bl, br}, ...]
+  let smoothedCorners = null;  // render için kullanılan
+  let lastValidDetectionTime = 0;
+  const DETECTION_TIMEOUT = 600;  // 600ms tespit yoksa çerçeveyi kaldır
+
   function updateDebug() {
     const cvOk = typeof cv !== 'undefined' && !!cv.Mat;
     const jsOk = typeof jscanify !== 'undefined';
     const ready = window._opencvReady;
     debugPanel.innerHTML = `
-      Frame: ${frameCount} | Video: ${video.videoWidth}x${video.videoHeight}<br>
+      Frame: ${frameCount} | Video: ${video.videoWidth}x${video.videoHeight} | History: ${cornerHistory.length}<br>
       OpenCV: ${cvOk?'✓':'✗'} | jscanify: ${jsOk?'✓':'✗'} | Ready: ${ready?'✓':'✗'}<br>
       Stable: ${stableDetectionFrames} | ${lastCornerInfo}<br>
       ${lastErr ? '<span style="color:#f44">'+lastErr+'</span>' : ''}
     `;
   }
 
-  function tick() {
-    _liveCameraAnimationId = requestAnimationFrame(tick);
-    frameCount++;
+  // Smoothing: yeni köşeleri history'e ekle, ortalama döndür
+  function smoothCorners(newCorners) {
+    cornerHistory.push(newCorners);
+    if (cornerHistory.length > SMOOTH_HISTORY) cornerHistory.shift();
+    if (cornerHistory.length === 0) return null;
 
-    if (!video.videoWidth) {
-      updateDebug();
-      return;
+    // Her köşe için ortalama (ağırlıklı: yeni daha çok ağırlık)
+    const avg = { topLeftCorner: {x:0,y:0}, topRightCorner: {x:0,y:0}, bottomLeftCorner: {x:0,y:0}, bottomRightCorner: {x:0,y:0} };
+    let totalWeight = 0;
+    cornerHistory.forEach((c, i) => {
+      const w = i + 1;  // ağırlık 1, 2, 3...
+      totalWeight += w;
+      avg.topLeftCorner.x += c.topLeftCorner.x * w;
+      avg.topLeftCorner.y += c.topLeftCorner.y * w;
+      avg.topRightCorner.x += c.topRightCorner.x * w;
+      avg.topRightCorner.y += c.topRightCorner.y * w;
+      avg.bottomLeftCorner.x += c.bottomLeftCorner.x * w;
+      avg.bottomLeftCorner.y += c.bottomLeftCorner.y * w;
+      avg.bottomRightCorner.x += c.bottomRightCorner.x * w;
+      avg.bottomRightCorner.y += c.bottomRightCorner.y * w;
+    });
+    for (const k of ['topLeftCorner','topRightCorner','bottomLeftCorner','bottomRightCorner']) {
+      avg[k].x /= totalWeight;
+      avg[k].y /= totalWeight;
     }
+    return avg;
+  }
 
-    // Overlay boyutu video DOM rect ile senkron (CSS box, gerçek ekran piksellerini al)
-    const rect = video.getBoundingClientRect();
+  // Çerçeveyi her frame çiz (smoothing ile akışkan animasyon)
+  function drawFrame() {
     const dpr = window.devicePixelRatio || 1;
+    const rect = video.getBoundingClientRect();
     const overlayPxW = Math.round(rect.width * dpr);
     const overlayPxH = Math.round(rect.height * dpr);
     if (overlay.width !== overlayPxW || overlay.height !== overlayPxH) {
@@ -4713,17 +4740,88 @@ function startLiveScannerLoop() {
       overlay.style.height = rect.height + 'px';
     }
 
-    // Çok sık tespit yapma — her 200ms'de bir
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+    if (!smoothedCorners || !video.videoWidth) return;
+
+    // Detection canvas (dw x dh) → CSS px (object-fit:cover)
+    const detectScale = 0.4;
+    const dw = video.videoWidth * detectScale;
+    const dh = video.videoHeight * detectScale;
+    const videoPxW = video.videoWidth;
+    const videoPxH = video.videoHeight;
+    const cssW = rect.width;
+    const cssH = rect.height;
+    const scale = Math.max(cssW / videoPxW, cssH / videoPxH);
+    const renderW = videoPxW * scale;
+    const renderH = videoPxH * scale;
+    const offsetX = (cssW - renderW) / 2;
+    const offsetY = (cssH - renderH) / 2;
+    const detScaleInv = 1 / detectScale;
+    const tx = p => (p.x * detScaleInv * scale + offsetX) * dpr;
+    const ty = p => (p.y * detScaleInv * scale + offsetY) * dpr;
+
+    const tl = smoothedCorners.topLeftCorner;
+    const tr = smoothedCorners.topRightCorner;
+    const bl = smoothedCorners.bottomLeftCorner;
+    const br = smoothedCorners.bottomRightCorner;
+
+    // Yumuşak yeşil çerçeve
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 4 * dpr;
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+    ctx.beginPath();
+    ctx.moveTo(tx(tl), ty(tl));
+    ctx.lineTo(tx(tr), ty(tr));
+    ctx.lineTo(tx(br), ty(br));
+    ctx.lineTo(tx(bl), ty(bl));
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Köşe noktaları
+    for (const p of [tl, tr, br, bl]) {
+      ctx.beginPath();
+      ctx.arc(tx(p), ty(p), 9 * dpr, 0, Math.PI * 2);
+      ctx.fillStyle = '#22c55e';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(tx(p), ty(p), 4 * dpr, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+    }
+  }
+
+  function tick() {
+    _liveCameraAnimationId = requestAnimationFrame(tick);
+    frameCount++;
+
+    // HER FRAME çerçeveyi çiz (smoothing yumuşak görünür)
+    drawFrame();
+
+    // Detection timeout: uzun süre tespit yoksa smoothed'i fade-out
     const now = Date.now();
-    if (now - lastDetectTime < 200 || processingFrame) {
+    if (smoothedCorners && (now - lastValidDetectionTime > DETECTION_TIMEOUT)) {
+      smoothedCorners = null;
+      cornerHistory = [];
+      stableDetectionFrames = 0;
+    }
+
+    if (!video.videoWidth) {
+      updateDebug();
+      return;
+    }
+
+    // Algılama frekansı: 350ms (yavaş, akışkan görünüm — smoothing zaten arada interpolate eder)
+    if (now - lastDetectTime < 350 || processingFrame) {
       updateDebug();
       return;
     }
     lastDetectTime = now;
 
-    // Scanner hazır mı?
     if (!isScannerReady()) {
-      status.textContent = '⏳ Tarayıcı yükleniyor... (' + (frameCount) + ')';
+      status.textContent = '⏳ Tarayıcı yükleniyor...';
       lastErr = 'OpenCV/jscanify hazır değil';
       updateDebug();
       return;
@@ -4733,7 +4831,6 @@ function startLiveScannerLoop() {
     processingFrame = true;
     let mat = null;
     try {
-      // Geçici canvas'a video frame al — daha küçük (hız + hafıza)
       const detectScale = 0.4;
       const dw = Math.round(video.videoWidth * detectScale);
       const dh = Math.round(video.videoHeight * detectScale);
@@ -4743,7 +4840,6 @@ function startLiveScannerLoop() {
       const tctx = tempCanvas.getContext('2d');
       tctx.drawImage(video, 0, 0, dw, dh);
 
-      // jscanify ile köşe bul
       const scanner = new jscanify();
       mat = cv.imread(tempCanvas);
       const contour = scanner.findPaperContour(mat);
@@ -4752,70 +4848,18 @@ function startLiveScannerLoop() {
         cornerPoints = scanner.getCornerPoints(contour);
       }
 
-      ctx.clearRect(0, 0, overlay.width, overlay.height);
-
       if (cornerPoints && validateCorners(cornerPoints, dw, dh)) {
-        // Detection canvas (dw x dh) → video pixel (videoWidth x videoHeight)
-        // → CSS rect (rect.width x rect.height, object-fit: cover)
-        const videoPxW = video.videoWidth;
-        const videoPxH = video.videoHeight;
-        const cssW = rect.width;
-        const cssH = rect.height;
-
-        // object-fit:cover hesabı: video'yu container'ı tam doldurmak için ölçekler ve kırpar
-        const scaleX = cssW / videoPxW;
-        const scaleY = cssH / videoPxH;
-        const scale = Math.max(scaleX, scaleY);
-        const renderW = videoPxW * scale;
-        const renderH = videoPxH * scale;
-        const offsetX = (cssW - renderW) / 2;
-        const offsetY = (cssH - renderH) / 2;
-
-        // Detection canvas → video pixel oranı
-        const detScale = 1 / detectScale;  // 0.4 → 2.5
-        // p (detection canvas) → CSS px
-        const tx = p => (p.x * detScale * scale + offsetX) * dpr;
-        const ty = p => (p.y * detScale * scale + offsetY) * dpr;
-
-        const tl = cornerPoints.topLeftCorner;
-        const tr = cornerPoints.topRightCorner;
-        const bl = cornerPoints.bottomLeftCorner;
-        const br = cornerPoints.bottomRightCorner;
-
-        lastCornerInfo = `corners detected: TL(${Math.round(tl.x)},${Math.round(tl.y)})`;
-
-        // Yeşil çerçeve çiz
-        ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 5 * dpr;
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.25)';
-        ctx.beginPath();
-        ctx.moveTo(tx(tl), ty(tl));
-        ctx.lineTo(tx(tr), ty(tr));
-        ctx.lineTo(tx(br), ty(br));
-        ctx.lineTo(tx(bl), ty(bl));
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Köşe noktaları
-        for (const p of [tl, tr, br, bl]) {
-          ctx.beginPath();
-          ctx.arc(tx(p), ty(p), 10 * dpr, 0, Math.PI * 2);
-          ctx.fillStyle = '#22c55e';
-          ctx.fill();
-          ctx.fillStyle = 'white';
-          ctx.beginPath();
-          ctx.arc(tx(p), ty(p), 5 * dpr, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
+        // Smoothing
+        smoothedCorners = smoothCorners(cornerPoints);
+        lastValidDetectionTime = now;
         stableDetectionFrames++;
         _liveCameraDetected = true;
         status.style.opacity = '0';
+        lastCornerInfo = `✓ stable: ${stableDetectionFrames}`;
 
-        // Auto-capture
+        // Auto-capture: 4 stable detection (~1.4 saniye) → çek
         const autoCheck = document.getElementById('liveAutoCapture');
-        if (autoCheck && autoCheck.checked && stableDetectionFrames === 8) {
+        if (autoCheck && autoCheck.checked && stableDetectionFrames === 4) {
           if (navigator.vibrate) navigator.vibrate(50);
           captureLiveScannerPhoto();
           stableDetectionFrames = 0;
@@ -4823,9 +4867,11 @@ function startLiveScannerLoop() {
       } else {
         stableDetectionFrames = Math.max(0, stableDetectionFrames - 1);
         _liveCameraDetected = false;
-        status.style.opacity = '1';
-        status.textContent = '📄 Belgeyi kameraya tutun';
-        lastCornerInfo = cornerPoints ? 'corners invalid (too small)' : 'no contour';
+        if (!smoothedCorners) {
+          status.style.opacity = '1';
+          status.textContent = '📄 Belgeyi kameraya tutun';
+        }
+        lastCornerInfo = cornerPoints ? 'invalid (not rectangle)' : 'no contour';
       }
     } catch (e) {
       lastErr = 'Err: ' + e.message;
@@ -4843,18 +4889,50 @@ function startLiveScannerLoop() {
   tick();
 }
 
-// Köşelerin makul olup olmadığını kontrol et (çok dar / dejenere değilse)
+// Köşelerin makul olup olmadığını kontrol et
+// Sadece "kâğıt benzeri" dikdörtgen şekiller geçer
 function validateCorners(c, w, h) {
   if (!c) return false;
   const tl = c.topLeftCorner, tr = c.topRightCorner, bl = c.bottomLeftCorner, br = c.bottomRightCorner;
   if (!tl || !tr || !bl || !br) return false;
-  // Min alan: video alanının %5'i (gevşek tutalım)
+
   const widthTop = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+  const widthBot = Math.hypot(br.x - bl.x, br.y - bl.y);
   const heightL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
-  const area = widthTop * heightL;
-  const totalArea = w * h;
-  if (area < totalArea * 0.05) return false;
-  if (widthTop < w * 0.15 || heightL < h * 0.15) return false;
+  const heightR = Math.hypot(br.x - tr.x, br.y - tr.y);
+
+  // 1) Min alan: video alanının %12'si
+  const area = ((widthTop + widthBot) / 2) * ((heightL + heightR) / 2);
+  if (area < w * h * 0.12) return false;
+
+  // 2) Min kenar uzunluğu
+  const minSide = Math.min(widthTop, widthBot, heightL, heightR);
+  if (minSide < Math.min(w, h) * 0.2) return false;
+
+  // 3) Karşı kenarlar benzer uzunlukta olmalı (dikdörtgen / trapezoid kontrol)
+  // Üst-alt ve sol-sağ farkı %40'tan fazla olmasın
+  const widthRatio = Math.min(widthTop, widthBot) / Math.max(widthTop, widthBot);
+  const heightRatio = Math.min(heightL, heightR) / Math.max(heightL, heightR);
+  if (widthRatio < 0.5 || heightRatio < 0.5) return false;
+
+  // 4) En-boy oranı makul (kâğıt değil, çok ince üçgen olmasın)
+  const aspectRatio = ((widthTop + widthBot) / 2) / ((heightL + heightR) / 2);
+  if (aspectRatio < 0.3 || aspectRatio > 3.5) return false;
+
+  // 5) 4 köşenin convex hull olduğunu kontrol et (dejenere şekil değilse)
+  // Her köşe diğerlerinin "iç tarafında" olmamalı — basit cross product ile
+  function cross(o, a, b) {
+    return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  }
+  // Saat yönü kontrol: TL→TR→BR→BL hep aynı işaret olmalı
+  const c1 = cross(tl, tr, br);
+  const c2 = cross(tr, br, bl);
+  const c3 = cross(br, bl, tl);
+  const c4 = cross(bl, tl, tr);
+  if (!(c1 > 0 && c2 > 0 && c3 > 0 && c4 > 0) && !(c1 < 0 && c2 < 0 && c3 < 0 && c4 < 0)) {
+    return false;
+  }
+
   return true;
 }
 
