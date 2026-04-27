@@ -190,43 +190,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <!-- SheetJS for XLSX export (EÜR) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 
-<!-- jscanify (OpenCV.js wrapper) for document edge detection + auto-crop -->
-<script async src="https://docs.opencv.org/4.7.0/opencv.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/ColonelParrot/jscanify@master/src/jscanify.min.js"></script>
-<script>
-  // OpenCV runtime ready event'i dinle (script load ≠ runtime ready)
-  window._opencvReady = false;
-  if (typeof cv !== 'undefined') {
-    if (cv.Mat) {
-      window._opencvReady = true;
-    } else {
-      cv['onRuntimeInitialized'] = () => { window._opencvReady = true; console.log('[Scanner] OpenCV ready'); };
-    }
-  } else {
-    // cv henüz tanımlı değilse, document onload sonrası kontrol et
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof cv !== 'undefined' && !window._opencvReady) {
-        if (cv.Mat) {
-          window._opencvReady = true;
-        } else {
-          cv['onRuntimeInitialized'] = () => { window._opencvReady = true; console.log('[Scanner] OpenCV ready (deferred)'); };
-        }
-      }
-    });
-    // Yedek olarak interval ile kontrol (script async yüklenmeden önce DOMContentLoaded geçebilir)
-    let _cvCheckInterval = setInterval(() => {
-      if (typeof cv !== 'undefined') {
-        clearInterval(_cvCheckInterval);
-        if (cv.Mat) {
-          window._opencvReady = true;
-        } else {
-          cv['onRuntimeInitialized'] = () => { window._opencvReady = true; console.log('[Scanner] OpenCV ready (interval)'); };
-        }
-      }
-    }, 200);
-    setTimeout(() => clearInterval(_cvCheckInterval), 30000);  // 30 sn sonra vazgeç
-  }
-</script>
+<!-- jscanify/OpenCV.js kaldırıldı — telefon native kamerası + manuel köşe ayarı kullanıyoruz -->
 </head>
 <body>
 
@@ -3982,120 +3946,10 @@ function renderGeldfluss() {
 // DOCUMENT SCANNER — jscanify ile edge detection + auto-crop
 // ============================================================
 
-// jscanify hazır mı?
-function isScannerReady() {
-  return !!(window._opencvReady && typeof cv !== 'undefined' && cv.Mat && typeof jscanify !== 'undefined');
-}
-
-// OpenCV.js + jscanify yüklemesini bekle (max 12 sn)
-async function waitForScanner(maxMs = 12000) {
-  const start = Date.now();
-  while (Date.now() - start < maxMs) {
-    if (isScannerReady()) return true;
-    await new Promise(r => setTimeout(r, 200));
-  }
-  console.warn('[Scanner] timeout — opencvReady:', window._opencvReady,
-    'cv:', typeof cv, 'jscanify:', typeof jscanify);
-  return false;
-}
-
-// File'a doc scanner uygula → otomatik crop + perspective correct
-// Başarısız olursa orijinali döner (sessizce)
-async function processWithScanner(file) {
-  if (!file || !file.type || !file.type.startsWith('image/')) return file;
-
-  // Scanner hazır değilse bekle
-  const ready = await waitForScanner(12000);
-  if (!ready) {
-    console.warn('[Scanner] hazır değil, ham foto kullanılıyor');
-    return file;
-  }
-
-  try {
-    // File → HTMLImageElement
-    const dataUrl = await new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = e => resolve(e.target.result);
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    });
-    const img = await new Promise((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = reject;
-      i.src = dataUrl;
-    });
-
-    console.log('[Scanner] Image yüklendi:', img.width, 'x', img.height);
-
-    const scanner = new jscanify();
-
-    // Önce kenar tespiti (debug için)
-    let cornerPoints = null;
-    try {
-      const mat = cv.imread(img);
-      const contour = scanner.findPaperContour(mat);
-      if (contour) {
-        cornerPoints = scanner.getCornerPoints(contour);
-        console.log('[Scanner] Köşeler:', cornerPoints);
-      }
-      mat.delete();
-    } catch (e) {
-      console.warn('[Scanner] Kenar tespiti başarısız:', e.message);
-    }
-
-    // Hedef boyut: orijinalin oranı korunsun (A4 değil — fatura A4 olmayabilir)
-    // Kenar tespit başarılıysa bulunan köşelerden hesapla
-    let targetW = img.width;
-    let targetH = img.height;
-    if (cornerPoints) {
-      const tl = cornerPoints.topLeftCorner;
-      const tr = cornerPoints.topRightCorner;
-      const bl = cornerPoints.bottomLeftCorner;
-      const br = cornerPoints.bottomRightCorner;
-      const widthTop = Math.hypot(tr.x - tl.x, tr.y - tl.y);
-      const widthBot = Math.hypot(br.x - bl.x, br.y - bl.y);
-      const heightL = Math.hypot(bl.x - tl.x, bl.y - tl.y);
-      const heightR = Math.hypot(br.x - tr.x, br.y - tr.y);
-      targetW = Math.round(Math.max(widthTop, widthBot));
-      targetH = Math.round(Math.max(heightL, heightR));
-      // Çok küçük gelirse iptal
-      if (targetW < 200 || targetH < 200) {
-        console.warn('[Scanner] Tespit edilen alan çok küçük, iptal');
-        return file;
-      }
-    }
-
-    // jscanify ile extract et
-    const resultCanvas = scanner.extractPaper(img, targetW, targetH);
-
-    if (!resultCanvas) {
-      console.warn('[Scanner] extractPaper boş döndü');
-      return file;
-    }
-
-    console.log('[Scanner] Extracted:', resultCanvas.width, 'x', resultCanvas.height);
-
-    // Canvas → Blob → File
-    return await new Promise((resolve) => {
-      resultCanvas.toBlob((blob) => {
-        if (!blob) {
-          resolve(file);
-          return;
-        }
-        const baseName = (file.name || 'beleg.jpg').replace(/\.\w+$/, '');
-        const newFile = new File([blob], baseName + '_scanned.jpg', {
-          type: 'image/jpeg',
-          lastModified: Date.now()
-        });
-        resolve(newFile);
-      }, 'image/jpeg', 0.92);
-    });
-  } catch (e) {
-    console.warn('[Scanner] exception:', e);
-    return file;
-  }
-}
+// jscanify kaldırıldı — bu fonksiyonlar artık no-op (eski çağrılar için stub)
+function isScannerReady() { return false; }
+async function waitForScanner() { return false; }
+async function processWithScanner(file) { return file; }
 
 // Image compression — Canvas API ile JPEG sıkıştırma
 // File girer, sıkıştırılmış File döner. PDF/non-image olduğu gibi geri verilir.
@@ -4520,17 +4374,8 @@ function fabAction(action) {
 // BELEG SCAN FLOW — Kamera ile çek → otomatik Ausgabe + beleg
 // ============================================================
 function startBelegScanFlow() {
-  // Canlı kamera modal aç (CamScanner-style magnet)
-  // getUserMedia desteği yoksa native input fallback
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    // Eski tarayıcı veya secure context değilse — native fallback
-    return startBelegScanFlowFallback();
-  }
-  openLiveScannerModal();
-}
-
-// Native fallback (eski cihazlar / file picker yolu)
-function startBelegScanFlowFallback() {
+  // Telefonun native kamerasını kullan (en iyi görüntü kalitesi + odak + ışık)
+  // getUserMedia / OpenCV / AI hepsini bıraktık — telefon kamera donanımı zaten optimal
   const isMobile = window.innerWidth <= 768 || /iPhone|iPad|Android/i.test(navigator.userAgent);
   const input = document.createElement('input');
   input.type = 'file';
@@ -4544,11 +4389,48 @@ function startBelegScanFlowFallback() {
       toast('Dosya çok büyük (max 10MB)', 'err');
       return;
     }
-    await createScannedAusgabe(file);
+
+    // PDF veya küçük resim → direkt OCR akışı (köşe ayarına gerek yok)
+    if (!file.type.startsWith('image/') || file.size < 200 * 1024) {
+      await createScannedAusgabe(file);
+      return;
+    }
+
+    // Resim → önizleme + manuel köşe ayarı
+    await openCornerEditorFromFile(file);
   };
   document.body.appendChild(input);
   input.click();
   setTimeout(() => input.remove(), 300);
+}
+
+// File → Image → corner editor (varsayılan %5 inset köşeler)
+async function openCornerEditorFromFile(file) {
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = e => resolve(e.target.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = dataUrl;
+    });
+
+    // Geçici canvas (corner editor canvas bekliyor)
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+    tempCanvas.getContext('2d').drawImage(img, 0, 0);
+
+    // Köşeler %5 inset — kullanıcı 4 noktayı parmakla ayarlayacak
+    openCornerEditor(tempCanvas, null);  // null → varsayılan inset
+  } catch (e) {
+    toast('Resim yüklenemedi: ' + e.message, 'err');
+  }
 }
 
 // ============================================================
@@ -5041,7 +4923,7 @@ function openCornerEditor(sourceCanvas, autoDetectedCorners) {
 
       <!-- Hint -->
       <div style="background:#1a1a1a;color:rgba(255,255,255,0.7);padding:0.6rem 1rem;font-size:0.8rem;text-align:center;border-bottom:1px solid #222">
-        🤖 AI köşeleri tespit etti · Yeşil noktaları sürükleyerek ince ayar yapabilirsiniz
+        💡 Yeşil noktaları belgenin köşelerine sürükleyin
       </div>
 
       <!-- Canvas area -->
@@ -5066,8 +4948,7 @@ function openCornerEditor(sourceCanvas, autoDetectedCorners) {
   img.onload = () => {
     drawCornerEditor(img);
     setupCornerEditorEvents(img);
-    // Otomatik AI köşe tespiti — kullanıcı beklerken yapsın
-    setTimeout(() => cornerEditorAutoDetect(), 200);
+    // Otomatik AI çağrısı KAPALI — kullanıcı isterse 🤖 butona basar
   };
   img.src = dataUrl;
   _cornerEditorState.image = img;
@@ -5082,14 +4963,8 @@ function closeCornerEditor() {
 
 function cornerEditorRetake() {
   closeCornerEditor();
-  // Live scanner zaten açık, sadece loop'u yeniden başlat
-  if (_liveCameraStream) {
-    startLiveScannerLoop();
-  } else {
-    // Stream kapalıysa baştan aç
-    closeLiveScannerModal();
-    setTimeout(() => openLiveScannerModal(), 100);
-  }
+  // Native kamerayı yeniden aç
+  setTimeout(() => startBelegScanFlow(), 100);
 }
 
 async function cornerEditorAutoDetect() {
@@ -5334,18 +5209,42 @@ async function cornerEditorAccept() {
     console.warn('[CornerEditor] extractPaper failed, fallback to crop:', e);
   }
 
-  // Fallback: jscanify yoksa veya hata olduysa, bounding-box crop yap
+  // Fallback: bounding-box yerine, dörtgen alanını clip ederek crop yap
+  // Sonuç: belge dik dursun veya eğri olsun, arka plan tamamen kesilir
   if (!resultBlob) {
-    const minX = Math.min(corners.tl.x, corners.bl.x);
-    const maxX = Math.max(corners.tr.x, corners.br.x);
-    const minY = Math.min(corners.tl.y, corners.tr.y);
-    const maxY = Math.max(corners.bl.y, corners.br.y);
+    const tl = corners.tl, tr = corners.tr, bl = corners.bl, br = corners.br;
+
+    // Bounding box (canvas boyutu için)
+    const minX = Math.min(tl.x, bl.x, tr.x, br.x);
+    const maxX = Math.max(tl.x, bl.x, tr.x, br.x);
+    const minY = Math.min(tl.y, tr.y, bl.y, br.y);
+    const maxY = Math.max(tl.y, tr.y, bl.y, br.y);
     const cw = Math.round(maxX - minX);
     const ch = Math.round(maxY - minY);
+
     const c = document.createElement('canvas');
     c.width = cw;
     c.height = ch;
-    c.getContext('2d').drawImage(img, minX, minY, cw, ch, 0, 0, cw, ch);
+    const ctx = c.getContext('2d');
+
+    // Beyaz arka plan (belge dışı alan beyaz olsun, OCR için iyi)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Dörtgen clip path (köşeler bounding box'a göre kaydırılır)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(tl.x - minX, tl.y - minY);
+    ctx.lineTo(tr.x - minX, tr.y - minY);
+    ctx.lineTo(br.x - minX, br.y - minY);
+    ctx.lineTo(bl.x - minX, bl.y - minY);
+    ctx.closePath();
+    ctx.clip();
+
+    // Image'i çiz — sadece clip alanı görünür kalır
+    ctx.drawImage(img, -minX, -minY);
+    ctx.restore();
+
     resultBlob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
   }
 
