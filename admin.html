@@ -190,6 +190,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <!-- SheetJS for XLSX export (EÜR) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 
+<!-- Chart.js for Bilanz Dashboard -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 <!-- jscanify/OpenCV.js kaldırıldı — telefon native kamerası + manuel köşe ayarı kullanıyoruz -->
 </head>
 <body>
@@ -224,6 +227,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="sb-item" data-page="orders" onclick="goto('orders')"><span class="sb-ico">📦</span> Siparişler</div>
         <div class="sb-item" data-page="buchhaltung" onclick="goto('buchhaltung')"><span class="sb-ico">📋</span> Buchhaltung</div>
         <div class="sb-item" data-page="geldfluss" onclick="goto('geldfluss')"><span class="sb-ico">💰</span> Geldfluss</div>
+        <div class="sb-item" data-page="bilanz" onclick="goto('bilanz')"><span class="sb-ico">📈</span> Bilanz</div>
         <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Müşteriler</div>
         <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medya</div>
       </nav>
@@ -442,6 +446,24 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
             .gf-mobile-cards { display: block; padding: 0.2rem 0; }
           }
         </style>
+      </section>
+
+      <!-- ===== BILANZ ===== -->
+      <section id="page-bilanz" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">📈 Bilanz Dashboard</h1>
+            <p class="page-sub">Gelir/gider analizi, kar/zarar trendi, müşteri raporları</p>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <select id="bilanzYear" onchange="loadBilanz()" style="padding:0.5rem 0.8rem;border:1px solid #d4cfc0;border-radius:8px;background:white;font-size:0.9rem;cursor:pointer"></select>
+            <button onclick="loadBilanz()" class="btn btn-secondary" style="padding:0.5rem 0.9rem;font-size:0.85rem">🔄</button>
+          </div>
+        </div>
+
+        <div id="bilanzContent">
+          <div style="padding:3rem;text-align:center;color:#888">Yükleniyor...</div>
+        </div>
       </section>
 
       <!-- ===== CUSTOMERS ===== -->
@@ -1223,6 +1245,7 @@ function goto(page) {
   if (page === 'images') loadImages();
   if (page === 'buchhaltung') loadInvoices();
   if (page === 'geldfluss') loadGeldfluss();
+  if (page === 'bilanz') initBilanz();
 }
 
 // ============================================================
@@ -3527,6 +3550,378 @@ function switchExTab(tab) {
   document.getElementById('extab-datev').classList.toggle('active', tab === 'datev');
   document.getElementById('ex-pane-eur').style.display = tab === 'eur' ? '' : 'none';
   document.getElementById('ex-pane-datev').style.display = tab === 'datev' ? '' : 'none';
+}
+
+// ============================================================
+// BILANZ DASHBOARD
+// ============================================================
+let _bilanzCharts = {};  // Chart.js instance'ları
+
+function initBilanz() {
+  // Yıl seçici doldur (son 5 yıl + bu yıl + gelecek yıl)
+  const sel = document.getElementById('bilanzYear');
+  if (sel.options.length === 0) {
+    const cy = new Date().getFullYear();
+    for (let y = cy + 1; y >= cy - 5; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      if (y === cy) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+  loadBilanz();
+}
+
+async function loadBilanz() {
+  const year = document.getElementById('bilanzYear').value;
+  const container = document.getElementById('bilanzContent');
+  container.innerHTML = '<div style="padding:3rem;text-align:center;color:#888">📊 Yükleniyor...</div>';
+
+  try {
+    const d = await api(`/api/admin/bilanz?year=${year}`);
+    if (!d.success) {
+      container.innerHTML = '<div style="padding:2rem;color:#c0392b">Hata: ' + (d.error || 'unknown') + '</div>';
+      return;
+    }
+    renderBilanz(d);
+  } catch (e) {
+    container.innerHTML = '<div style="padding:2rem;color:#c0392b">Hata: ' + e.message + '</div>';
+  }
+}
+
+function fmtEur(n) {
+  return '€ ' + (Number(n) || 0).toFixed(2).replace('.', ',');
+}
+
+function pctDiff(cur, prev) {
+  if (!prev || prev === 0) return cur > 0 ? '+∞' : '0';
+  const diff = ((cur - prev) / Math.abs(prev)) * 100;
+  return (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
+}
+
+function renderBilanz(d) {
+  const container = document.getElementById('bilanzContent');
+  const k = d.kpi;
+  const ku = d.kleinunternehmer;
+
+  // Yıllık karşılaştırma renk
+  const yearSaldoColor = k.year_saldo >= 0 ? '#16a34a' : '#dc2626';
+  const monthSaldoColor = k.month_saldo >= 0 ? '#16a34a' : '#dc2626';
+  const yearVsLastYear = pctDiff(k.year_einnahmen, k.year_einnahmen_prev);
+  const monthVsLast = pctDiff(k.month_einnahmen, k.last_month_einnahmen);
+
+  // KU renk: %80'den fazla → uyarı
+  let kuColor = '#16a34a', kuBg = '#dcfce7';
+  if (ku.percent > 0.8) { kuColor = '#ea580c'; kuBg = '#ffedd5'; }
+  if (ku.percent > 1.0) { kuColor = '#dc2626'; kuBg = '#fee2e2'; }
+
+  container.innerHTML = `
+    <!-- KPI Kartları -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.9rem;margin-bottom:1.5rem">
+      <div class="card" style="border-left:4px solid #16a34a;padding:1rem 1.2rem">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Gelir</div>
+        <div style="font-size:1.5rem;font-weight:600;color:#16a34a">${fmtEur(k.year_einnahmen)}</div>
+        <div style="font-size:0.75rem;color:${k.year_einnahmen >= k.year_einnahmen_prev ? '#16a34a' : '#dc2626'};margin-top:0.3rem">
+          ${yearVsLastYear} vs ${d.year - 1}
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid #dc2626;padding:1rem 1.2rem">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Gider</div>
+        <div style="font-size:1.5rem;font-weight:600;color:#dc2626">${fmtEur(k.year_ausgaben)}</div>
+        <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
+          Geçen yıl: ${fmtEur(k.year_ausgaben_prev)}
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid ${yearSaldoColor};padding:1rem 1.2rem">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Kar/Zarar</div>
+        <div style="font-size:1.5rem;font-weight:700;color:${yearSaldoColor}">${fmtEur(k.year_saldo)}</div>
+        <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
+          Geçen yıl: ${fmtEur(k.year_saldo_prev)}
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid #1e40af;padding:1rem 1.2rem;cursor:pointer" onclick="goto('customers')" title="Müşteriler sayfasına git">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Açık Alacak</div>
+        <div style="font-size:1.5rem;font-weight:600;color:#1e40af">${fmtEur(k.open_invoice_total)}</div>
+        <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
+          ${k.open_invoice_count} faturayı bekleyen
+        </div>
+      </div>
+    </div>
+
+    <!-- Bu ay vs Geçen ay -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0.9rem;margin-bottom:1.5rem">
+      <div class="card" style="padding:1rem 1.2rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.7rem">
+          <div>
+            <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Bu Ay - Saldo</div>
+            <div style="font-size:1.4rem;font-weight:700;color:${monthSaldoColor};margin-top:0.2rem">${fmtEur(k.month_saldo)}</div>
+          </div>
+          <span style="background:${k.month_einnahmen >= k.last_month_einnahmen ? '#dcfce7' : '#fee2e2'};color:${k.month_einnahmen >= k.last_month_einnahmen ? '#16a34a' : '#dc2626'};padding:0.2rem 0.6rem;border-radius:4px;font-size:0.72rem;font-weight:600">${monthVsLast}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#666;border-top:1px solid #eee;padding-top:0.5rem">
+          <span>Gelir: <strong style="color:#16a34a">${fmtEur(k.month_einnahmen)}</strong></span>
+          <span>Gider: <strong style="color:#dc2626">${fmtEur(k.month_ausgaben)}</strong></span>
+        </div>
+      </div>
+      <div class="card" style="padding:1rem 1.2rem">
+        <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Geçen Ay - Saldo</div>
+        <div style="font-size:1.4rem;font-weight:700;color:${k.last_month_saldo >= 0 ? '#16a34a' : '#dc2626'}">${fmtEur(k.last_month_saldo)}</div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#666;border-top:1px solid #eee;padding-top:0.5rem;margin-top:0.5rem">
+          <span>Gelir: <strong style="color:#16a34a">${fmtEur(k.last_month_einnahmen)}</strong></span>
+          <span>Gider: <strong style="color:#dc2626">${fmtEur(k.last_month_ausgaben)}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kleinunternehmer Sınırı -->
+    <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem">
+        <div>
+          <div style="font-weight:600;font-size:0.95rem">Kleinunternehmer Grenze §19 UStG</div>
+          <div style="font-size:0.78rem;color:#666;margin-top:0.2rem">${fmtEur(ku.current)} / ${fmtEur(ku.limit)} (${(ku.percent * 100).toFixed(1)}%)</div>
+        </div>
+        <span style="background:${kuBg};color:${kuColor};padding:0.3rem 0.8rem;border-radius:6px;font-size:0.85rem;font-weight:600">
+          ${ku.status === 'unter' ? '✓ unter Grenze' : '⚠️ über Grenze'}
+        </span>
+      </div>
+      <div style="background:#f0ebe0;border-radius:8px;height:12px;overflow:hidden;position:relative">
+        <div style="height:100%;width:${Math.min(100, ku.percent * 100).toFixed(1)}%;background:${kuColor};transition:width 0.5s"></div>
+      </div>
+      <div style="font-size:0.78rem;color:#666;margin-top:0.4rem">
+        ${ku.remaining > 0 ? `Bu yıl daha ${fmtEur(ku.remaining)} ekleyebilirsin` : 'Sınır aşıldı - Regelbesteuerung gerekli'}
+      </div>
+    </div>
+
+    <!-- Aylık Trend Grafiği -->
+    <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 style="margin:0;font-size:1rem;font-weight:600">📊 Aylık Gelir/Gider</h3>
+      </div>
+      <div style="position:relative;height:280px">
+        <canvas id="bilanzMonthlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Cumulative Saldo -->
+    <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 style="margin:0;font-size:1rem;font-weight:600">📈 Kümülatif Saldo</h3>
+      </div>
+      <div style="position:relative;height:240px">
+        <canvas id="bilanzCumChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Kategori Pasta -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0.9rem;margin-bottom:1.5rem">
+      <div class="card" style="padding:1.2rem">
+        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#16a34a">Gelir Kategorileri</h3>
+        <div style="position:relative;height:240px">
+          <canvas id="bilanzEinChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="padding:1.2rem">
+        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#dc2626">Gider Kategorileri</h3>
+        <div style="position:relative;height:240px">
+          <canvas id="bilanzAusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Müşteriler -->
+    ${d.top_customers.length > 0 ? `
+    <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
+      <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600">🏆 Top Müşteriler (Toplam Ciro)</h3>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+          <thead>
+            <tr style="background:#faf7f0;border-bottom:2px solid #e8e3d6">
+              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Müşteri</th>
+              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Tip</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Toplam Faturalı</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Ödenen</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Bakiye</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.top_customers.map(c => `
+              <tr style="border-bottom:1px solid #f0ebe0;cursor:pointer" onclick="goto('customers');setTimeout(()=>openKontokorrent('${escapeHtml(c.id)}'),200)">
+                <td style="padding:0.6rem 0.8rem;font-weight:500">${escapeHtml(c.name)}</td>
+                <td style="padding:0.6rem 0.8rem"><span style="background:${c.type === 'b2b' ? '#dbeafe' : '#f5f1e8'};color:${c.type === 'b2b' ? '#1e40af' : '#6b6b5a'};padding:0.1rem 0.5rem;border-radius:4px;font-size:0.72rem;font-weight:600">${c.type.toUpperCase()}</span></td>
+                <td style="padding:0.6rem 0.8rem;text-align:right;font-weight:500">${fmtEur(c.total_invoiced)}</td>
+                <td style="padding:0.6rem 0.8rem;text-align:right;color:#16a34a">${fmtEur(c.total_paid)}</td>
+                <td style="padding:0.6rem 0.8rem;text-align:right;font-weight:600;color:${c.balance > 0.01 ? '#dc2626' : '#888'}">${fmtEur(c.balance)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <div style="font-size:0.72rem;color:#888;text-align:right">Son güncelleme: ${new Date(d.generated_at).toLocaleString('de-DE')}</div>
+  `;
+
+  // Grafikler
+  setTimeout(() => renderBilanzCharts(d), 50);
+}
+
+function renderBilanzCharts(d) {
+  // Eski chart'ları yok et
+  for (const k in _bilanzCharts) {
+    try { _bilanzCharts[k].destroy(); } catch(e) {}
+  }
+  _bilanzCharts = {};
+
+  const monthLabels = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  const einnahmenData = d.monthly.map(m => m.einnahmen);
+  const ausgabenData = d.monthly.map(m => m.ausgaben);
+  const cumulativeData = d.monthly.map(m => m.cumulative);
+
+  // 1) Aylık Gelir/Gider (bar chart)
+  const c1 = document.getElementById('bilanzMonthlyChart');
+  if (c1 && typeof Chart !== 'undefined') {
+    _bilanzCharts.monthly = new Chart(c1, {
+      type: 'bar',
+      data: {
+        labels: monthLabels,
+        datasets: [
+          {
+            label: 'Gelir',
+            data: einnahmenData,
+            backgroundColor: 'rgba(22, 163, 74, 0.7)',
+            borderColor: '#16a34a',
+            borderWidth: 1
+          },
+          {
+            label: 'Gider',
+            data: ausgabenData,
+            backgroundColor: 'rgba(220, 38, 38, 0.7)',
+            borderColor: '#dc2626',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ctx.dataset.label + ': ' + fmtEur(ctx.parsed.y)
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (v) => '€' + v.toLocaleString('de-DE') }
+          }
+        }
+      }
+    });
+  }
+
+  // 2) Kümülatif Saldo (line chart)
+  const c2 = document.getElementById('bilanzCumChart');
+  if (c2 && typeof Chart !== 'undefined') {
+    _bilanzCharts.cum = new Chart(c2, {
+      type: 'line',
+      data: {
+        labels: monthLabels,
+        datasets: [{
+          label: 'Kümülatif Saldo',
+          data: cumulativeData,
+          fill: true,
+          borderColor: '#1e40af',
+          backgroundColor: 'rgba(30, 64, 175, 0.15)',
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#1e40af'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => 'Saldo: ' + fmtEur(ctx.parsed.y)
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: { callback: (v) => '€' + v.toLocaleString('de-DE') }
+          }
+        }
+      }
+    });
+  }
+
+  // 3) Gelir Kategorileri (doughnut)
+  const c3 = document.getElementById('bilanzEinChart');
+  if (c3 && typeof Chart !== 'undefined' && d.categories.einnahmen.length > 0) {
+    _bilanzCharts.ein = new Chart(c3, {
+      type: 'doughnut',
+      data: {
+        labels: d.categories.einnahmen.map(c => c.label),
+        datasets: [{
+          data: d.categories.einnahmen.map(c => c.amount),
+          backgroundColor: ['#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7', '#15803d', '#166534'],
+          borderWidth: 2,
+          borderColor: 'white'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ctx.label + ': ' + fmtEur(ctx.parsed)
+            }
+          }
+        }
+      }
+    });
+  } else if (c3) {
+    c3.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Veri yok</div>';
+  }
+
+  // 4) Gider Kategorileri (doughnut)
+  const c4 = document.getElementById('bilanzAusChart');
+  if (c4 && typeof Chart !== 'undefined' && d.categories.ausgaben.length > 0) {
+    _bilanzCharts.aus = new Chart(c4, {
+      type: 'doughnut',
+      data: {
+        labels: d.categories.ausgaben.map(c => c.label),
+        datasets: [{
+          data: d.categories.ausgaben.map(c => c.amount),
+          backgroundColor: ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca', '#fee2e2', '#991b1b', '#7f1d1d'],
+          borderWidth: 2,
+          borderColor: 'white'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ctx.label + ': ' + fmtEur(ctx.parsed)
+            }
+          }
+        }
+      }
+    });
+  } else if (c4) {
+    c4.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Veri yok</div>';
+  }
 }
 
 async function loadEurPreview() {
