@@ -204,10 +204,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
     </div>
     <div class="ltitle">Keby Admin Panel</div>
-    <div class="lsub">Yönetici girişi</div>
+    <div class="lsub">Administrator-Login</div>
     <form onsubmit="doLogin(event)">
-      <input id="loginPw" class="linput" type="password" placeholder="Şifre" autocomplete="current-password" autofocus>
-      <button type="submit" class="lbtn">Giriş yap</button>
+      <input id="loginPw" class="linput" type="password" placeholder="Passwort" autocomplete="current-password" autofocus>
+      <button type="submit" class="lbtn">Anmelden</button>
       <div id="lerr" class="lerr"></div>
     </form>
   </div>
@@ -223,16 +223,16 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       </div>
       <nav class="sb-nav">
         <div class="sb-item active" data-page="dashboard" onclick="goto('dashboard')"><span class="sb-ico">📊</span> Dashboard</div>
-        <div class="sb-item" data-page="products" onclick="goto('products')"><span class="sb-ico">🫒</span> Ürünler</div>
-        <div class="sb-item" data-page="orders" onclick="goto('orders')"><span class="sb-ico">📦</span> Siparişler</div>
+        <div class="sb-item" data-page="products" onclick="goto('products')"><span class="sb-ico">🫒</span> Produkte</div>
+        <div class="sb-item" data-page="orders" onclick="goto('orders')"><span class="sb-ico">📦</span> Bestellungen</div>
         <div class="sb-item" data-page="buchhaltung" onclick="goto('buchhaltung')"><span class="sb-ico">📋</span> Buchhaltung</div>
         <div class="sb-item" data-page="geldfluss" onclick="goto('geldfluss')"><span class="sb-ico">💰</span> Geldfluss</div>
         <div class="sb-item" data-page="bilanz" onclick="goto('bilanz')"><span class="sb-ico">📈</span> Bilanz</div>
-        <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Müşteriler</div>
-        <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medya</div>
+        <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Kunden</div>
+        <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medien</div>
       </nav>
       <div class="sb-foot">
-        <div class="sb-logout" onclick="logout()">⎋ Çıkış</div>
+        <div class="sb-logout" onclick="logout()">⎋ Abmelden</div>
       </div>
     </aside>
 
@@ -244,17 +244,17 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="page-head">
           <div>
             <h1 class="page-title">Dashboard</h1>
-            <div class="page-sub">Genel bakış</div>
+            <div class="page-sub">Übersicht</div>
           </div>
           <button class="btn btn-secondary" onclick="loadAll()">↻ Yenile</button>
         </div>
         <div class="stats-grid" id="dashStats"></div>
         <div class="panel">
-          <div class="panel-head"><div class="panel-title">Son siparişler</div>
-            <a class="btn btn-sm btn-secondary" onclick="goto('orders')">Tümü →</a>
+          <div class="panel-head"><div class="panel-title">Letzte Bestellungen</div>
+            <a class="btn btn-sm btn-secondary" onclick="goto('orders')">Alle →</a>
           </div>
           <div class="panel-body flush">
-            <table class="tbl"><thead><tr><th>Ref</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th>Tarih</th></tr></thead>
+            <table class="tbl"><thead><tr><th>Ref</th><th>Kunde</th><th>Betrag</th><th>Status</th><th>Datum</th></tr></thead>
             <tbody id="dashRecentTbody"></tbody></table>
           </div>
         </div>
@@ -264,15 +264,15 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <section id="page-products" class="page hidden">
         <div class="page-head">
           <div>
-            <h1 class="page-title">Ürünler</h1>
-            <div class="page-sub">Katalog yönetimi</div>
+            <h1 class="page-title">Produkte</h1>
+            <div class="page-sub">Katalogverwaltung</div>
           </div>
-          <button class="btn btn-primary" onclick="openProductModal()">+ Yeni ürün</button>
+          <button class="btn btn-primary" onclick="openProductModal()">+ Neues Produkt</button>
         </div>
         <div class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th></th><th>Ürün</th><th>Fiyat</th><th>Stok</th><th>Durum</th><th>Resim</th><th></th>
+              <th></th><th>Produkt</th><th>Preis</th><th>Bestand</th><th>Status</th><th>Bild</th><th></th>
             </tr></thead>
             <tbody id="prodTbody"></tbody></table>
           </div>
@@ -283,19 +283,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <section id="page-orders" class="page hidden">
         <div class="page-head">
           <div>
-            <h1 class="page-title">Siparişler</h1>
-            <div class="page-sub"><span id="orderCount">—</span> sipariş</div>
+            <h1 class="page-title">Bestellungen</h1>
+            <div class="page-sub"><span id="orderCount">—</span> Bestellungen</div>
           </div>
           <div class="flex gap-sm">
-            <input class="finput" style="width:220px" placeholder="🔍 Ara…" id="orderSearch" oninput="renderOrders()">
-            <button class="btn btn-secondary" onclick="enrichStripeOrders()" title="Eski Stripe siparişlerinin müşteri/adres bilgisini Stripe'tan çek">💳 Stripe verilerini güncelle</button>
+            <input class="finput" style="width:220px" placeholder="🔍 Suchen…" id="orderSearch" oninput="renderOrders()">
+            <button class="btn btn-secondary" onclick="enrichStripeOrders()" title="Kunden-/Adressdaten alter Stripe-Bestellungen aus Stripe laden">💳 Stripe-Daten aktualisieren</button>
             <button class="btn btn-secondary" onclick="loadOrders()">↻</button>
           </div>
         </div>
         <div class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>Ref</th><th>Müşteri</th><th>Ürünler</th><th>Tutar</th><th>Ödeme</th><th>Durum</th><th>Rechnung</th><th>Tarih</th><th></th>
+              <th>Ref</th><th>Kunde</th><th>Produkte</th><th>Betrag</th><th>Zahlung</th><th>Status</th><th>Rechnung</th><th>Datum</th><th></th>
             </tr></thead>
             <tbody id="ordersTbody"></tbody></table>
           </div>
@@ -307,18 +307,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="page-head">
           <div>
             <h1 class="page-title">📋 Buchhaltung</h1>
-            <div class="page-sub"><span id="invCount">—</span> fatura · Toplam: <span id="invTotal">—</span></div>
+            <div class="page-sub"><span id="invCount">—</span> Rechnungen · Gesamt: <span id="invTotal">—</span></div>
           </div>
           <div class="flex gap-sm">
-            <input class="finput" style="width:200px" placeholder="🔍 Numara/müşteri ara…" id="invSearch" oninput="renderInvoicesList()">
+            <input class="finput" style="width:200px" placeholder="🔍 Nummer/Kunde suchen…" id="invSearch" oninput="renderInvoicesList()">
             <select class="finput" id="invFilterSource" style="width:140px" onchange="renderInvoicesList()">
-              <option value="">Tüm kaynaklar</option>
+              <option value="">Alle Quellen</option>
               <option value="online">🌐 Online</option>
-              <option value="manual">📝 Manuel</option>
+              <option value="manual">📝 Manuell</option>
               <option value="storno">🚫 Storno</option>
             </select>
             <select class="finput" id="invFilterPayment" style="width:140px" onchange="renderInvoicesList()">
-              <option value="">Tüm ödemeler</option>
+              <option value="">Alle Zahlungsarten</option>
               <option value="stripe">Stripe</option>
               <option value="paypal">PayPal</option>
               <option value="bar">Bar</option>
@@ -331,34 +331,34 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </div>
         </div>
 
-        <!-- İstatistik kartları -->
+        <!-- Statistik-Karten -->
         <div class="dash-grid" style="margin-bottom:1rem">
           <div class="stat-card" onclick="filterInvBySource('')" style="cursor:pointer">
-            <div class="stat-label">Bu ay (toplam)</div>
+            <div class="stat-label">Diesen Monat (gesamt)</div>
             <div class="stat-value" id="statInvMonth">—</div>
-            <div class="stat-sub"><span id="statInvMonthCount">—</span> fatura</div>
+            <div class="stat-sub"><span id="statInvMonthCount">—</span> Rechnungen</div>
           </div>
           <div class="stat-card" onclick="filterInvBySource('online')" style="cursor:pointer">
-            <div class="stat-label">🌐 Online (bu ay)</div>
+            <div class="stat-label">🌐 Online (diesen Monat)</div>
             <div class="stat-value" id="statInvOnline">—</div>
-            <div class="stat-sub"><span id="statInvOnlineCount">—</span> fatura</div>
+            <div class="stat-sub"><span id="statInvOnlineCount">—</span> Rechnungen</div>
           </div>
           <div class="stat-card" onclick="filterInvBySource('manual')" style="cursor:pointer">
-            <div class="stat-label">📝 Manuel (bu ay)</div>
+            <div class="stat-label">📝 Manuell (diesen Monat)</div>
             <div class="stat-value" id="statInvManual">—</div>
-            <div class="stat-sub"><span id="statInvManualCount">—</span> fatura</div>
+            <div class="stat-sub"><span id="statInvManualCount">—</span> Rechnungen</div>
           </div>
           <div class="stat-card" onclick="filterInvByPayment('offen')" style="cursor:pointer">
-            <div class="stat-label">⏳ Açık ödemeler</div>
+            <div class="stat-label">⏳ Offene Zahlungen</div>
             <div class="stat-value" id="statInvOpen">—</div>
-            <div class="stat-sub"><span id="statInvOpenCount">—</span> fatura</div>
+            <div class="stat-sub"><span id="statInvOpenCount">—</span> Rechnungen</div>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>Nr</th><th>Datum</th><th>Müşteri</th><th>Pozisyonlar</th><th>Tutar</th><th>Ödeme</th><th>Kaynak</th><th>Durum</th><th></th>
+              <th>Nr.</th><th>Datum</th><th>Kunde</th><th>Positionen</th><th>Betrag</th><th>Zahlung</th><th>Quelle</th><th>Status</th><th></th>
             </tr></thead>
             <tbody id="invTbody"></tbody></table>
           </div>
@@ -391,7 +391,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </div>
         </div>
 
-        <!-- KPI Kartları -->
+        <!-- KPI-Karten -->
         <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
           <div class="card" style="border-left:4px solid #3d6b2a;padding:1rem 1.2rem">
             <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Einnahmen</div>
@@ -409,8 +409,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
         <!-- Sync info -->
         <div id="gfSyncBanner" style="display:none;background:#fff8e7;border-left:3px solid #c4a24a;padding:0.7rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem">
-          <strong>İlk kurulum:</strong> Mevcut faturaları Geldfluss'a dahil etmek için
-          <button onclick="syncInvoicesToGeldfluss()" class="btn btn-secondary" style="margin-left:0.5rem;padding:0.3rem 0.8rem;font-size:0.8rem">🔄 Faturaları Senkronize Et</button>
+          <strong>Erste Einrichtung:</strong> Vorhandene Rechnungen in Geldfluss aufnehmen
+          <button onclick="syncInvoicesToGeldfluss()" class="btn btn-secondary" style="margin-left:0.5rem;padding:0.3rem 0.8rem;font-size:0.8rem">🔄 Rechnungen synchronisieren</button>
         </div>
 
         <!-- Tablo (desktop) -->
@@ -429,7 +429,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
                 </tr>
               </thead>
               <tbody id="gfTbody">
-                <tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Yükleniyor...</td></tr>
+                <tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Wird geladen...</td></tr>
               </tbody>
             </table>
           </div>
@@ -453,7 +453,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="page-head">
           <div>
             <h1 class="page-title">📈 Bilanz Dashboard</h1>
-            <p class="page-sub">Gelir/gider analizi, kar/zarar trendi, müşteri raporları</p>
+            <p class="page-sub">Einnahmen-/Ausgaben-Analyse, Gewinn-/Verlust-Trend, Kundenberichte</p>
           </div>
           <div style="display:flex;gap:0.5rem;align-items:center">
             <select id="bilanzYear" onchange="loadBilanz()" style="padding:0.5rem 0.8rem;border:1px solid #d4cfc0;border-radius:8px;background:white;font-size:0.9rem;cursor:pointer"></select>
@@ -462,7 +462,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         </div>
 
         <div id="bilanzContent">
-          <div style="padding:3rem;text-align:center;color:#888">Yükleniyor...</div>
+          <div style="padding:3rem;text-align:center;color:#888">Wird geladen...</div>
         </div>
       </section>
 
@@ -470,26 +470,26 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <section id="page-customers" class="page hidden">
         <div class="page-head">
           <div>
-            <h1 class="page-title">Müşteriler</h1>
-            <div class="page-sub"><span id="custCount">—</span> kayıt</div>
+            <h1 class="page-title">Kunden</h1>
+            <div class="page-sub"><span id="custCount">—</span> Einträge</div>
           </div>
           <div class="flex gap-sm">
-            <input class="finput" style="width:220px" placeholder="🔍 Ara…" id="custSearch" oninput="renderCustomersAll()">
-            <button class="btn btn-primary" onclick="openCustomerModal()">+ Yeni Müşteri</button>
+            <input class="finput" style="width:220px" placeholder="🔍 Suchen…" id="custSearch" oninput="renderCustomersAll()">
+            <button class="btn btn-primary" onclick="openCustomerModal()">+ Neuer Kunde</button>
           </div>
         </div>
 
         <!-- Tab switcher -->
         <div class="cust-tabs" style="display:flex;gap:0;border-bottom:1px solid #e5e5e0;margin-bottom:1rem">
-          <button id="ctab-local" class="cust-tab active" onclick="switchCustTab('local')">📦 Sipariş Müşterileri</button>
-          <button id="ctab-stripe" class="cust-tab" onclick="switchCustTab('stripe')">💳 Stripe Ödeyenler</button>
+          <button id="ctab-local" class="cust-tab active" onclick="switchCustTab('local')">📦 Bestellkunden</button>
+          <button id="ctab-stripe" class="cust-tab" onclick="switchCustTab('stripe')">💳 Stripe-Zahler</button>
         </div>
 
         <!-- Local customers (mevcut) -->
         <div id="cust-pane-local" class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>İsim</th><th>Tip</th><th>E-posta</th><th>Şehir</th><th>Sipariş</th><th>Bakiye</th><th>Son sipariş</th><th></th>
+              <th>Name</th><th>Typ</th><th>E-Mail</th><th>Stadt</th><th>Bestellungen</th><th>Saldo</th><th>Letzte Bestellung</th><th></th>
             </tr></thead>
             <tbody id="custTbody"></tbody></table>
           </div>
@@ -500,7 +500,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <div class="panel-body flush">
             <div id="stripeStatus" style="padding:1rem;color:#888"></div>
             <table class="tbl" id="stripeTable" style="display:none"><thead><tr>
-              <th>İsim</th><th>E-posta</th><th>Telefon</th><th>Adres</th><th>Ödeme</th><th>Toplam</th><th>Son</th><th></th>
+              <th>Name</th><th>E-Mail</th><th>Telefon</th><th>Adresse</th><th>Zahlung</th><th>Gesamt</th><th>Letzte</th><th></th>
             </tr></thead>
             <tbody id="stripeTbody"></tbody></table>
             <div style="padding:1rem;text-align:center;border-top:1px solid #f0f0e8" id="stripeLoadMore"></div>
@@ -522,11 +522,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <section id="page-images" class="page hidden">
         <div class="page-head">
           <div>
-            <h1 class="page-title">Medya Kütüphanesi</h1>
-            <div class="page-sub"><span id="imgCount">—</span> dosya</div>
+            <h1 class="page-title">Medien-Bibliothek</h1>
+            <div class="page-sub"><span id="imgCount">—</span> Dateien</div>
           </div>
           <div class="flex gap-sm">
-            <button class="btn btn-primary" onclick="document.getElementById('mediaUpload').click()">⬆️ Yükle</button>
+            <button class="btn btn-primary" onclick="document.getElementById('mediaUpload').click()">⬆️ Hochladen</button>
             <input id="mediaUpload" type="file" multiple accept="image/*,video/*" style="display:none" onchange="uploadFiles(this.files, 'media')">
             <button class="btn btn-secondary" onclick="loadImages()">↻</button>
           </div>
@@ -610,15 +610,15 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <div class="modal-backdrop" id="prodModal">
   <div class="modal wide">
     <div class="modal-head">
-      <div class="modal-title" id="prodModalTitle">Ürün düzenle</div>
+      <div class="modal-title" id="prodModalTitle">Produkt bearbeiten</div>
       <button class="modal-close" onclick="closeProdModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field">
-          <label class="flabel">Ürün ID (kısa, benzersiz)</label>
+          <label class="flabel">Produkt-ID (kurz, eindeutig)</label>
           <input id="pf_id" class="finput" placeholder="kanister-5l">
-          <div class="fhint">URL/slug için kullanılır. Değiştirilemez.</div>
+          <div class="fhint">Wird für URL/Slug verwendet. Nicht änderbar.</div>
         </div>
         <div class="field">
           <label class="flabel">Sayfa slug</label>
@@ -649,7 +649,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <select id="pf_active" class="fselect"><option value="true">Aktif</option><option value="false">Pasif</option></select>
         </div>
         <div class="field form-full">
-          <label class="flabel">Kısa açıklama (Türkçe)</label>
+          <label class="flabel">Kurzbeschreibung (Türkisch)</label>
           <input id="pf_short_tr" class="finput">
         </div>
         <div class="field form-full">
@@ -657,7 +657,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <input id="pf_short_de" class="finput">
         </div>
         <div class="field form-full">
-          <label class="flabel">Uzun açıklama (Türkçe)</label>
+          <label class="flabel">Langbeschreibung (Türkisch)</label>
           <textarea id="pf_desc_tr" class="ftextarea"></textarea>
         </div>
         <div class="field form-full">
@@ -668,17 +668,17 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <label class="flabel">Resimler</label>
           <div id="pf_images_preview" class="img-gallery" style="margin-bottom:1rem"></div>
           <div class="flex gap-sm">
-            <button class="btn btn-secondary btn-sm" onclick="openImagePicker()">🖼️ Galeriden seç</button>
-            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('prodImgUpload').click()">⬆️ Yeni yükle</button>
+            <button class="btn btn-secondary btn-sm" onclick="openImagePicker()">🖼️ Aus Galerie wählen</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('prodImgUpload').click()">⬆️ Neu hochladen</button>
             <input id="prodImgUpload" type="file" multiple accept="image/*" style="display:none" onchange="uploadFiles(this.files, 'product')">
           </div>
-          <div class="fhint">İlk resim kapak (thumb) olur.</div>
+          <div class="fhint">Das erste Bild wird zum Cover (Thumbnail).</div>
         </div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-danger" id="pf_delBtn" onclick="delProduct()" style="margin-right:auto">🗑 Sil</button>
-      <button class="btn btn-secondary" onclick="closeProdModal()">İptal</button>
+      <button class="btn btn-danger" id="pf_delBtn" onclick="delProduct()" style="margin-right:auto">🗑 Löschen</button>
+      <button class="btn btn-secondary" onclick="closeProdModal()">Abbrechen</button>
       <button class="btn btn-primary" onclick="saveProduct()">Kaydet</button>
     </div>
   </div>
@@ -688,15 +688,15 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <div class="modal-backdrop" id="imgPicker">
   <div class="modal wide">
     <div class="modal-head">
-      <div class="modal-title">Galeriden resim seç</div>
+      <div class="modal-title">Bild aus Galerie wählen</div>
       <button class="modal-close" onclick="closeImagePicker()">✕</button>
     </div>
     <div class="modal-body">
       <div id="imgPickerGrid" class="img-gallery"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-secondary" onclick="closeImagePicker()">İptal</button>
-      <button class="btn btn-primary" onclick="applyImagePicker()">Seçilenleri ekle</button>
+      <button class="btn btn-secondary" onclick="closeImagePicker()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="applyImagePicker()">Auswahl hinzufügen</button>
     </div>
   </div>
 </div>
@@ -705,11 +705,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <div class="modal-backdrop" id="orderModal">
   <div class="modal" style="max-width:760px">
     <div class="modal-head">
-      <div class="modal-title">Sipariş detayı</div>
+      <div class="modal-title">Bestelldetails</div>
       <button class="modal-close" onclick="closeOrderModal()">✕</button>
     </div>
     <div class="modal-body">
-      <!-- Stripe rich panel (sadece Stripe siparişlerinde) -->
+      <!-- Stripe rich panel (nur bei Stripe-Bestellungen) -->
       <div id="of_stripe_panel" style="display:none;background:linear-gradient(135deg,#635bff10,#635bff05);border:1px solid #635bff30;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.2rem">
         <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem">
           <span style="background:#635bff;color:white;padding:0.15rem 0.6rem;border-radius:4px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em">STRIPE</span>
@@ -719,7 +719,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.6rem;font-size:0.82rem">
           <div><span style="color:#888">Payment ID:</span> <code id="of_stripe_pid" style="font-size:0.78rem;background:#f4f4f0;padding:0.1rem 0.4rem;border-radius:3px"></code></div>
           <div><span style="color:#888">Tarih:</span> <span id="of_stripe_date"></span></div>
-          <div id="of_stripe_receipt_wrap"><a id="of_stripe_receipt" href="#" target="_blank" style="color:#3d6b2a;font-size:0.85rem">🧾 Stripe Makbuz ↗</a></div>
+          <div id="of_stripe_receipt_wrap"><a id="of_stripe_receipt" href="#" target="_blank" style="color:#3d6b2a;font-size:0.85rem">🧾 Stripe-Beleg ↗</a></div>
         </div>
       </div>
 
@@ -728,21 +728,21 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="field"><label class="flabel">Durum</label>
           <select id="of_status" class="fselect">
             <option value="neu">Yeni</option>
-            <option value="onaylandi">Onaylandı</option>
-            <option value="hazirlaniyor">Hazırlanıyor</option>
-            <option value="gonderildi">Gönderildi</option>
+            <option value="onaylandi">Bestätigt</option>
+            <option value="hazirlaniyor">In Bearbeitung</option>
+            <option value="gonderildi">Versendet</option>
             <option value="teslim">Teslim edildi</option>
-            <option value="iptal">İptal</option>
+            <option value="iptal">Storniert</option>
           </select>
         </div>
-        <div class="field"><label class="flabel">Müşteri</label><input id="of_name" class="finput"></div>
+        <div class="field"><label class="flabel">Kunde</label><input id="of_name" class="finput"></div>
         <div class="field"><label class="flabel">E-posta <a id="of_email_link" href="#" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">📧 Mail at</a></label><input id="of_email" class="finput"></div>
         <div class="field"><label class="flabel">Telefon <a id="of_phone_link" href="#" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">📞 Ara</a></label><input id="of_phone" class="finput"></div>
         <div class="field"><label class="flabel">Ödeme</label><input id="of_payment" class="finput"></div>
         <div class="field"><label class="flabel">Tutar</label><input id="of_total" class="finput" type="number" step="0.01"></div>
         <div class="field form-full">
           <label class="flabel">Adres
-            <a id="of_addr_maps" href="#" target="_blank" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">🗺 Maps'te aç</a>
+            <a id="of_addr_maps" href="#" target="_blank" style="float:right;font-size:0.75rem;color:#3d6b2a;display:none">🗺 In Maps öffnen</a>
           </label>
           <textarea id="of_addr" class="ftextarea" rows="3"></textarea>
         </div>
@@ -758,10 +758,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-danger" onclick="delOrder()" style="margin-right:auto">🗑 Sil</button>
+      <button class="btn btn-danger" onclick="delOrder()" style="margin-right:auto">🗑 Löschen</button>
       <button id="of_invoice_btn" class="btn btn-secondary" onclick="generateInvoice()" style="background:#3d6b2a;color:white;border-color:#3d6b2a">📄 Rechnung</button>
       <button id="of_email_btn" class="btn btn-secondary" onclick="emailInvoiceModal()" style="background:#635bff;color:white;border-color:#635bff;display:none">📧 PDF Mail</button>
-      <button class="btn btn-secondary" onclick="closeOrderModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="closeOrderModal()">Abbrechen</button>
       <button class="btn btn-primary" onclick="saveOrder()">Kaydet</button>
     </div>
   </div>
@@ -776,19 +776,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     </div>
     <div class="modal-body">
 
-      <!-- Müşteri seçimi -->
+      <!-- Kundenauswahl -->
       <div style="background:#f7f4ee;border-radius:8px;padding:1rem;margin-bottom:1.2rem">
         <div style="font-weight:500;color:#2a4a1a;margin-bottom:0.6rem;font-size:0.9rem">👤 Müşteri</div>
         <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.6rem">
           <select id="mi_customer_select" class="finput" style="flex:1" onchange="onManualCustomerChange()">
-            <option value="">— Müşteri seç —</option>
-            <option value="__new__">➕ Yeni müşteri ekle</option>
+            <option value="">— Kunde wählen —</option>
+            <option value="__new__">➕ Neuen Kunden hinzufügen</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="openCustomerModal(null, true)" type="button">+ Yeni</button>
         </div>
         <div id="mi_customer_preview" style="display:none;font-size:0.82rem;color:#555;padding:0.6rem;background:white;border-radius:5px"></div>
 
-        <!-- İnline yeni müşteri formu (basit, daha fazla için ana modal'ı aç) -->
+        <!-- Inline-Formular für neuen Kunden (einfach, für mehr Felder Hauptmodal öffnen) -->
         <div id="mi_new_customer_form" style="display:none;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid #e0d8c7">
           <div class="form-grid">
             <div class="field"><label class="flabel">Ad / Firma *</label><input class="finput" id="mi_nc_name"></div>
@@ -813,7 +813,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           <span style="font-weight:500;color:#2a4a1a">Gesamtbetrag</span>
           <span id="mi_total_display" style="font-size:1.15rem;font-weight:bold;color:#2a4a1a">€ 0,00</span>
         </div>
-        <div style="font-size:0.72rem;color:#888;margin-top:0.4rem">💡 Ürün seçin (Art-Nr, isim, fiyat otomatik) veya <strong>"Özel pozisyon"</strong>la elle girin (Beratung, özel iş vb.).</div>
+        <div style="font-size:0.72rem;color:#888;margin-top:0.4rem">💡 Produkt wählen (Art-Nr, Name, Preis automatisch) oder <strong>"Eigene Position"</strong> manuell eingeben (Beratung, Sonderarbeit etc.).</div>
       </div>
 
       <!-- Ödeme + Tarih -->
@@ -829,18 +829,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </select>
         </div>
         <div class="field">
-          <label class="flabel">Sipariş tarihi (Lieferdatum)</label>
+          <label class="flabel">Bestelldatum (Lieferdatum)</label>
           <input class="finput" id="mi_order_date" type="date">
         </div>
         <div class="field form-full">
-          <label class="flabel">Notizen (intern, fatura görünmez)</label>
+          <label class="flabel">Notizen (intern, nicht auf Rechnung sichtbar)</label>
           <textarea class="ftextarea" id="mi_notes" rows="2"></textarea>
         </div>
       </div>
 
     </div>
     <div class="modal-foot">
-      <button class="btn btn-secondary" onclick="closeManualInvoiceModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="closeManualInvoiceModal()">Abbrechen</button>
       <button class="btn btn-secondary" onclick="previewManualInvoice()" style="margin-left:auto">👁 Vorschau</button>
       <button class="btn btn-primary" onclick="saveManualInvoice(false)">💾 Speichern + Drucken</button>
       <button class="btn btn-primary" onclick="saveManualInvoice(true)" style="background:#3d6b2a">💾 Speichern + Mail senden</button>
@@ -856,7 +856,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <button class="modal-close" onclick="closeInvoiceDetailModal()">✕</button>
     </div>
     <div class="modal-body" id="idm_body" style="max-height:75vh;overflow-y:auto">
-      <div style="text-align:center;padding:3rem;color:#888">Yükleniyor...</div>
+      <div style="text-align:center;padding:3rem;color:#888">Wird geladen...</div>
     </div>
   </div>
 </div>
@@ -913,11 +913,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
       <div style="margin-top:0.8rem">
         <label class="form-lbl">Notizen (opsiyonel)</label>
-        <textarea class="finput" id="gfm_notes" rows="2" placeholder="İç not..."></textarea>
+        <textarea class="finput" id="gfm_notes" rows="2" placeholder="Interne Notiz..."></textarea>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-secondary" onclick="closeGeldflussModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="closeGeldflussModal()">Abbrechen</button>
       <button class="btn btn-primary" id="gfm_save_btn" onclick="saveGeldflussEntry()">💾 Speichern</button>
     </div>
   </div>
@@ -931,7 +931,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <button class="modal-close" onclick="closeKontokorrent()">✕</button>
     </div>
     <div class="modal-body" id="kk_body">
-      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor…</div>
+      <div class="text-center" style="padding:2rem;color:#888">Wird geladen…</div>
     </div>
   </div>
 </div>
@@ -944,10 +944,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <button class="modal-close" onclick="closeLieferscheinModal()">✕</button>
     </div>
     <div class="modal-body" id="lsBody">
-      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor...</div>
+      <div class="text-center" style="padding:2rem;color:#888">Wird geladen...</div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-secondary" onclick="closeLieferscheinModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="closeLieferscheinModal()">Abbrechen</button>
       <button class="btn btn-primary" style="background:#3d6b2a" onclick="saveLieferschein()">📦 Erstellen + PDF öffnen</button>
     </div>
   </div>
@@ -961,7 +961,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <button class="modal-close" onclick="closeBelegManager()">✕</button>
     </div>
     <div class="modal-body" id="belegModalBody">
-      <div class="text-center" style="padding:2rem;color:#888">Yükleniyor...</div>
+      <div class="text-center" style="padding:2rem;color:#888">Wird geladen...</div>
     </div>
   </div>
 </div>
@@ -976,14 +976,14 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     <div class="modal-body">
       <!-- Tab switcher -->
       <div style="display:flex;gap:0;border-bottom:1px solid #e5e5e0;margin-bottom:1.5rem">
-        <button id="extab-eur" class="ex-tab active" onclick="switchExTab('eur')">📋 EÜR (Yıl Sonu Vergi)</button>
+        <button id="extab-eur" class="ex-tab active" onclick="switchExTab('eur')">📋 EÜR (Jahresabschluss)</button>
         <button id="extab-datev" class="ex-tab" onclick="switchExTab('datev')">📁 DATEV (Steuerberater)</button>
       </div>
 
       <!-- EÜR Pane -->
       <div id="ex-pane-eur">
         <div style="background:#f0f9ff;border-left:3px solid #0369a1;padding:0.8rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:0.85rem">
-          <strong>EÜR — Einnahmen-Überschuss-Rechnung:</strong> Kleinunternehmer için yıl sonu vergi raporu (§ 4 Abs. 3 EStG). Finanzamt'a sunabilir veya kendi vergi beyannamenizde kullanabilirsiniz.
+          <strong>EÜR — Einnahmen-Überschuss-Rechnung:</strong> Jahresabschluss-Steuerbericht für Kleinunternehmer (§ 4 Abs. 3 EStG). Beim Finanzamt einreichbar oder für die eigene Steuererklärung verwendbar.
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
           <div>
@@ -998,7 +998,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         </div>
         <!-- EÜR önizleme -->
         <div id="eur_preview" style="background:white;border:1px solid #e5e5e0;border-radius:8px;padding:1rem;min-height:200px">
-          <div class="text-center" style="color:#888;padding:2rem">Yıl seçin…</div>
+          <div class="text-center" style="color:#888;padding:2rem">Jahr wählen…</div>
         </div>
       </div>
 
@@ -1018,15 +1018,15 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
           </div>
         </div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
-          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_month')">Bu Ay</button>
-          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_month')">Geçen Ay</button>
-          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_quarter')">Bu Çeyrek</button>
-          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_year')">Bu Yıl</button>
-          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_year')">Geçen Yıl</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_month')">Diesen Monat</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_month')">Letzten Monat</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_quarter')">Dieses Quartal</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('this_year')">Dieses Jahr</button>
+          <button class="btn btn-secondary btn-sm" onclick="setDatevPeriod('last_year')">Letztes Jahr</button>
         </div>
         <button class="btn btn-primary" style="background:#3d6b2a;width:100%" onclick="downloadDatevCsv()">⬇ DATEV CSV İndir</button>
         <div style="margin-top:1rem;font-size:0.8rem;color:#666">
-          <strong>Format:</strong> CSV (UTF-8 BOM, ";" ayraç, Windows-1252 uyumlu)<br>
+          <strong>Format:</strong> CSV (UTF-8 BOM, ";" Trennzeichen, Windows-1252 kompatibel)<br>
           <strong>Sütunlar:</strong> Umsatz · Soll/Haben · Konto · Gegenkonto · Belegdatum · Belegfeld · Buchungstext · Steuersatz<br>
           <strong>Hesap planı:</strong> SKR03 (Kleinunternehmer)
         </div>
@@ -1045,12 +1045,12 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 <div class="modal-backdrop" id="customerModal">
   <div class="modal" style="max-width:600px">
     <div class="modal-head">
-      <div class="modal-title" id="cm_title">👤 Yeni Müşteri</div>
+      <div class="modal-title" id="cm_title">👤 Neuer Kunde</div>
       <button class="modal-close" onclick="closeCustomerModal()">✕</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="cm_id">
-      <!-- Tip seçici -->
+      <!-- Typ-Auswahl -->
       <div class="field form-full" style="margin-bottom:1rem">
         <label class="flabel">Müşteri Tipi</label>
         <div style="display:flex;gap:0;border:1px solid #e0e0d8;border-radius:8px;padding:3px;background:#f7f4ee">
@@ -1063,7 +1063,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       <div class="form-grid">
         <div class="field form-full" id="cm_company_field" style="display:none">
           <label class="flabel">Firma Adı *</label>
-          <input class="finput" id="cm_company_name" placeholder="ör. Müller GmbH">
+          <input class="finput" id="cm_company_name" placeholder="z.B. Müller GmbH">
         </div>
         <div class="field form-full"><label class="flabel"><span id="cm_name_lbl">Ad Soyad</span> *</label><input class="finput" id="cm_name"></div>
         <div class="field"><label class="flabel">E-Mail</label><input class="finput" id="cm_email" type="email"></div>
@@ -1086,8 +1086,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
       </style>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-danger" id="cm_delete_btn" onclick="deleteCustomer()" style="display:none;margin-right:auto">🗑 Sil</button>
-      <button class="btn btn-secondary" onclick="closeCustomerModal()">İptal</button>
+      <button class="btn btn-danger" id="cm_delete_btn" onclick="deleteCustomer()" style="display:none;margin-right:auto">🗑 Löschen</button>
+      <button class="btn btn-secondary" onclick="closeCustomerModal()">Abbrechen</button>
       <button class="btn btn-primary" onclick="saveCustomer()">💾 Kaydet</button>
     </div>
   </div>
@@ -1140,11 +1140,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         </div>
       </div>
       <div style="font-size:0.78rem;color:#888;margin-top:0.5rem">
-        ℹ️ E-posta gönderen: <code>noreply@machbar24.com</code> (BCC: info@keby.shop)
+        ℹ️ E-Mail-Absender: <code>noreply@machbar24.com</code> (BCC: info@keby.shop)
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-secondary" onclick="closeEmailModal()">İptal</button>
+      <button class="btn btn-secondary" onclick="closeEmailModal()">Abbrechen</button>
       <button id="em_send_btn" class="btn btn-primary" onclick="sendInvoiceEmail()">📧 Gönder</button>
     </div>
   </div>
@@ -1208,7 +1208,7 @@ async function checkAuth() {
 }
 
 function logout() {
-  if (!confirm('Çıkış yapmak istiyor musunuz?')) return;
+  if (!confirm('Möchtest du dich abmelden?')) return;
   TOKEN = '';
   sessionStorage.removeItem('keby_admin_token');
   document.getElementById('adminWrap').style.display = 'none';
@@ -1287,10 +1287,10 @@ async function loadOrders() {
     renderOrders();
     renderDash();
 
-    // Auto-enrich: boş Stripe siparişleri varsa sessizce arka planda Stripe'tan zenginleştir
+    // Auto-Anreicherung: leere Stripe-Bestellungen werden im Hintergrund aus Stripe angereichert
     const needsEnrich = orders.some(o =>
       o.payment === 'stripe' && o.stripePaymentId &&
-      (!o.email || !o.name || o.name === 'Stripe Müşteri' || !o.address)
+      (!o.email || !o.name || o.name === 'Stripe Kunde' || !o.address)
     );
     if (needsEnrich) {
       autoEnrichStripe();
@@ -1303,8 +1303,8 @@ async function autoEnrichStripe() {
     const d = await api('/api/admin/orders/enrich-stripe', { method: 'POST' });
     if (d.success && d.enriched > 0) {
       // Sessiz toast (kullanıcıyı rahatsız etme, sadece bilgilendir)
-      toast(`✨ ${d.enriched} Stripe siparişi otomatik güncellendi`, 'ok');
-      // Sipariş listesini yenile
+      toast(`✨ ${d.enriched} Stripe-Bestellung automatisch aktualisiert`, 'ok');
+      // Bestelliste neu laden
       const r = await api('/api/orders');
       orders = (r.orders || []).sort((a,b) => new Date(b.date) - new Date(a.date));
       renderOrders();
@@ -1317,12 +1317,12 @@ async function autoEnrichStripe() {
 }
 
 async function enrichStripeOrders() {
-  if (!confirm('Eski Stripe siparişlerinin müşteri ve adres bilgisi Stripe API\'sinden çekilecek. Devam?')) return;
-  toast('Stripe verileri çekiliyor…');
+  if (!confirm('Kunden- und Adressdaten alter Stripe-Bestellungen werden aus der Stripe API geladen. Fortfahren?')) return;
+  toast('Stripe-Daten werden geladen…');
   try {
     const d = await api('/api/admin/orders/enrich-stripe', { method: 'POST' });
     if (d.success) {
-      toast(`✅ ${d.enriched} sipariş güncellendi (${d.total_stripe} Stripe siparişi var)`, 'ok');
+      toast(`✅ ${d.enriched} Bestellung aktualisiert (${d.total_stripe} Stripe-Bestellung vorhanden)`, 'ok');
       await loadOrders();
     } else {
       toast(d.error || 'Hata', 'err');
@@ -1358,40 +1358,40 @@ function renderDash() {
   const newOrders = orders.filter(o => o.status === 'neu' || !o.status).length;
 
   document.getElementById('dashStats').innerHTML = `
-    <div class="stat-card accent" onclick="goto('orders')" style="cursor:pointer" title="Siparişler sayfasına git">
-      <div class="stat-label">Bu ay ciro</div>
+    <div class="stat-card accent" onclick="goto('orders')" style="cursor:pointer" title="Zur Bestellungen-Seite">
+      <div class="stat-label">Diesen Monat Umsatz</div>
       <div class="stat-value">€${revenueMonth.toFixed(2)}</div>
-      <div class="stat-meta">${ordersMonth.length} sipariş →</div>
+      <div class="stat-meta">${ordersMonth.length} Bestellungen →</div>
     </div>
-    <div class="stat-card" onclick="goto('orders')" style="cursor:pointer" title="Siparişler sayfasına git">
-      <div class="stat-label">Bugün sipariş</div>
+    <div class="stat-card" onclick="goto('orders')" style="cursor:pointer" title="Zur Bestellungen-Seite">
+      <div class="stat-label">Heute Bestellungen</div>
       <div class="stat-value">${ordersToday.length}</div>
-      <div class="stat-meta">yeni: ${newOrders} →</div>
+      <div class="stat-meta">neu: ${newOrders} →</div>
     </div>
-    <div class="stat-card info" onclick="goto('customers')" style="cursor:pointer" title="Müşteriler sayfasına git">
-      <div class="stat-label">Toplam müşteri</div>
+    <div class="stat-card info" onclick="goto('customers')" style="cursor:pointer" title="Zur Kunden-Seite">
+      <div class="stat-label">Kunden gesamt</div>
       <div class="stat-value">${customers.length}</div>
-      <div class="stat-meta">kayıtlı →</div>
+      <div class="stat-meta">registriert →</div>
     </div>
-    <div class="stat-card warn" onclick="goto('products')" style="cursor:pointer" title="Ürünler sayfasına git">
-      <div class="stat-label">Aktif ürün</div>
+    <div class="stat-card warn" onclick="goto('products')" style="cursor:pointer" title="Zur Produkte-Seite">
+      <div class="stat-label">Aktive Produkte</div>
       <div class="stat-value">${products.filter(p=>p.active).length}</div>
       <div class="stat-meta">toplam: ${products.length} →</div>
     </div>
   `;
   document.getElementById('dashRecentTbody').innerHTML = orders.slice(0,5).map(o => {
-    const displayName = (!o.name || o.name === 'Stripe Müşteri')
+    const displayName = (!o.name || o.name === 'Stripe Kunde')
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
     return `
-    <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')" title="Sipariş detayını aç">
+    <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')" title="Bestelldetails öffnen">
       <td><strong>${o.ref || o.id}</strong></td>
       <td>${displayName}</td>
       <td>€${(parseFloat(o.total)||0).toFixed(2)}</td>
       <td>${statusBadge(o.status)}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem">Henüz sipariş yok</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem">Noch keine Bestellungen</td></tr>';
 }
 
 // ============================================================
@@ -1412,14 +1412,14 @@ function renderProducts() {
       <td>${(p.images||[]).length}</td>
       <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openProductModal('${p.id}')">Düzenle</button></td>
     </tr>
-  `).join('') || '<tr><td colspan="7" class="text-center text-muted" style="padding:2rem">Henüz ürün yok. "+ Yeni ürün" butonuyla ekleyin.</td></tr>';
+  `).join('') || '<tr><td colspan="7" class="text-center text-muted" style="padding:2rem">Noch keine Produkte. Mit "+ Neues Produkt" hinzufügen.</td></tr>';
 }
 
 function openProductModal(id) {
   const isNew = !id;
   editingProduct = isNew ? null : products.find(p => p.id === id);
   const p = editingProduct || { active: true, mwst: '19%', stock: 0, price: 0, images: [] };
-  document.getElementById('prodModalTitle').textContent = isNew ? 'Yeni ürün' : 'Ürün düzenle';
+  document.getElementById('prodModalTitle').textContent = isNew ? 'Neues Produkt' : 'Produkt bearbeiten';
   document.getElementById('pf_id').value = p.id || '';
   document.getElementById('pf_id').disabled = !isNew;
   document.getElementById('pf_slug').value = p.slug || '';
@@ -1448,7 +1448,7 @@ function renderProductImages(imgs) {
       <div class="img-tile-del" onclick="event.stopPropagation();removeProductImg(${i})" title="Kaldır">✕</div>
       <div class="img-tile-name">${key.replace('keby/','')}</div>
     </div>
-  `).join('') || '<div class="text-muted text-center" style="padding:1rem;grid-column:1/-1">Henüz resim yok</div>';
+  `).join('') || '<div class="text-muted text-center" style="padding:1rem;grid-column:1/-1">Noch keine Bilder</div>';
 }
 
 function removeProductImg(idx) {
@@ -1481,17 +1481,17 @@ async function saveProduct() {
     images: imgs,
     thumb: imgs[0] || ''
   };
-  if (!data.id) return toast('Ürün ID zorunlu', 'err');
+  if (!data.id) return toast('Produkt-ID erforderlich', 'err');
   if (!data.name_tr) return toast('TR isim zorunlu', 'err');
   try {
     if (editingProduct) {
       await api('/api/admin/product/' + encodeURIComponent(editingProduct.id), {
         method: 'PUT', body: data
       });
-      toast('Ürün güncellendi');
+      toast('Produkt aktualisiert');
     } else {
       await api('/api/admin/product/create', { method: 'POST', body: data });
-      toast('Ürün oluşturuldu');
+      toast('Produkt erstellt');
     }
     closeProdModal();
     loadProducts();
@@ -1500,7 +1500,7 @@ async function saveProduct() {
 
 async function delProduct() {
   if (!editingProduct) return;
-  if (!confirm(`"${editingProduct.name_tr}" ürününü silmek istediğine emin misin?`)) return;
+  if (!confirm(`"${editingProduct.name_tr}" Produkt wirklich löschen?`)) return;
   try {
     await api('/api/admin/product/' + encodeURIComponent(editingProduct.id), { method: 'DELETE' });
     toast('Silindi');
@@ -1516,7 +1516,7 @@ async function openImagePicker() {
   pickerSelection.clear();
   document.getElementById('imgPicker').classList.add('show');
   const grid = document.getElementById('imgPickerGrid');
-  grid.innerHTML = '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Yükleniyor...</div>';
+  grid.innerHTML = '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Wird geladen...</div>';
   if (images.length === 0) await loadImages();
   grid.innerHTML = images.map(img => `
     <div class="img-tile" data-key="${img.key}" onclick="togglePicker('${img.key}', this)">
@@ -1593,11 +1593,11 @@ function renderImages() {
       <div class="img-tile-del" onclick="event.stopPropagation();deleteImage('${img.key}')" title="Sil">✕</div>
       <div class="img-tile-name">${img.key.replace('keby/','')}<br><small>${(img.size/1024).toFixed(0)}KB</small></div>
     </div>
-  `).join('') || '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Henüz resim yok</div>';
+  `).join('') || '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Noch keine Bilder</div>';
 }
 
 async function deleteImage(key) {
-  if (!confirm(`"${key}" dosyasını silmek istediğine emin misin?`)) return;
+  if (!confirm(`"${key}" Datei wirklich löschen?`)) return;
   try {
     await api('/api/admin/image/' + encodeURIComponent(key), { method: 'DELETE' });
     toast('Silindi');
@@ -1608,7 +1608,7 @@ async function deleteImage(key) {
 function copyImageUrl(key) {
   const url = IMG_BASE + key;
   navigator.clipboard.writeText(url);
-  toast('URL kopyalandı');
+  toast('URL kopiert');
 }
 
 // ============================================================
@@ -1623,11 +1623,11 @@ function renderOrders() {
   ) : orders;
   document.getElementById('orderCount').textContent = filtered.length;
   document.getElementById('ordersTbody').innerHTML = filtered.map(o => {
-    const displayName = (!o.name || o.name === 'Stripe Müşteri')
+    const displayName = (!o.name || o.name === 'Stripe Kunde')
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
     const invoiceCell = o.invoice_number
-      ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung aç">📄 ${o.invoice_number}</a>`
+      ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung öffnen">📄 ${o.invoice_number}</a>`
       : `<span style="color:#bbb;font-size:0.75rem">—</span>`;
     return `
     <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')">
@@ -1644,7 +1644,7 @@ function renderOrders() {
         <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Sipariş yok</td></tr>';
+  }).join('') || '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Keine Bestellungen</td></tr>';
 }
 
 function openOrderModal(id) {
@@ -1671,15 +1671,15 @@ function openOrderModal(id) {
   if (o.payment === 'stripe' && o.stripePaymentId) {
     stripePanel.style.display = '';
     document.getElementById('of_stripe_pid').textContent = o.stripePaymentId;
-    document.getElementById('of_stripe_method').textContent = 'Yükleniyor…';
+    document.getElementById('of_stripe_method').textContent = 'Wird geladen…';
     document.getElementById('of_stripe_date').textContent = '…';
-    document.getElementById('of_stripe_status').innerHTML = '<span style="color:#888;font-size:0.78rem">Stripe\'tan çekiliyor…</span>';
+    document.getElementById('of_stripe_status').innerHTML = '<span style="color:#888;font-size:0.78rem">Wird von Stripe geladen…</span>';
     document.getElementById('of_stripe_receipt_wrap').style.display = 'none';
 
     // Müşteri alanlarına "yükleniyor" göstergesi
-    if (!o.email) document.getElementById('of_email').placeholder = '⏳ Stripe\'tan çekiliyor…';
-    if (!o.name || o.name === 'Stripe Müşteri') document.getElementById('of_name').placeholder = '⏳ Stripe\'tan çekiliyor…';
-    if (!o.address) document.getElementById('of_addr').placeholder = '⏳ Stripe\'tan çekiliyor…';
+    if (!o.email) document.getElementById('of_email').placeholder = '⏳ Wird von Stripe geladen…';
+    if (!o.name || o.name === 'Stripe Kunde') document.getElementById('of_name').placeholder = '⏳ Wird von Stripe geladen…';
+    if (!o.address) document.getElementById('of_addr').placeholder = '⏳ Wird von Stripe geladen…';
 
     // Async fetch
     fetchStripePayment(o.stripePaymentId, o);
@@ -1697,11 +1697,11 @@ function updateInvoiceButton() {
   if (!btn || !editingOrder) return;
   if (editingOrder.invoice_number) {
     btn.innerHTML = `📄 Rechnung ${editingOrder.invoice_number}`;
-    btn.title = 'Faturayı yeni sekmede aç';
+    btn.title = 'Rechnung in neuem Tab öffnen';
     if (emailBtn) emailBtn.style.display = '';
   } else {
     btn.innerHTML = '📄 Rechnung oluştur';
-    btn.title = 'Yeni fatura numarası alıp PDF açar';
+    btn.title = 'Neue Rechnungsnummer und PDF öffnen';
     if (emailBtn) emailBtn.style.display = 'none';
   }
 }
@@ -1715,7 +1715,7 @@ async function fetchStripePayment(pi, order) {
     }
     const p = d.payment;
 
-    // Sipariş artık açık değilse iptal (kullanıcı kapattı)
+    // Bestellung nicht mehr offen, Abbruch (vom Benutzer geschlossen)
     if (!editingOrder || editingOrder.id !== order.id) return;
 
     // Stripe panel doldur
@@ -1732,8 +1732,8 @@ async function fetchStripePayment(pi, order) {
       document.getElementById('of_stripe_receipt_wrap').style.display = '';
     }
 
-    // Müşteri verilerini canlı doldur (DB'den boş olanları, ya da hep Stripe'tan)
-    const liveName = p.name || 'Stripe Müşteri';
+    // Kundendaten live ausfüllen (leere DB-Felder oder immer aus Stripe)
+    const liveName = p.name || 'Stripe Kunde';
     const liveEmail = p.email || '';
     const livePhone = p.phone || '';
     const a = p.address || {};
@@ -1746,13 +1746,13 @@ async function fetchStripePayment(pi, order) {
     document.getElementById('of_name').placeholder = '';
     document.getElementById('of_addr').placeholder = '';
 
-    // Veri yoksa kullanıcıya bildir
+    // Keine Datensa kullanıcıya bildir
     const hasAnyCustomerData = p.name || p.email || p.phone || (a.line1 || a.city);
     if (!hasAnyCustomerData) {
       document.getElementById('of_stripe_status').innerHTML =
-        '<span style="color:#b45309;font-size:0.78rem;background:#fef3c7;padding:0.15rem 0.5rem;border-radius:4px">⚠️ Stripe\'ta müşteri verisi yok (Apple Pay/Link veya hızlı ödeme olabilir)</span>';
+        '<span style="color:#b45309;font-size:0.78rem;background:#fef3c7;padding:0.15rem 0.5rem;border-radius:4px">⚠️ Keine Kundendaten in Stripe (Apple Pay/Link oder Express-Checkout)</span>';
       // Email boş ise placeholder
-      document.getElementById('of_email').placeholder = 'Stripe\'ta e-posta verisi yok';
+      document.getElementById('of_email').placeholder = 'Keine E-Mail-Daten in Stripe';
       document.getElementById('of_name').placeholder = 'İsim verisi yok';
       document.getElementById('of_addr').placeholder = 'Adres verisi yok';
     }
@@ -1886,7 +1886,7 @@ async function generateInvoice() {
   const btn = document.getElementById('of_invoice_btn');
   const originalText = btn.innerHTML;
 
-  // Eğer fatura zaten varsa direkt aç
+  // Wenn Rechnung bereits existiert, direkt öffnen
   if (editingOrder.invoice_number) {
     const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
     window.open(url, '_blank');
@@ -1894,7 +1894,7 @@ async function generateInvoice() {
   }
 
   // Yoksa oluştur
-  if (!confirm('Bu sipariş için yeni bir Rechnung numarası oluşturulacak. Devam?')) return;
+  if (!confirm('Für diese Bestellung wird eine neue Rechnungsnummer erstellt. Fortfahren?')) return;
 
   btn.disabled = true;
   btn.innerHTML = '⏳ Oluşturuluyor…';
@@ -1917,12 +1917,12 @@ async function generateInvoice() {
       orders[idx].invoice_issued_at = d.invoice.issued_at;
     }
 
-    toast(`✅ Rechnung ${d.invoice.number} oluşturuldu`, 'ok');
+    toast(`✅ Rechnung ${d.invoice.number} erstellt`, 'ok');
     btn.disabled = false;
     updateInvoiceButton();
     renderOrders();
 
-    // Yeni sekmede aç
+    // In neuem Tab öffnen
     const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
     window.open(url, '_blank');
   } catch (e) {
@@ -1937,7 +1937,7 @@ async function generateInvoice() {
 // ============================================================
 async function emailInvoiceModal() {
   if (!editingOrder || !editingOrder.invoice_number) {
-    toast('Önce Rechnung oluştur', 'err');
+    toast('Erst Rechnung erstellen', 'err');
     return;
   }
   const inv = editingOrder.invoice_number;
@@ -1975,18 +1975,18 @@ async function sendInvoiceEmail() {
   const message = document.getElementById('em_message').value.trim();
 
   if (!recipient || !recipient.includes('@')) {
-    toast('Geçerli e-posta gir', 'err');
+    toast('Gültige E-Mail eingeben', 'err');
     return;
   }
   if (!subject) {
-    toast('Konu boş olamaz', 'err');
+    toast('Betreff darf nicht leer sein', 'err');
     return;
   }
 
   const btn = document.getElementById('em_send_btn');
   const original = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '⏳ PDF üretiliyor + gönderiliyor…';
+  btn.innerHTML = '⏳ PDF wird erstellt + gesendet…';
 
   try {
     const d = await api('/api/admin/invoice/' + encodeURIComponent(editingOrder.id) + '/email', {
@@ -1994,7 +1994,7 @@ async function sendInvoiceEmail() {
       body: { recipient, subject, message }
     });
     if (d.success) {
-      toast(`✅ E-posta gönderildi → ${d.recipient} (PDF: ${Math.round(d.pdf_size/1024)} KB)`, 'ok');
+      toast(`✅ E-Mail gesendet → ${d.recipient} (PDF: ${Math.round(d.pdf_size/1024)} KB)`, 'ok');
       closeEmailModal();
     } else {
       toast(d.error || 'Hata', 'err');
@@ -2020,7 +2020,7 @@ async function saveOrder() {
   editingOrder.note = document.getElementById('of_note').value;
   try {
     await api('/api/admin/orders', { method: 'POST', body: { orders } });
-    toast('Sipariş güncellendi');
+    toast('Bestellung aktualisiert');
     closeOrderModal();
     renderOrders();
   } catch (e) { toast(e.message, 'err'); }
@@ -2028,7 +2028,7 @@ async function saveOrder() {
 
 async function delOrder() {
   if (!editingOrder) return;
-  if (!confirm(`${editingOrder.ref || editingOrder.id} siparişini silmek istediğine emin misin?`)) return;
+  if (!confirm(`${editingOrder.ref || editingOrder.id} Bestellung wirklich löschen?`)) return;
   orders = orders.filter(o => o.id !== editingOrder.id);
   try {
     await api('/api/admin/orders', { method: 'POST', body: { orders } });
@@ -2066,7 +2066,7 @@ function renderCustomers() {
     const displayName = isB2B && c.company_name
       ? `<strong>${escapeHtml(c.company_name)}</strong><br><span style="font-size:0.78rem;color:#888">${escapeHtml(c.name || '')}</span>`
       : `<strong>${escapeHtml(c.name || '—')}</strong>`;
-    // Bakiye placeholder (asyncly load)
+    // Saldo-Platzhalter (lädt asynchron)
     const balanceCell = `<span class="cust-balance" data-id="${escapeHtml(c.id)}" style="font-size:0.82rem;color:#888">…</span>`;
 
     return `<tr>
@@ -2079,9 +2079,9 @@ function renderCustomers() {
       <td onclick="openCustomerTimeline(customers[${idx}])" style="cursor:pointer" class="text-muted text-sm">${fmtDate(last)}</td>
       <td><button class="btn btn-sm" style="background:#3d6b2a;color:white" onclick="openKontokorrent('${escapeHtml(c.id)}')">📊 Cari</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Müşteri yok — yukarıdan "+ Yeni Müşteri" tıklayın</td></tr>';
+  }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Keine Kunden — oben "+ Neuer Kunde" klicken</td></tr>';
 
-  // Bakiyeleri lazy load (asenkron, paralel)
+  // Salden lazy laden (asynchron, parallel)
   setTimeout(loadAllBalances, 100);
 }
 
@@ -2169,13 +2169,13 @@ async function loadStripeCustomers(append = false) {
     }
     stripeLastId = d.last_id;
     stripeHasMore = d.has_more;
-    status.textContent = `${stripeCustomers.length} benzersiz müşteri yüklendi`;
+    status.textContent = `${stripeCustomers.length} eindeutige Kunden geladen`;
     table.style.display = '';
     renderStripeCustomers();
     if (stripeHasMore) {
       loadMore.innerHTML = '<button class="btn btn-secondary" onclick="loadStripeCustomers(true)">↓ Daha fazla yükle</button>';
     } else {
-      loadMore.innerHTML = '<span class="text-muted text-sm">Tüm kayıtlar yüklendi</span>';
+      loadMore.innerHTML = '<span class="text-muted text-sm">Alle Einträge geladen</span>';
     }
   } catch (e) {
     status.textContent = '❌ ' + e.message;
@@ -2207,7 +2207,7 @@ function renderStripeCustomers() {
       <td style="font-size:0.78rem">${succeeded}× ${methods.join(', ')||'—'}</td>
       <td><strong>€${totalEur}</strong></td>
       <td class="text-sm text-muted">${lastDate}</td>
-      <td><button class="btn btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.78rem" onclick="showStripeDetail('${emailSafe}')">Detay</button></td>
+      <td><button class="btn btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.78rem" onclick="showStripeDetail('${emailSafe}')">Details</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem">Müşteri bulunamadı</td></tr>';
 }
@@ -2255,7 +2255,7 @@ function showStripeDetail(email) {
 
       <h3 style="font-size:0.95rem;margin:1rem 0 0.5rem">Ödeme Geçmişi</h3>
       <table class="tbl" style="font-size:0.85rem">
-        <thead><tr><th>Tarih</th><th>Tutar</th><th>Yöntem</th><th>Durum</th><th></th></tr></thead>
+        <thead><tr><th>Datum</th><th>Betrag</th><th>Yöntem</th><th>Status</th><th></th></tr></thead>
         <tbody>
           ${c.charges.sort((a,b)=>b.created-a.created).map(ch => `<tr>
             <td>${new Date(ch.created*1000).toLocaleString('tr-TR')}</td>
@@ -2339,7 +2339,7 @@ async function loadInvoices() {
     renderInvoicesList();
     renderInvoicesStats();
   } catch (e) {
-    toast('Faturalar yüklenemedi: ' + e.message, 'err');
+    toast('Rechnungen konnten nicht geladen werden: ' + e.message, 'err');
   }
 }
 
@@ -2459,10 +2459,10 @@ function filterInvByPayment(pay) {
 }
 
 async function viewInvoice(orderId) {
-  // Modal'ı aç + yüklenirken loading göster
+  // Modal öffnen + Loading anzeigen
   const modal = document.getElementById('invoiceDetailModal');
   const body = document.getElementById('idm_body');
-  body.innerHTML = '<div style="text-align:center;padding:3rem;color:#888">Yükleniyor...</div>';
+  body.innerHTML = '<div style="text-align:center;padding:3rem;color:#888">Wird geladen...</div>';
   modal.classList.add('show');
 
   try {
@@ -2639,8 +2639,8 @@ function closeInvoiceDetailModal() {
 }
 
 function downloadInvoicePDF(orderId) {
-  // PDF endpoint'i çağır, blob aç
-  toast('PDF hazırlanıyor...', 'ok');
+  // PDF endpoint aufrufen, Blob öffnen
+  toast('PDF wird vorbereitet...', 'ok');
   fetch(API + '/api/invoice/' + encodeURIComponent(orderId) + '/pdf', {
     headers: { 'Authorization': 'Bearer ' + TOKEN }
   })
@@ -2649,13 +2649,13 @@ function downloadInvoicePDF(orderId) {
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
     })
-    .catch(e => toast('PDF hatası: ' + e, 'err'));
+    .catch(e => toast('PDF-Fehler: ' + e, 'err'));
 }
 
 async function stornoInvoice(orderId, number) {
   const reason = prompt('Storno sebebi (opsiyonel):', 'Stornorechnung');
   if (reason === null) return;
-  if (!confirm('Fatura ' + number + ' iptal edilecek (Stornorechnung üretilecek). Bu işlem geri alınamaz. Devam?')) return;
+  if (!confirm('Rechnung ' + number + ' wird storniert (Stornorechnung wird erstellt). Diese Aktion ist nicht rückgängig zu machen. Fortfahren?')) return;
 
   try {
     const d = await api('/api/admin/invoices/' + encodeURIComponent(orderId) + '/storno', {
@@ -2663,11 +2663,11 @@ async function stornoInvoice(orderId, number) {
       body: { reason }
     });
     if (d.success) {
-      toast('✅ Storno-Rechnung ' + d.storno_number + ' oluşturuldu', 'ok');
+      toast('✅ Storno-Rechnung ' + d.storno_number + ' erstellt', 'ok');
       await loadInvoices();
     }
   } catch (e) {
-    toast('Storno hatası: ' + e.message, 'err');
+    toast('Storno-Fehler: ' + e.message, 'err');
   }
 }
 
@@ -2678,7 +2678,7 @@ async function stornoInvoice(orderId, number) {
 function openManualInvoiceModal(prefilledCustomerId) {
   // Customer dropdown'ı doldur
   const sel = document.getElementById('mi_customer_select');
-  sel.innerHTML = '<option value="">— Müşteri seç —</option><option value="__new__">➕ Yeni müşteri ekle (form aşağıda)</option>';
+  sel.innerHTML = '<option value="">— Kunde wählen —</option><option value="__new__">➕ Neuen Kunden hinzufügen (form aşağıda)</option>';
   customers.slice().sort((a,b) => (a.name||'').localeCompare(b.name||'', 'de'))
     .forEach(c => {
       const opt = document.createElement('option');
@@ -2880,7 +2880,7 @@ function recalcManualTotal() {
   document.getElementById('mi_total_display').textContent = '€ ' + total.toFixed(2).replace('.', ',');
 }
 
-// Manuel fatura ÖNİZLEME (kaydetmeden PDF yeni sekmede aç)
+// Manuelle Rechnung VORSCHAU (PDF in neuem Tab ohne Speichern)
 async function previewManualInvoice() {
   // Form verisini topla — saveManualInvoice ile aynı mantık
   const items = manualInvoiceItems.filter(it => it && it.name && it.qty > 0);
@@ -2896,7 +2896,7 @@ async function previewManualInvoice() {
 
   if (sel.value === '__new__') {
     const name = document.getElementById('mi_nc_name').value.trim();
-    if (!name) { toast('Müşteri adı gerekli (veya mevcut seç)', 'err'); return; }
+    if (!name) { toast('Kundenname erforderlich (oder bestehenden auswählen)', 'err'); return; }
     body.customer = {
       name,
       email: document.getElementById('mi_nc_email').value.trim(),
@@ -2915,7 +2915,7 @@ async function previewManualInvoice() {
     toast('Müşteri seçin veya yeni ekleyin', 'err'); return;
   }
 
-  toast('Vorschau hazırlanıyor...', 'ok');
+  toast('Vorschau wird vorbereitet...', 'ok');
 
   // Yeni sekme AÇ hemen (popup blocker'ı için user-action sırasında yapılmalı)
   const tab = window.open('about:blank', '_blank');
@@ -2923,7 +2923,7 @@ async function previewManualInvoice() {
     toast('Popup engellendi — tarayıcı ayarlarını kontrol edin', 'err');
     return;
   }
-  tab.document.write('<html><head><title>Vorschau yükleniyor...</title></head><body style="font-family:system-ui;text-align:center;padding-top:100px;color:#2a4a1a"><h2>📄 Vorschau hazırlanıyor...</h2><p style="color:#666">Birkaç saniye içinde açılacak.</p></body></html>');
+  tab.document.write('<html><head><title>Vorschau wird geladen...</title></head><body style="font-family:system-ui;text-align:center;padding-top:100px;color:#2a4a1a"><h2>📄 Vorschau wird vorbereitet...</h2><p style="color:#666">Wird in wenigen Sekunden geöffnet.</p></body></html>');
 
   try {
     const res = await fetch(API + '/api/admin/invoices/preview', {
@@ -2966,7 +2966,7 @@ async function saveManualInvoice(sendMail) {
 
   if (sel.value === '__new__') {
     const name = document.getElementById('mi_nc_name').value.trim();
-    if (!name) { toast('Müşteri adı gerekli', 'err'); return; }
+    if (!name) { toast('Kundenname erforderlich', 'err'); return; }
     body.customer = {
       name,
       email: document.getElementById('mi_nc_email').value.trim(),
@@ -3000,7 +3000,7 @@ async function saveManualInvoice(sendMail) {
           toast('Müşteride e-posta yok, mail gönderilemedi', 'err');
         }
       } else {
-        // PDF aç (yazdırılabilir)
+        // PDF öffnen (druckbar)
         window.open(API + '/api/invoice/' + encodeURIComponent(d.invoice.order_id), '_blank');
       }
     }
@@ -3056,14 +3056,14 @@ function openCustomerModal(customer, fromManualInvoice) {
     document.getElementById('cm_delete_btn').style.display = customer.id ? 'inline-block' : 'none';
     setCustomerType(customer.customer_type || 'b2c');
   } else {
-    document.getElementById('cm_title').textContent = '👤 Yeni Müşteri';
+    document.getElementById('cm_title').textContent = '👤 Neuer Kunde';
     ['cm_id','cm_name','cm_company_name','cm_email','cm_phone','cm_line1','cm_plz','cm_city','cm_ust','cm_notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('cm_country').value = 'DE';
     document.getElementById('cm_payment_terms').value = '14';
     document.getElementById('cm_delete_btn').style.display = 'none';
     setCustomerType('b2c');
   }
-  // Fatura modali içinden açıldıysa kaydedince oraya geri dön
+  // Wenn aus Rechnungs-Modal geöffnet, nach Speichern zurückkehren
   document.getElementById('customerModal').dataset.fromInvoice = fromManualInvoice ? '1' : '';
   document.getElementById('customerModal').classList.add('show');
 }
@@ -3075,11 +3075,11 @@ function closeCustomerModal() {
 
 async function saveCustomer() {
   const name = document.getElementById('cm_name').value.trim();
-  if (!name) { toast('Ad gerekli', 'err'); return; }
+  if (!name) { toast('Name erforderlich', 'err'); return; }
 
   const customerType = document.getElementById('cm_customer_type').value;
   const companyName = document.getElementById('cm_company_name').value.trim();
-  if (customerType === 'b2b' && !companyName) { toast('Firma adı gerekli', 'err'); return; }
+  if (customerType === 'b2b' && !companyName) { toast('Firmenname erforderlich', 'err'); return; }
 
   const id = document.getElementById('cm_id').value;
   const data = {
@@ -3112,7 +3112,7 @@ async function saveCustomer() {
       closeCustomerModal();
       await loadCustomers();
       if (fromInv) {
-        // Manuel fatura modali açıksa, dropdown'ı yenile ve seç
+        // Wenn manuelles Rechnungsmodal offen, Dropdown aktualisieren und auswählen
         const sel = document.getElementById('mi_customer_select');
         const newOpt = document.createElement('option');
         newOpt.value = d.customer.id;
@@ -3131,7 +3131,7 @@ async function deleteCustomer() {
   const id = document.getElementById('cm_id').value;
   if (!id) return;
   const name = document.getElementById('cm_name').value;
-  if (!confirm('"' + name + '" silinsin mi? (Eski faturalar silinmez)')) return;
+  if (!confirm('"' + name + '" wirklich löschen? (Alte Rechnungen bleiben erhalten)')) return;
 
   try {
     const d = await api('/api/admin/customers/' + encodeURIComponent(id), { method: 'DELETE' });
@@ -3151,7 +3151,7 @@ async function deleteCustomer() {
 
 async function openCustomerTimeline(customer) {
   document.getElementById('tl_title').textContent = '📜 ' + customer.name;
-  document.getElementById('tl_header').innerHTML = '<div style="color:#888;text-align:center">Yükleniyor…</div>';
+  document.getElementById('tl_header').innerHTML = '<div style="color:#888;text-align:center">Wird geladen…</div>';
   document.getElementById('tl_stats').innerHTML = '';
   document.getElementById('tl_events').innerHTML = '';
   document.getElementById('timelineModal').classList.add('show');
@@ -3212,7 +3212,7 @@ async function openCustomerTimeline(customer) {
             <div style="font-weight:bold;color:${ev.total < 0 ? '#c0392b' : '#2a4a1a'}">${totalStr}</div>
           </div>`;
         } else {
-          // order (henüz fatura kesilmemiş)
+          // Bestellung (noch keine Rechnung erstellt)
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem;border-left:3px solid #c4a24a;background:#fffbf0;margin-bottom:0.5rem;border-radius:0 5px 5px 0">
             <div>
               <div style="font-weight:500;color:#866d24">📦 Bestellung ${ev.ref}</div>
@@ -3254,7 +3254,7 @@ async function openKontokorrent(customerId) {
   _kkCurrentCustomer = customer;
 
   document.getElementById('kk_customer_name').textContent = customer.company_name || customer.name;
-  document.getElementById('kk_body').innerHTML = '<div class="text-center" style="padding:2rem;color:#888">Bakiye yükleniyor…</div>';
+  document.getElementById('kk_body').innerHTML = '<div class="text-center" style="padding:2rem;color:#888">Saldo wird geladen…</div>';
   document.getElementById('kontokorrentModal').classList.add('show');
 
   try {
@@ -3304,12 +3304,12 @@ function renderKontokorrent() {
         <div style="font-size:0.72rem;color:#888">${b.invoice_count} adet</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Toplam Ödenen</div>
+        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Gesamt bezahlt</div>
         <div style="font-size:1.1rem;font-weight:500;color:#16a34a">€${b.total_paid.toFixed(2).replace('.', ',')}</div>
         <div style="font-size:0.7rem;color:#888">Online: €${b.total_paid_online.toFixed(2)} · Manuel: €${b.total_paid_manual.toFixed(2)}</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Bakiye</div>
+        <div style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.05em">Saldo</div>
         <div style="font-size:1.4rem;font-weight:600;color:${balanceColor}">€${Math.abs(b.balance).toFixed(2).replace('.', ',')}</div>
         <div style="font-size:0.72rem;color:${balanceColor}">${balanceLabel}</div>
       </div>
@@ -3355,7 +3355,7 @@ function renderKontokorrent() {
     </div>
   `;
 
-  // Hareket dökümü (faturalar + ödemeler birleştirilmiş, tarih sıralı)
+  // Bewegungsverlauf (Rechnungen + Zahlungen kombiniert, nach Datum sortiert)
   const movements = [];
   for (const inv of b.invoices) {
     movements.push({
@@ -3440,10 +3440,10 @@ function renderKontokorrent() {
       <table class="tbl" style="margin:0">
         <thead>
           <tr>
-            <th>Tarih</th><th>Açıklama</th><th>Ref.</th>
+            <th>Datum</th><th>Açıklama</th><th>Ref.</th>
             <th style="text-align:right">Borç (€)</th>
             <th style="text-align:right">Alacak (€)</th>
-            <th style="text-align:right">Bakiye (€)</th>
+            <th style="text-align:right">Saldo (€)</th>
             <th></th>
           </tr>
         </thead>
@@ -3486,7 +3486,7 @@ async function kkAddPayment() {
     });
     if (d.success) {
       toast('✅ Ödeme kaydedildi', 'ok');
-      // Bakiyeyi yeniden yükle
+      // Saldo neu laden
       await openKontokorrent(_kkCurrentCustomer.id);
       // Müşteri tablosunu güncelle (bakiye göstergeleri için)
       loadAllBalances();
@@ -3576,7 +3576,7 @@ function initBilanz() {
 async function loadBilanz() {
   const year = document.getElementById('bilanzYear').value;
   const container = document.getElementById('bilanzContent');
-  container.innerHTML = '<div style="padding:3rem;text-align:center;color:#888">📊 Yükleniyor...</div>';
+  container.innerHTML = '<div style="padding:3rem;text-align:center;color:#888">📊 Wird geladen...</div>';
 
   try {
     const d = await api(`/api/admin/bilanz?year=${year}`);
@@ -3617,34 +3617,34 @@ function renderBilanz(d) {
   if (ku.percent > 1.0) { kuColor = '#dc2626'; kuBg = '#fee2e2'; }
 
   container.innerHTML = `
-    <!-- KPI Kartları -->
+    <!-- KPI-Karten -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.9rem;margin-bottom:1.5rem">
       <div class="card" style="border-left:4px solid #16a34a;padding:1rem 1.2rem">
-        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Gelir</div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Jahr ${d.year} — Einnahmen</div>
         <div style="font-size:1.5rem;font-weight:600;color:#16a34a">${fmtEur(k.year_einnahmen)}</div>
         <div style="font-size:0.75rem;color:${k.year_einnahmen >= k.year_einnahmen_prev ? '#16a34a' : '#dc2626'};margin-top:0.3rem">
-          ${yearVsLastYear} vs ${d.year - 1}
+          ${yearVsLastYear} vs. ${d.year - 1}
         </div>
       </div>
       <div class="card" style="border-left:4px solid #dc2626;padding:1rem 1.2rem">
-        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Gider</div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Jahr ${d.year} — Ausgaben</div>
         <div style="font-size:1.5rem;font-weight:600;color:#dc2626">${fmtEur(k.year_ausgaben)}</div>
         <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
-          Geçen yıl: ${fmtEur(k.year_ausgaben_prev)}
+          Vorjahr: ${fmtEur(k.year_ausgaben_prev)}
         </div>
       </div>
       <div class="card" style="border-left:4px solid ${yearSaldoColor};padding:1rem 1.2rem">
-        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Yıl ${d.year} - Kar/Zarar</div>
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Jahr ${d.year} — Gewinn/Verlust</div>
         <div style="font-size:1.5rem;font-weight:700;color:${yearSaldoColor}">${fmtEur(k.year_saldo)}</div>
         <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
-          Geçen yıl: ${fmtEur(k.year_saldo_prev)}
+          Vorjahr: ${fmtEur(k.year_saldo_prev)}
         </div>
       </div>
-      <div class="card" style="border-left:4px solid #1e40af;padding:1rem 1.2rem;cursor:pointer" onclick="goto('customers')" title="Müşteriler sayfasına git">
-        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Açık Alacak</div>
+      <div class="card" style="border-left:4px solid #1e40af;padding:1rem 1.2rem;cursor:pointer" onclick="goto('customers')" title="Zur Kunden-Seite">
+        <div style="font-size:0.7rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Offene Forderungen</div>
         <div style="font-size:1.5rem;font-weight:600;color:#1e40af">${fmtEur(k.open_invoice_total)}</div>
         <div style="font-size:0.75rem;color:#666;margin-top:0.3rem">
-          ${k.open_invoice_count} faturayı bekleyen
+          ${k.open_invoice_count} offene Rechnungen
         </div>
       </div>
     </div>
@@ -3654,22 +3654,22 @@ function renderBilanz(d) {
       <div class="card" style="padding:1rem 1.2rem">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.7rem">
           <div>
-            <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Bu Ay - Saldo</div>
+            <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">Diesen Monat - Saldo</div>
             <div style="font-size:1.4rem;font-weight:700;color:${monthSaldoColor};margin-top:0.2rem">${fmtEur(k.month_saldo)}</div>
           </div>
           <span style="background:${k.month_einnahmen >= k.last_month_einnahmen ? '#dcfce7' : '#fee2e2'};color:${k.month_einnahmen >= k.last_month_einnahmen ? '#16a34a' : '#dc2626'};padding:0.2rem 0.6rem;border-radius:4px;font-size:0.72rem;font-weight:600">${monthVsLast}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#666;border-top:1px solid #eee;padding-top:0.5rem">
-          <span>Gelir: <strong style="color:#16a34a">${fmtEur(k.month_einnahmen)}</strong></span>
-          <span>Gider: <strong style="color:#dc2626">${fmtEur(k.month_ausgaben)}</strong></span>
+          <span>Einnahmen: <strong style="color:#16a34a">${fmtEur(k.month_einnahmen)}</strong></span>
+          <span>Ausgaben: <strong style="color:#dc2626">${fmtEur(k.month_ausgaben)}</strong></span>
         </div>
       </div>
       <div class="card" style="padding:1rem 1.2rem">
-        <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Geçen Ay - Saldo</div>
+        <div style="font-size:0.72rem;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Letzten Monat - Saldo</div>
         <div style="font-size:1.4rem;font-weight:700;color:${k.last_month_saldo >= 0 ? '#16a34a' : '#dc2626'}">${fmtEur(k.last_month_saldo)}</div>
         <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#666;border-top:1px solid #eee;padding-top:0.5rem;margin-top:0.5rem">
-          <span>Gelir: <strong style="color:#16a34a">${fmtEur(k.last_month_einnahmen)}</strong></span>
-          <span>Gider: <strong style="color:#dc2626">${fmtEur(k.last_month_ausgaben)}</strong></span>
+          <span>Einnahmen: <strong style="color:#16a34a">${fmtEur(k.last_month_einnahmen)}</strong></span>
+          <span>Ausgaben: <strong style="color:#dc2626">${fmtEur(k.last_month_ausgaben)}</strong></span>
         </div>
       </div>
     </div>
@@ -3689,14 +3689,14 @@ function renderBilanz(d) {
         <div style="height:100%;width:${Math.min(100, ku.percent * 100).toFixed(1)}%;background:${kuColor};transition:width 0.5s"></div>
       </div>
       <div style="font-size:0.78rem;color:#666;margin-top:0.4rem">
-        ${ku.remaining > 0 ? `Bu yıl daha ${fmtEur(ku.remaining)} ekleyebilirsin` : 'Sınır aşıldı - Regelbesteuerung gerekli'}
+        ${ku.remaining > 0 ? `Dieses Jahr noch ${fmtEur(ku.remaining)} möglich` : 'Grenze überschritten — Regelbesteuerung erforderlich'}
       </div>
     </div>
 
     <!-- Aylık Trend Grafiği -->
     <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <h3 style="margin:0;font-size:1rem;font-weight:600">📊 Aylık Gelir/Gider</h3>
+        <h3 style="margin:0;font-size:1rem;font-weight:600">📊 Monatliche Einnahmen/Ausgaben</h3>
       </div>
       <div style="position:relative;height:280px">
         <canvas id="bilanzMonthlyChart"></canvas>
@@ -3706,7 +3706,7 @@ function renderBilanz(d) {
     <!-- Cumulative Saldo -->
     <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <h3 style="margin:0;font-size:1rem;font-weight:600">📈 Kümülatif Saldo</h3>
+        <h3 style="margin:0;font-size:1rem;font-weight:600">📈 Kumulativer Saldo</h3>
       </div>
       <div style="position:relative;height:240px">
         <canvas id="bilanzCumChart"></canvas>
@@ -3716,13 +3716,13 @@ function renderBilanz(d) {
     <!-- Kategori Pasta -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0.9rem;margin-bottom:1.5rem">
       <div class="card" style="padding:1.2rem">
-        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#16a34a">Gelir Kategorileri</h3>
+        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#16a34a">Einnahmen-Kategorien</h3>
         <div style="position:relative;height:240px">
           <canvas id="bilanzEinChart"></canvas>
         </div>
       </div>
       <div class="card" style="padding:1.2rem">
-        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#dc2626">Gider Kategorileri</h3>
+        <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600;color:#dc2626">Ausgaben-Kategorien</h3>
         <div style="position:relative;height:240px">
           <canvas id="bilanzAusChart"></canvas>
         </div>
@@ -3732,16 +3732,16 @@ function renderBilanz(d) {
     <!-- Top Müşteriler -->
     ${d.top_customers.length > 0 ? `
     <div class="card" style="padding:1.2rem;margin-bottom:1.5rem">
-      <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600">🏆 Top Müşteriler (Toplam Ciro)</h3>
+      <h3 style="margin:0 0 0.8rem 0;font-size:1rem;font-weight:600">🏆 Top-Kunden (Gesamtumsatz)</h3>
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
           <thead>
             <tr style="background:#faf7f0;border-bottom:2px solid #e8e3d6">
-              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Müşteri</th>
-              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Tip</th>
-              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Toplam Faturalı</th>
-              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Ödenen</th>
-              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Bakiye</th>
+              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Kunde</th>
+              <th style="padding:0.6rem 0.8rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Typ</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Gesamt fakturiert</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Bezahlt</th>
+              <th style="padding:0.6rem 0.8rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase">Saldo</th>
             </tr>
           </thead>
           <tbody>
@@ -3759,7 +3759,7 @@ function renderBilanz(d) {
       </div>
     </div>` : ''}
 
-    <div style="font-size:0.72rem;color:#888;text-align:right">Son güncelleme: ${new Date(d.generated_at).toLocaleString('de-DE')}</div>
+    <div style="font-size:0.72rem;color:#888;text-align:right">Letzte Aktualisierung: ${new Date(d.generated_at).toLocaleString('de-DE')}</div>
   `;
 
   // Grafikler
@@ -3787,14 +3787,14 @@ function renderBilanzCharts(d) {
         labels: monthLabels,
         datasets: [
           {
-            label: 'Gelir',
+            label: 'Einnahmen',
             data: einnahmenData,
             backgroundColor: 'rgba(22, 163, 74, 0.7)',
             borderColor: '#16a34a',
             borderWidth: 1
           },
           {
-            label: 'Gider',
+            label: 'Ausgaben',
             data: ausgabenData,
             backgroundColor: 'rgba(220, 38, 38, 0.7)',
             borderColor: '#dc2626',
@@ -3831,7 +3831,7 @@ function renderBilanzCharts(d) {
       data: {
         labels: monthLabels,
         datasets: [{
-          label: 'Kümülatif Saldo',
+          label: 'Kumulativer Saldo',
           data: cumulativeData,
           fill: true,
           borderColor: '#1e40af',
@@ -3861,7 +3861,7 @@ function renderBilanzCharts(d) {
     });
   }
 
-  // 3) Gelir Kategorileri (doughnut)
+  // 3) Einnahmen-Kategorien (doughnut)
   const c3 = document.getElementById('bilanzEinChart');
   if (c3 && typeof Chart !== 'undefined' && d.categories.einnahmen.length > 0) {
     _bilanzCharts.ein = new Chart(c3, {
@@ -3889,10 +3889,10 @@ function renderBilanzCharts(d) {
       }
     });
   } else if (c3) {
-    c3.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Veri yok</div>';
+    c3.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Keine Daten</div>';
   }
 
-  // 4) Gider Kategorileri (doughnut)
+  // 4) Ausgaben-Kategorien (doughnut)
   const c4 = document.getElementById('bilanzAusChart');
   if (c4 && typeof Chart !== 'undefined' && d.categories.ausgaben.length > 0) {
     _bilanzCharts.aus = new Chart(c4, {
@@ -3920,13 +3920,13 @@ function renderBilanzCharts(d) {
       }
     });
   } else if (c4) {
-    c4.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Veri yok</div>';
+    c4.parentElement.innerHTML = '<div style="text-align:center;color:#888;padding:3rem">Keine Daten</div>';
   }
 }
 
 async function loadEurPreview() {
   const year = document.getElementById('eur_year').value;
-  document.getElementById('eur_preview').innerHTML = '<div class="text-center" style="color:#888;padding:2rem">Yükleniyor…</div>';
+  document.getElementById('eur_preview').innerHTML = '<div class="text-center" style="color:#888;padding:2rem">Wird geladen…</div>';
   try {
     const d = await api(`/api/admin/export/eur?year=${year}`);
     if (!d.success) {
@@ -4151,7 +4151,7 @@ async function loadGeldfluss() {
   if (from) params.set('from', from);
   if (to) params.set('to', to);
 
-  document.getElementById('gfTbody').innerHTML = '<tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Yükleniyor...</td></tr>';
+  document.getElementById('gfTbody').innerHTML = '<tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Wird geladen...</td></tr>';
 
   try {
     const d = await api('/api/admin/geldfluss?' + params.toString());
@@ -4195,7 +4195,7 @@ function renderGeldfluss() {
   const tbody = document.getElementById('gfTbody');
   if (entries.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="padding:2.5rem;text-align:center;color:#888">Bu dönem için kayıt yok</td></tr>';
-    // Mobile cards de boşalt
+    // Mobile Cards leeren
     const mobWrap = document.getElementById('gfMobileCards');
     if (mobWrap) mobWrap.innerHTML = '<div style="padding:2.5rem;text-align:center;color:#888">Bu dönem için kayıt yok</div>';
     return;
@@ -4349,7 +4349,7 @@ async function processWithScanner(file) { return file; }
 // Image compression — Canvas API ile JPEG sıkıştırma
 // File girer, sıkıştırılmış File döner. PDF/non-image olduğu gibi geri verilir.
 async function compressImage(file, options = {}) {
-  // Sadece resimleri sıkıştır
+  // Nur Bilderleri sıkıştır
   if (!file || !file.type || !file.type.startsWith('image/')) return file;
   // Zaten küçükse atla (< 600 KB)
   if (file.size < 600 * 1024) return file;
@@ -5222,7 +5222,7 @@ async function captureLiveScannerPhoto() {
   const video = document.getElementById('liveVideo');
   const captureCanvas = document.getElementById('liveCapture');
   if (!video || !video.videoWidth) {
-    toast('Kamera hazır değil', 'err');
+    toast('Kamera nicht bereit', 'err');
     return;
   }
 
@@ -5312,14 +5312,14 @@ function openCornerEditor(sourceCanvas, autoDetectedCorners) {
       <!-- Top bar -->
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0.85rem 1rem;background:#111;color:white">
         <button onclick="closeCornerEditor()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;padding:0.3rem 0.6rem">←</button>
-        <div style="font-size:0.95rem;font-weight:500">Köşeleri Ayarla</div>
+        <div style="font-size:0.95rem;font-weight:500">Ecken anpassen</div>
         <div style="width:40px"></div>
       </div>
 
       <!-- Hint -->
       <div style="background:#1a1a1a;color:rgba(255,255,255,0.75);padding:0.6rem 1rem;font-size:0.78rem;text-align:center;border-bottom:1px solid #222;line-height:1.4">
-        Yeşil noktaları belgenin köşelerine sürükleyin<br>
-        <span style="font-size:0.7rem;opacity:0.7">🔍 Sürüklerken büyüteç açılır — hassas ayar için</span>
+        Grüne Punkte an die Ecken des Dokuments ziehen<br>
+        <span style="font-size:0.7rem;opacity:0.7">🔍 Beim Ziehen erscheint eine Lupe — für präzise Anpassung</span>
       </div>
 
       <!-- Canvas area -->
@@ -5329,9 +5329,9 @@ function openCornerEditor(sourceCanvas, autoDetectedCorners) {
 
       <!-- Bottom buttons -->
       <div style="background:#111;padding:1rem;display:flex;gap:0.7rem">
-        <button onclick="cornerEditorRetake()" style="flex:1;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.92rem">🔄 Yeniden çek</button>
+        <button onclick="cornerEditorRetake()" style="flex:1;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.92rem">🔄 Erneut aufnehmen</button>
         <button onclick="cornerEditorAutoDetect()" style="flex:0;background:#1e40af;color:white;border:none;padding:0.85rem 0.9rem;border-radius:10px;cursor:pointer;font-size:0.92rem;font-weight:500" title="AI ile köşeleri yeniden bul">🤖 AI</button>
-        <button onclick="cornerEditorAccept()" style="flex:1.5;background:#22c55e;color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.95rem;font-weight:500">✓ Kullan</button>
+        <button onclick="cornerEditorAccept()" style="flex:1.5;background:#22c55e;color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-size:0.95rem;font-weight:500">✓ Verwenden</button>
       </div>
     `;
     document.body.appendChild(m);
@@ -5384,7 +5384,7 @@ async function cornerEditorAutoDetect() {
     const blob = await new Promise(r => tempCanvas.toBlob(r, 'image/jpeg', 0.85));
     if (!blob) {
       hideLoadingToast(loadingId);
-      toast('Resim hazırlanamadı', 'err');
+      toast('Bild konnte nicht vorbereitet werden', 'err');
       return;
     }
 
@@ -5730,7 +5730,7 @@ async function cornerEditorAccept() {
   }
 
   if (!resultBlob) {
-    toast('İşlenemedi', 'err');
+    toast('Verarbeitung fehlgeschlagen', 'err');
     return;
   }
 
