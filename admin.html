@@ -230,6 +230,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="sb-item" data-page="bilanz" onclick="goto('bilanz')"><span class="sb-ico">📈</span> Bilanz</div>
         <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Kunden</div>
         <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medien</div>
+        <div class="sb-item" data-page="hero" onclick="goto('hero')"><span class="sb-ico">🎬</span> Hero / Galerie</div>
       </nav>
       <div class="sb-foot">
         <div class="sb-logout" onclick="logout()">⎋ Abmelden</div>
@@ -464,6 +465,91 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
         <div id="bilanzContent">
           <div style="padding:3rem;text-align:center;color:#888">Wird geladen...</div>
+        </div>
+      </section>
+
+      <!-- ===== HERO / GALERIE ===== -->
+      <section id="page-hero" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">🎬 Hero / Galerie</h1>
+            <div class="page-sub">Startseiten-Slider und Medien verwalten</div>
+          </div>
+        </div>
+
+        <!-- TAB SWITCHER -->
+        <div style="display:flex;gap:0;margin-bottom:1.2rem;background:#f5f1e8;border-radius:8px;padding:4px;width:fit-content">
+          <button id="hero-tab-slides" onclick="heroTab('slides')" style="padding:0.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer;font-size:0.88rem;font-weight:500;background:#2a4a1a;color:white">🖼️ Hero Slides</button>
+          <button id="hero-tab-media" onclick="heroTab('media')" style="padding:0.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer;font-size:0.88rem;font-weight:500;background:transparent;color:#6b6b5a">📁 Medien-Upload</button>
+        </div>
+
+        <!-- SLIDES TAB -->
+        <div id="hero-pane-slides">
+          <div class="card" style="padding:1.2rem;margin-bottom:1rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <div style="font-weight:600">Aktuelle Slides (Drag & Drop zum Sortieren)</div>
+              <button onclick="heroAddSlide()" style="background:#2a4a1a;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-size:0.85rem">+ Neuer Slide</button>
+            </div>
+            <div id="heroSlideList" style="display:flex;flex-direction:column;gap:0.6rem">
+              <div style="padding:2rem;text-align:center;color:#888">Wird geladen...</div>
+            </div>
+            <div style="margin-top:1rem;display:flex;justify-content:flex-end">
+              <button onclick="heroSaveSlides()" style="background:#2a4a1a;color:white;border:none;padding:0.65rem 1.4rem;border-radius:8px;cursor:pointer;font-weight:500">💾 Speichern & Veröffentlichen</button>
+            </div>
+          </div>
+
+          <!-- Yeni slide formu (gizli) -->
+          <div id="heroAddForm" class="card" style="padding:1.2rem;display:none">
+            <h3 style="margin:0 0 1rem 0;font-size:1rem">Neuer Slide hinzufügen</h3>
+            <div style="display:grid;gap:0.8rem">
+              <div>
+                <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:0.3rem">Medientyp</label>
+                <select id="newSlideType" onchange="heroTypeChange()" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+                  <option value="image">🖼️ Bild</option>
+                  <option value="video">🎥 Video</option>
+                </select>
+              </div>
+              <div id="newSlideUrlGroup">
+                <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:0.3rem">URL (oder unten hochladen)</label>
+                <input id="newSlideUrl" type="text" placeholder="https://... oder aus Medien auswählen" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px;font-size:0.88rem">
+              </div>
+              <div>
+                <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:0.3rem">Datei hochladen (Bild: max 10MB · Video: max 100MB)</label>
+                <input id="newSlideFile" type="file" accept="image/*,video/mp4,video/webm" style="width:100%;font-size:0.85rem">
+              </div>
+              <div id="newSlideAltGroup">
+                <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:0.3rem">Alt-Text (Barrierefreiheit)</label>
+                <input id="newSlideAlt" type="text" placeholder="z.B. Keby Olivenöl 750ml" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px;font-size:0.88rem">
+              </div>
+              <div style="display:flex;gap:0.6rem;justify-content:flex-end">
+                <button onclick="document.getElementById('heroAddForm').style.display='none'" style="background:none;border:1px solid #d4cfc0;padding:0.5rem 1rem;border-radius:6px;cursor:pointer">Abbrechen</button>
+                <button onclick="heroConfirmAdd()" style="background:#2a4a1a;color:white;border:none;padding:0.5rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:500">✓ Hinzufügen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEDIA TAB -->
+        <div id="hero-pane-media" style="display:none">
+          <div class="card" style="padding:1.2rem">
+            <h3 style="margin:0 0 1rem 0;font-size:1rem">Medien hochladen (Bilder & Videos)</h3>
+            <div style="border:2px dashed #d4cfc0;border-radius:8px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer" onclick="document.getElementById('heroMediaFileInput').click()">
+              <div style="font-size:2rem;margin-bottom:0.5rem">📁</div>
+              <div style="font-weight:500;color:#2a4a1a;margin-bottom:0.3rem">Dateien auswählen</div>
+              <div style="font-size:0.8rem;color:#888">JPG, PNG, WEBP, MP4, WEBM · Bilder max 10MB · Videos max 100MB</div>
+              <input id="heroMediaFileInput" type="file" multiple accept="image/*,video/mp4,video/webm" style="display:none" onchange="heroMediaUpload(this.files)">
+            </div>
+            <div id="heroMediaProgress" style="display:none;margin-bottom:1rem">
+              <div style="background:#f0ebe0;border-radius:6px;height:8px;overflow:hidden">
+                <div id="heroMediaProgressBar" style="height:100%;background:#2a4a1a;transition:width 0.3s;width:0%"></div>
+              </div>
+              <div id="heroMediaProgressText" style="font-size:0.8rem;color:#666;margin-top:0.3rem">Hochladen...</div>
+            </div>
+            <div style="font-size:0.85rem;color:#666;margin-bottom:1rem">Hochgeladene Medien sind unter den folgenden URLs verfügbar und können als Slide-URL verwendet werden:</div>
+            <div id="heroMediaList" style="display:flex;flex-wrap:wrap;gap:0.8rem">
+              <div style="color:#888;font-size:0.85rem">Noch keine Dateien hochgeladen.</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1247,6 +1333,7 @@ function goto(page) {
   if (page === 'buchhaltung') loadInvoices();
   if (page === 'geldfluss') loadGeldfluss();
   if (page === 'bilanz') initBilanz();
+  if (page === 'hero') initHeroPage();
 }
 
 // ============================================================
@@ -3557,6 +3644,242 @@ function switchExTab(tab) {
 // BILANZ DASHBOARD
 // ============================================================
 let _bilanzCharts = {};  // Chart.js instance'ları
+
+// ============================================================
+// HERO / GALERIE
+// ============================================================
+let _heroSlides = [];  // [{id, type, src, alt, order}]
+let _heroDirty = false;
+
+function heroTab(tab) {
+  document.getElementById('hero-pane-slides').style.display = tab === 'slides' ? '' : 'none';
+  document.getElementById('hero-pane-media').style.display = tab === 'media' ? '' : 'none';
+  document.getElementById('hero-tab-slides').style.background = tab === 'slides' ? '#2a4a1a' : 'transparent';
+  document.getElementById('hero-tab-slides').style.color = tab === 'slides' ? 'white' : '#6b6b5a';
+  document.getElementById('hero-tab-media').style.background = tab === 'media' ? '#2a4a1a' : 'transparent';
+  document.getElementById('hero-tab-media').style.color = tab === 'media' ? 'white' : '#6b6b5a';
+}
+
+async function initHeroPage() {
+  heroTab('slides');
+  await loadHeroSlides();
+}
+
+async function loadHeroSlides() {
+  const list = document.getElementById('heroSlideList');
+  list.innerHTML = '<div style="padding:1.5rem;text-align:center;color:#888">Wird geladen...</div>';
+  try {
+    const d = await api('/api/admin/slides');
+    _heroSlides = (d.slides || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+    renderHeroSlideList();
+  } catch (e) {
+    list.innerHTML = '<div style="color:#c0392b">Fehler: ' + e.message + '</div>';
+  }
+}
+
+function renderHeroSlideList() {
+  const list = document.getElementById('heroSlideList');
+  if (_heroSlides.length === 0) {
+    list.innerHTML = '<div style="padding:1.5rem;text-align:center;color:#888">Noch keine Slides. "+ Neuer Slide" klicken.</div>';
+    return;
+  }
+  list.innerHTML = _heroSlides.map((s, i) => {
+    const thumb = s.type === 'video'
+      ? `<div style="width:80px;height:56px;background:#1a2818;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem">🎥</div>`
+      : `<img src="${escapeHtml(s.src)}" style="width:80px;height:56px;object-fit:cover;border-radius:6px;background:#e8e3d6" onerror="this.style.background='#e8e3d6'">`;
+
+    return `
+    <div style="display:flex;align-items:center;gap:0.8rem;background:#faf7f0;border:1px solid #e8e3d6;border-radius:8px;padding:0.7rem 0.9rem" id="hslide-${i}">
+      <div style="cursor:grab;color:#999;font-size:1.2rem;padding:0 0.2rem" title="Ziehen zum Sortieren">⠿</div>
+      ${thumb}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.75rem;font-weight:600;color:#6b6b5a;text-transform:uppercase;letter-spacing:0.05em">${s.type === 'video' ? '🎥 Video' : '🖼️ Bild'}</div>
+        <div style="font-size:0.82rem;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0.1rem">${escapeHtml(s.alt || s.src.split('/').pop())}</div>
+        <div style="font-size:0.72rem;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(s.src)}</div>
+      </div>
+      <div style="display:flex;gap:0.3rem;flex-shrink:0">
+        <button onclick="heroMoveSlide(${i},-1)" ${i===0?'disabled':''} style="background:none;border:1px solid #d4cfc0;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:0.9rem" title="Nach oben">↑</button>
+        <button onclick="heroMoveSlide(${i},1)" ${i===_heroSlides.length-1?'disabled':''} style="background:none;border:1px solid #d4cfc0;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:0.9rem" title="Nach unten">↓</button>
+        <button onclick="heroDeleteSlide(${i})" style="background:none;border:1px solid #fee2e2;color:#c0392b;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:0.9rem" title="Löschen">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  _heroDirty = false;
+}
+
+function heroMoveSlide(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= _heroSlides.length) return;
+  [_heroSlides[idx], _heroSlides[newIdx]] = [_heroSlides[newIdx], _heroSlides[idx]];
+  // order güncelle
+  _heroSlides.forEach((s, i) => s.order = i);
+  _heroDirty = true;
+  renderHeroSlideList();
+}
+
+function heroDeleteSlide(idx) {
+  const s = _heroSlides[idx];
+  if (!confirm(`"${s.alt || s.src.split('/').pop()}" slide\'ı silmek istediğinizden emin misiniz?`)) return;
+  _heroSlides.splice(idx, 1);
+  _heroSlides.forEach((s, i) => s.order = i);
+  _heroDirty = true;
+  renderHeroSlideList();
+  toast('Slide entfernt – zum Speichern "Speichern" klicken', 'info');
+}
+
+function heroAddSlide() {
+  document.getElementById('heroAddForm').style.display = '';
+  document.getElementById('newSlideUrl').value = '';
+  document.getElementById('newSlideAlt').value = '';
+  document.getElementById('newSlideFile').value = '';
+  document.getElementById('newSlideType').value = 'image';
+  heroTypeChange();
+}
+
+function heroTypeChange() {
+  const type = document.getElementById('newSlideType').value;
+  document.getElementById('newSlideAltGroup').style.display = type === 'video' ? 'none' : '';
+}
+
+async function heroConfirmAdd() {
+  const type = document.getElementById('newSlideType').value;
+  const fileInput = document.getElementById('newSlideFile');
+  let src = document.getElementById('newSlideUrl').value.trim();
+  const alt = document.getElementById('newSlideAlt').value.trim();
+
+  // Dosya yükle
+  if (fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    const loadingId = showLoadingToast('⬆️ Hochladen...');
+    try {
+      const fd = new FormData();
+      const prefix = type === 'video' ? 'keby/hero/videos/' : 'keby/hero/images/';
+      fd.append('file', file);
+      fd.append('name', prefix + file.name);
+      const r = await fetch(API + '/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN },
+        body: fd
+      });
+      const d = await r.json();
+      hideLoadingToast(loadingId);
+      if (!d.success) { toast('Upload-Fehler: ' + (d.error || 'unbekannt'), 'err'); return; }
+      src = d.url;
+      toast('✅ Hochgeladen', 'ok');
+    } catch (e) {
+      hideLoadingToast(loadingId);
+      toast('Upload-Fehler: ' + e.message, 'err');
+      return;
+    }
+  }
+
+  if (!src) { toast('URL oder Datei erforderlich', 'err'); return; }
+
+  const newSlide = {
+    id: 's' + Date.now(),
+    type,
+    src,
+    alt: alt || '',
+    order: _heroSlides.length
+  };
+  _heroSlides.push(newSlide);
+  _heroDirty = true;
+  document.getElementById('heroAddForm').style.display = 'none';
+  renderHeroSlideList();
+  toast('Slide hinzugefügt – zum Speichern "Speichern" klicken', 'info');
+}
+
+async function heroSaveSlides() {
+  try {
+    const r = await fetch(API + '/api/admin/slides', {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slides: _heroSlides })
+    });
+    const d = await r.json();
+    if (!d.success) { toast('Fehler: ' + (d.error || 'unbekannt'), 'err'); return; }
+    toast(`✅ ${d.count} Slides gespeichert – Änderungen sind live!`, 'ok');
+    _heroDirty = false;
+  } catch (e) {
+    toast('Fehler: ' + e.message, 'err');
+  }
+}
+
+// Medien upload tab
+async function heroMediaUpload(files) {
+  if (!files || files.length === 0) return;
+  const progress = document.getElementById('heroMediaProgress');
+  const bar = document.getElementById('heroMediaProgressBar');
+  const text = document.getElementById('heroMediaProgressText');
+  progress.style.display = '';
+
+  const results = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const pct = Math.round((i / files.length) * 100);
+    bar.style.width = pct + '%';
+    text.textContent = `Hochladen (${i + 1}/${files.length}): ${file.name}`;
+
+    try {
+      const isVideo = file.type.startsWith('video/');
+      const prefix = isVideo ? 'keby/hero/videos/' : 'keby/hero/images/';
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('name', prefix + file.name);
+      const r = await fetch(API + '/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN },
+        body: fd
+      });
+      const d = await r.json();
+      if (d.success) results.push({ url: d.url, type: d.type || (isVideo ? 'video' : 'image'), name: file.name });
+    } catch (e) {
+      console.warn('Upload failed:', file.name, e);
+    }
+  }
+
+  bar.style.width = '100%';
+  text.textContent = `✅ ${results.length} Dateien hochgeladen`;
+  setTimeout(() => { progress.style.display = 'none'; }, 2000);
+
+  // Sonuçları göster
+  const mediaList = document.getElementById('heroMediaList');
+  const existing = mediaList.querySelector('.media-item') ? '' : '';
+  const newItems = results.map(r => {
+    const thumb = r.type === 'video'
+      ? `<div style="width:100%;height:80px;background:#1a2818;display:flex;align-items:center;justify-content:center;color:white;font-size:2rem">🎥</div>`
+      : `<img src="${escapeHtml(r.url)}" style="width:100%;height:80px;object-fit:cover;display:block">`;
+    return `
+      <div class="media-item" style="width:140px;border:1px solid #e8e3d6;border-radius:6px;overflow:hidden;background:white">
+        ${thumb}
+        <div style="padding:0.5rem">
+          <div style="font-size:0.7rem;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.url)}">${escapeHtml(r.name)}</div>
+          <button onclick="navigator.clipboard.writeText('${escapeHtml(r.url)}').then(()=>toast('URL kopiert','ok'))" style="background:none;border:1px solid #d4cfc0;width:100%;padding:0.2rem;border-radius:4px;cursor:pointer;font-size:0.7rem;margin-top:0.3rem">📋 URL kopieren</button>
+          <button onclick="heroUseAsSlide('${escapeHtml(r.url)}','${escapeHtml(r.type)}')" style="background:#2a4a1a;color:white;border:none;width:100%;padding:0.2rem;border-radius:4px;cursor:pointer;font-size:0.7rem;margin-top:0.2rem">+ Als Slide</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (mediaList.querySelector('div[style*="Noch keine"]')) {
+    mediaList.innerHTML = '';
+  }
+  mediaList.insertAdjacentHTML('afterbegin', newItems);
+}
+
+function heroUseAsSlide(url, type) {
+  const slide = {
+    id: 's' + Date.now(),
+    type: type || 'image',
+    src: url,
+    alt: url.split('/').pop().replace(/\.\w+$/, '').replace(/-/g, ' '),
+    order: _heroSlides.length
+  };
+  _heroSlides.push(slide);
+  _heroDirty = true;
+  heroTab('slides');
+  renderHeroSlideList();
+  toast('Als Slide hinzugefügt – zum Speichern "Speichern" klicken', 'info');
+}
 
 function initBilanz() {
   // Yıl seçici doldur (son 5 yıl + bu yıl + gelecek yıl)
