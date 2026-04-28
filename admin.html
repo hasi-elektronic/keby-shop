@@ -297,7 +297,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="panel">
           <div class="panel-body flush">
             <table class="tbl"><thead><tr>
-              <th>Ref</th><th>Kunde</th><th>Produkte</th><th>Betrag</th><th>Zahlung</th><th>Status</th><th>Rechnung</th><th>Datum</th><th></th>
+              <th>Ref</th><th>Kunde</th><th>Produkte</th><th>Betrag</th><th>Zahlung</th><th>Status</th><th>Rechnung</th><th>Tracking</th><th>Datum</th><th></th>
             </tr></thead>
             <tbody id="ordersTbody"></tbody></table>
           </div>
@@ -848,6 +848,54 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 </div>
 
 <!-- ============ ORDER MODAL ============ -->
+<!-- TRACKING MODAL -->
+<div class="modal-backdrop" id="trackingModal" style="display:none" onclick="if(event.target===this)closeTrackingModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2 class="modal-title">📦 Versand & Tracking</h2>
+      <button class="modal-close" onclick="closeTrackingModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="trackingOrderInfo" style="background:#f5f1e8;border-radius:6px;padding:0.7rem 1rem;margin-bottom:1rem;font-size:0.88rem;color:#555"></div>
+      <div style="display:grid;gap:0.8rem">
+        <div>
+          <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Sendungsnummer *</label>
+          <input id="trackingNumber" type="text" placeholder="z.B. 1Z999AA10123456784" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px;font-family:monospace;font-size:0.95rem">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Versanddienstleister</label>
+          <select id="trackingCarrier" onchange="trackingCarrierChange()" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            <option value="DHL">DHL</option>
+            <option value="DPD">DPD</option>
+            <option value="Hermes">Hermes</option>
+            <option value="GLS">GLS</option>
+            <option value="UPS">UPS</option>
+            <option value="FedEx">FedEx</option>
+            <option value="Post AT">Österreichische Post</option>
+            <option value="Post CH">Swiss Post</option>
+            <option value="Andere">Andere</option>
+          </select>
+        </div>
+        <div id="trackingUrlGroup" style="display:none">
+          <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Tracking-URL (manuell)</label>
+          <input id="trackingUrl" type="url" placeholder="https://..." style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px;font-size:0.85rem">
+        </div>
+        <div style="background:#f0f9ff;border-radius:6px;padding:0.7rem 1rem;display:flex;align-items:center;gap:0.6rem">
+          <input type="checkbox" id="trackingSendEmail" checked style="width:16px;height:16px;cursor:pointer">
+          <label for="trackingSendEmail" style="font-size:0.88rem;cursor:pointer;color:#333">
+            Tracking-E-Mail an Kunden senden
+            <span id="trackingEmailTarget" style="display:block;font-size:0.75rem;color:#888"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeTrackingModal()" class="btn btn-secondary">Abbrechen</button>
+      <button onclick="saveTracking()" class="btn btn-primary" style="background:#2a4a1a;color:white;border:none">📦 Versand bestätigen</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="orderModal">
   <div class="modal" style="max-width:760px">
     <div class="modal-head">
@@ -1840,6 +1888,15 @@ function renderOrders() {
     const invoiceCell = o.invoice_number
       ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung öffnen">📄 ${o.invoice_number}</a>`
       : `<span style="color:#bbb;font-size:0.75rem">—</span>`;
+    const trackingCell = o.tracking_number
+      ? `<div style="font-size:0.72rem">
+           <span style="background:#dbeafe;color:#1e40af;padding:0.15rem 0.5rem;border-radius:4px;font-family:monospace">${escapeHtml(o.carrier || 'DHL')}</span>
+           ${o.tracking_url
+             ? `<a href="${escapeHtml(o.tracking_url)}" target="_blank" onclick="event.stopPropagation()" style="color:#1e40af;margin-left:4px;font-size:0.7rem">${escapeHtml(o.tracking_number)}</a>`
+             : `<span style="color:#333;margin-left:4px">${escapeHtml(o.tracking_number)}</span>`
+           }
+         </div>`
+      : `<button onclick="event.stopPropagation();openTrackingModal('${o.id}')" style="background:none;border:1px dashed #d4cfc0;color:#888;font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:4px;cursor:pointer">+ Tracking</button>`;
     return `
     <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')">
       <td><strong>${o.ref || o.id}</strong></td>
@@ -1849,13 +1906,14 @@ function renderOrders() {
       <td>${paymentBadge(o.payment)}</td>
       <td>${statusBadge(o.status)}</td>
       <td>${invoiceCell}</td>
+      <td>${trackingCell}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
       <td>
         <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;font-size:0.7rem;margin-right:0.3rem" onclick="event.stopPropagation();createLieferscheinFromOrder('${o.id}')" title="Lieferschein erstellen">📦 LS</button>
         <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Keine Bestellungen</td></tr>';
+  }).join('') || '<tr><td colspan="10" class="text-center text-muted" style="padding:2rem">Keine Bestellungen</td></tr>';
 }
 
 function openOrderModal(id) {
@@ -4012,6 +4070,88 @@ function heroUseAsSlide(url, type) {
   heroTab('slides');
   renderHeroSlideList();
   toast('Als Slide hinzugefügt – zum Speichern "Speichern" klicken', 'info');
+}
+
+// ============================================================
+// VERSAND & TRACKING
+// ============================================================
+let _trackingOrderId = null;
+
+function openTrackingModal(orderId) {
+  const order = orders.find(o => o.id === orderId);
+  if (!order) return;
+  _trackingOrderId = orderId;
+
+  // Sipariş bilgisi
+  document.getElementById('trackingOrderInfo').innerHTML =
+    `<strong>${order.ref || order.id}</strong> · ${escapeHtml(order.name || 'Misafir')} · €${(parseFloat(order.total)||0).toFixed(2)}`;
+
+  // Önceden tracking varsa doldur
+  document.getElementById('trackingNumber').value = order.tracking_number || '';
+  document.getElementById('trackingCarrier').value = order.carrier || 'DHL';
+  document.getElementById('trackingUrl').value = order.tracking_url || '';
+  document.getElementById('trackingSendEmail').checked = true;
+  document.getElementById('trackingEmailTarget').textContent = order.email ? `→ ${order.email}` : '(keine E-Mail Adresse)';
+
+  trackingCarrierChange();
+  document.getElementById('trackingModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('trackingNumber').focus(), 100);
+}
+
+function closeTrackingModal() {
+  document.getElementById('trackingModal').style.display = 'none';
+  _trackingOrderId = null;
+}
+
+function trackingCarrierChange() {
+  const carrier = document.getElementById('trackingCarrier').value;
+  // "Andere" seçilince manuel URL alanı göster
+  document.getElementById('trackingUrlGroup').style.display = carrier === 'Andere' ? '' : 'none';
+}
+
+async function saveTracking() {
+  const trackingNumber = document.getElementById('trackingNumber').value.trim();
+  const carrier = document.getElementById('trackingCarrier').value;
+  const trackingUrl = document.getElementById('trackingUrl').value.trim() || null;
+  const sendEmail = document.getElementById('trackingSendEmail').checked;
+
+  if (!trackingNumber) { toast('Sendungsnummer erforderlich', 'err'); return; }
+  if (!_trackingOrderId) return;
+
+  const btn = document.querySelector('#trackingModal .btn-primary');
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  try {
+    const r = await fetch(API + `/api/admin/orders/${_trackingOrderId}/tracking`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracking_number: trackingNumber, carrier, tracking_url: trackingUrl, send_email: sendEmail })
+    });
+    const d = await r.json();
+    if (!d.success) { toast('Fehler: ' + (d.error || 'unbekannt'), 'err'); return; }
+
+    const emailInfo = sendEmail
+      ? (d.email_sent ? ' · ✉️ Mail gesendet' : ' · ⚠️ Mail fehlgeschlagen')
+      : '';
+    toast(`✅ Tracking gespeichert${emailInfo}`, 'ok');
+
+    // Local orders listesini güncelle
+    const order = orders.find(o => o.id === _trackingOrderId);
+    if (order) {
+      order.tracking_number = trackingNumber;
+      order.carrier = carrier;
+      order.tracking_url = d.tracking_url;
+      order.status = order.status === 'neu' ? 'gonderildi' : order.status;
+    }
+    renderOrders();
+    closeTrackingModal();
+  } catch (e) {
+    toast('Fehler: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📦 Versand bestätigen';
+  }
 }
 
 // ============================================================
