@@ -260,9 +260,28 @@ footer.foot a:hover { text-decoration: underline; }
     <aside class="order-summary">
       <h2 data-tr="Bestellübersicht" data-de="Bestellübersicht">Bestellübersicht</h2>
       <div id="summary-items"></div>
+
+      <!-- Kupon kodu -->
+      <div style="margin:1rem 0;padding:0.8rem;background:#f9f7f0;border-radius:8px;border:1px solid #e8e3d6">
+        <div style="font-size:0.78rem;font-weight:600;color:#555;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em">Gutscheincode</div>
+        <div style="display:flex;gap:0.4rem">
+          <input id="couponInput" type="text" placeholder="Code eingeben" style="flex:1;padding:0.5rem 0.7rem;border:1px solid #d4cfc0;border-radius:5px;font-size:0.88rem;font-family:monospace;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          <button id="couponApplyBtn" onclick="applyCoupon()" style="background:#2a4a1a;color:white;border:none;padding:0.5rem 0.8rem;border-radius:5px;cursor:pointer;font-size:0.82rem;white-space:nowrap">Anwenden</button>
+        </div>
+        <div id="couponMsg" style="font-size:0.78rem;margin-top:0.4rem"></div>
+      </div>
+
       <div class="summary-total">
         <span class="summary-total-lbl" data-tr="Gesamt" data-de="Gesamt">Gesamt</span>
         <span class="summary-total-val" id="summary-total">0,00 €</span>
+      </div>
+      <div id="couponDiscountRow" style="display:none;justify-content:space-between;font-size:0.85rem;color:#16a34a;padding:0.3rem 0;margin-top:-0.5rem">
+        <span id="couponDiscountLabel">Rabatt (CODE)</span>
+        <span id="couponDiscountAmount">-0,00 €</span>
+      </div>
+      <div id="couponNewTotal" style="display:none;justify-content:space-between;font-weight:600;font-size:1rem;padding:0.5rem 0;border-top:1px solid #e8e3d6;margin-top:0.3rem">
+        <span>Endbetrag</span>
+        <span id="couponNewTotalAmount">0,00 €</span>
       </div>
       <div class="summary-note" data-tr="Versandkostenfrei ab 120 €" data-de="Versandkostenfrei ab 120 €">Versandkostenfrei ab 120 €</div>
     </aside>
@@ -282,6 +301,7 @@ const STRIPE_PK = 'pk_live_51RGtcIPjzcd25CIMagy3DdiqbjCJlj0YIUJI7oDuaTCdKrhCWIsm
 
 let cart = [];
 let _stripeCheckout = null;
+let _appliedCoupon = null;  // {code, type, value, discount_amount, new_total}
 
 // Sepeti localStorage'tan yükle
 function loadCart() {
@@ -314,6 +334,75 @@ function renderSummary() {
     </div>
   `).join('');
   document.getElementById('summary-total').textContent = fmt(total);
+
+  // Uygulanan kupon varsa göster
+  const discRow = document.getElementById('couponDiscountRow');
+  const newTotalRow = document.getElementById('couponNewTotal');
+  if (_appliedCoupon) {
+    discRow.style.display = 'flex';
+    newTotalRow.style.display = 'flex';
+    document.getElementById('couponDiscountLabel').textContent = `Rabatt (${_appliedCoupon.code})`;
+    document.getElementById('couponDiscountAmount').textContent = '-' + fmt(_appliedCoupon.discount_amount);
+    document.getElementById('couponNewTotalAmount').textContent = fmt(_appliedCoupon.new_total);
+  } else {
+    discRow.style.display = 'none';
+    newTotalRow.style.display = 'none';
+  }
+}
+
+async function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  const msg = document.getElementById('couponMsg');
+  const btn = document.getElementById('couponApplyBtn');
+  if (!code) { msg.innerHTML = '<span style="color:#c0392b">Code eingeben</span>'; return; }
+
+  // Zaten uygulandıysa kaldır
+  if (_appliedCoupon && _appliedCoupon.code === code) {
+    _appliedCoupon = null;
+    document.getElementById('couponInput').value = '';
+    msg.innerHTML = '';
+    renderSummary();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '…';
+  msg.innerHTML = '';
+
+  try {
+    const total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+    const r = await fetch(API + '/api/coupon/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, order_total: total })
+    });
+    const d = await r.json();
+
+    if (!d.success) {
+      msg.innerHTML = `<span style="color:#c0392b">❌ ${escHtml(d.error || 'Ungültiger Code')}</span>`;
+      _appliedCoupon = null;
+    } else {
+      _appliedCoupon = {
+        code: d.coupon.code,
+        type: d.coupon.type,
+        value: d.coupon.value,
+        stripe_coupon_id: d.coupon.stripe_coupon_id,
+        discount_amount: d.discount_amount,
+        new_total: d.new_total
+      };
+      const discText = d.coupon.type === 'percent'
+        ? `${d.coupon.value}% Rabatt`
+        : `€${d.coupon.value.toFixed(2)} Rabatt`;
+      msg.innerHTML = `<span style="color:#16a34a">✅ ${escHtml(d.coupon.description || discText)} angewendet</span>`;
+      btn.textContent = 'Entfernen';
+      renderSummary();
+    }
+  } catch (e) {
+    msg.innerHTML = `<span style="color:#c0392b">Fehler: ${escHtml(e.message)}</span>`;
+  } finally {
+    btn.disabled = false;
+    if (!_appliedCoupon) btn.textContent = 'Anwenden';
+  }
 }
 
 function goBack() {
@@ -336,7 +425,11 @@ async function initCheckout() {
     const r = await fetch(API + '/api/stripe/create-checkout-session', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ items, locale: 'de' })
+      body: JSON.stringify({
+        items,
+        locale: 'de',
+        couponCode: _appliedCoupon ? _appliedCoupon.code : null
+      })
     });
     const d = await r.json();
 
