@@ -2141,8 +2141,8 @@ body { color: #1a1a14; }
   <div id="kslides-container">
     <!-- Fallback: ilk slide hardcoded (JS yüklenene kadar görünür) -->
     <div class="kslide" id="kslide-fallback" style="position:absolute;inset:0;opacity:1;transition:opacity 1s;z-index:1;background:#1a2818">
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)" loading="eager">
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="Keby" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block" loading="eager">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(20px) brightness(0.5);transform:scale(1.08)" loading="eager">
+      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg" alt="Keby" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block" loading="eager">
     </div>
   </div>
   <!-- OVERLAY -->
@@ -2206,21 +2206,26 @@ body { color: #1a1a14; }
       vid.loop = true;
       vid.playsInline = true;
       vid.setAttribute('playsinline', '');
+      // object-fit: cover → video her en boyda tam doldurur
       vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center';
       div.appendChild(vid);
     } else {
-      // Resim slide: blur arka plan + net ön plan
+      // Resim slide: blur arka plan + cover ön plan
+      // Her en boy oranında (dikey, kare, yatay) tam frame doldurmak için cover kullan
       var blur = document.createElement('img');
       blur.src = slide.src;
       blur.alt = '';
       blur.setAttribute('aria-hidden', 'true');
-      blur.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(30px) brightness(0.7);transform:scale(1.15)';
+      // Blur: tüm frame'i doldurur, arka plan efekti
+      blur.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:blur(20px) brightness(0.5);transform:scale(1.08)';
       blur.loading = idx === 0 ? 'eager' : 'lazy';
 
       var main = document.createElement('img');
       main.src = slide.src;
       main.alt = slide.alt || 'Keby';
-      main.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block';
+      // cover → dikey/kare/yatay resim ne olursa olsun frame'i doldurur
+      // object-position: center → odak ortada
+      main.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block';
       main.loading = idx === 0 ? 'eager' : 'lazy';
 
       div.appendChild(blur);
