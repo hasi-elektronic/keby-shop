@@ -1675,13 +1675,23 @@ async function uploadFiles(files, context) {
 function renderImages() {
   document.getElementById('imgCount').textContent = images.length;
   const grid = document.getElementById('mediaGrid');
-  grid.innerHTML = images.map(img => `
-    <div class="img-tile" onclick="copyImageUrl('${img.key}')">
-      <img src="${IMG_BASE}${img.key}" alt="" onerror="this.style.background='#fdd'">
-      <div class="img-tile-del" onclick="event.stopPropagation();deleteImage('${img.key}')" title="Sil">✕</div>
-      <div class="img-tile-name">${img.key.replace('keby/','')}<br><small>${(img.size/1024).toFixed(0)}KB</small></div>
-    </div>
-  `).join('') || '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Noch keine Bilder</div>';
+  grid.innerHTML = images.map(img => {
+    const url = IMG_BASE + img.key;
+    const isVideo = /\.(mp4|mov|webm)$/i.test(img.key);
+    const media = isVideo
+      ? `<video src="${url}" style="width:100%;height:100%;object-fit:cover" muted playsinline preload="metadata" onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0">
+           <div style="position:absolute;inset:0;background:#1a2818;display:flex;align-items:center;justify-content:center;color:white;font-size:2rem">🎥</div>
+         </video>
+         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;pointer-events:none;opacity:0.85">🎥</div>`
+      : `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.background='#e8e3d6';this.style.display='none'">`;
+    return `
+      <div class="img-tile" onclick="copyImageUrl('${img.key}')">
+        ${media}
+        <div class="img-tile-del" onclick="event.stopPropagation();deleteImage('${img.key}')" title="Löschen">✕</div>
+        <div class="img-tile-name">${img.key.replace('keby/','')}<br><small>${(img.size/1024).toFixed(0)}KB</small></div>
+      </div>
+    `;
+  }).join('') || '<div class="text-center text-muted" style="grid-column:1/-1;padding:2rem">Noch keine Dateien</div>';
 }
 
 async function deleteImage(key) {
@@ -3754,7 +3764,12 @@ async function heroConfirmAdd() {
     try {
       const fd = new FormData();
       const prefix = type === 'video' ? 'keby/hero/videos/' : 'keby/hero/images/';
-      fd.append('file', file);
+      // Resim ise client-side resize (max 1920px, en boy oranı korunur)
+      let uploadFile = file;
+      if (file.type && file.type.startsWith('image/')) {
+        uploadFile = await compressImage(file, { maxDim: 1920, quality: 0.88 });
+      }
+      fd.append('file', uploadFile);
       fd.append('name', prefix + file.name);
       const r = await fetch(API + '/api/admin/upload', {
         method: 'POST',
@@ -3824,7 +3839,12 @@ async function heroMediaUpload(files) {
       const isVideo = file.type.startsWith('video/');
       const prefix = isVideo ? 'keby/hero/videos/' : 'keby/hero/images/';
       const fd = new FormData();
-      fd.append('file', file);
+      // Resim ise client-side resize (max 1920px, en boy oranı korunur, site layoutu bozulmaz)
+      let uploadFile = file;
+      if (!isVideo && file.type.startsWith('image/')) {
+        uploadFile = await compressImage(file, { maxDim: 1920, quality: 0.88 });
+      }
+      fd.append('file', uploadFile);
       fd.append('name', prefix + file.name);
       const r = await fetch(API + '/api/admin/upload', {
         method: 'POST',
