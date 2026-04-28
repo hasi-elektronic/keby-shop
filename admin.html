@@ -1266,7 +1266,11 @@ async function doLogin(e) {
   e.preventDefault();
   const pw = document.getElementById('loginPw').value;
   const err = document.getElementById('lerr');
+  const btn = document.querySelector('#loginForm button[type="submit"]');
   err.textContent = '';
+
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+
   try {
     const r = await fetch(API + '/api/admin/login', {
       method: 'POST',
@@ -1274,12 +1278,52 @@ async function doLogin(e) {
       body: JSON.stringify({password: pw})
     });
     const d = await r.json();
-    if (!d.success) throw new Error(d.error || 'Giriş başarısız');
+
+    if (r.status === 429) {
+      // Rate limit
+      const wait = d.retry_after || 60;
+      err.textContent = `⛔ Zu viele Versuche. Bitte ${wait} Sekunden warten.`;
+      // Countdown
+      let remaining = wait;
+      const interval = setInterval(() => {
+        remaining--;
+        err.textContent = `⛔ Bitte warten: ${remaining}s`;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          err.textContent = '';
+          if (btn) { btn.disabled = false; btn.textContent = 'Anmelden'; }
+        }
+      }, 1000);
+      return;
+    }
+
+    if (!d.success) throw new Error(d.error || 'Anmeldung fehlgeschlagen');
+
     TOKEN = d.token;
     sessionStorage.setItem('keby_admin_token', TOKEN);
+
+    // Session timeout — 8 saat sonra uyarı, 30 dk ekstra
+    const expiresIn = (d.expires_in || 28800) * 1000;  // ms
+    const warnAt = expiresIn - 5 * 60 * 1000;  // 5 dk önce uyar
+    if (warnAt > 0) {
+      setTimeout(() => {
+        if (TOKEN) {
+          toast('⏰ Sitzung läuft in 5 Minuten ab — bitte speichern!', 'warn');
+        }
+      }, warnAt);
+      setTimeout(() => {
+        if (TOKEN) {
+          toast('🔒 Sitzung abgelaufen — bitte neu anmelden', 'err');
+          logout(true);  // auto-logout
+        }
+      }, expiresIn);
+    }
+
     showApp();
   } catch (e) {
     err.textContent = e.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Anmelden'; }
   }
 }
 
@@ -1294,8 +1338,17 @@ async function checkAuth() {
   } catch { return false; }
 }
 
-function logout() {
-  if (!confirm('Möchtest du dich abmelden?')) return;
+async function logout(auto = false) {
+  if (!auto && !confirm('Möchtest du dich abmelden?')) return;
+
+  // Server-side session sil
+  if (TOKEN) {
+    fetch(API + '/api/admin/logout', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + TOKEN}
+    }).catch(() => {});
+  }
+
   TOKEN = '';
   sessionStorage.removeItem('keby_admin_token');
   document.getElementById('adminWrap').style.display = 'none';
