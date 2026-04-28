@@ -231,6 +231,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="sb-item" data-page="customers" onclick="goto('customers')"><span class="sb-ico">👥</span> Kunden</div>
         <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medien</div>
         <div class="sb-item" data-page="hero" onclick="goto('hero')"><span class="sb-ico">🎬</span> Hero / Galerie</div>
+        <div class="sb-item" data-page="coupons" onclick="goto('coupons')"><span class="sb-ico">🎟️</span> Gutscheine</div>
       </nav>
       <div class="sb-foot">
         <div class="sb-logout" onclick="logout()">⎋ Abmelden</div>
@@ -550,6 +551,64 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
               <div style="color:#888;font-size:0.85rem">Noch keine Dateien hochgeladen.</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ===== GUTSCHEINE ===== -->
+      <section id="page-coupons" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">🎟️ Gutscheine</h1>
+            <div class="page-sub">Rabattcodes verwalten — Stripe-synchronisiert</div>
+          </div>
+          <button onclick="couponOpenCreate()" class="btn btn-primary" style="padding:0.55rem 1.1rem;font-size:0.88rem;font-weight:500">+ Neuer Code</button>
+        </div>
+
+        <!-- Neuer Coupon Form -->
+        <div id="couponCreateForm" class="card" style="padding:1.2rem;margin-bottom:1.2rem;display:none">
+          <h3 style="margin:0 0 1rem 0;font-size:1rem;font-weight:600">Neuen Gutschein erstellen</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.8rem">
+            <div>
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Code *</label>
+              <input id="cpCode" type="text" placeholder="z.B. SOMMER10" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px;font-family:monospace;text-transform:uppercase;font-size:0.95rem" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Rabatttyp *</label>
+              <select id="cpType" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px" onchange="couponTypeChange()">
+                <option value="percent">% Prozent</option>
+                <option value="fixed">€ Festbetrag</option>
+              </select>
+            </div>
+            <div>
+              <label id="cpValueLabel" style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Rabatt (%) *</label>
+              <input id="cpValue" type="number" min="0.01" step="0.01" placeholder="10" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Max. Nutzungen</label>
+              <input id="cpMaxUses" type="number" min="1" placeholder="unbegrenzt" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Gültig bis</label>
+              <input id="cpExpires" type="date" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Min. Bestellwert (€)</label>
+              <input id="cpMinOrder" type="number" min="0" step="0.01" placeholder="kein Minimum" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            </div>
+            <div style="grid-column:1/-1">
+              <label style="font-size:0.78rem;color:#666;display:block;margin-bottom:0.3rem">Beschreibung (intern)</label>
+              <input id="cpDesc" type="text" placeholder="z.B. Sommerkampagne 2026" style="width:100%;padding:0.6rem;border:1px solid #d4cfc0;border-radius:6px">
+            </div>
+          </div>
+          <div style="display:flex;gap:0.6rem;margin-top:1rem;justify-content:flex-end">
+            <button onclick="couponCancelCreate()" style="background:none;border:1px solid #d4cfc0;padding:0.55rem 1rem;border-radius:6px;cursor:pointer">Abbrechen</button>
+            <button onclick="couponCreate()" class="btn btn-primary" style="padding:0.55rem 1.2rem;font-weight:500">✓ Erstellen</button>
+          </div>
+        </div>
+
+        <!-- Coupon listesi -->
+        <div class="card" style="padding:0">
+          <div id="couponList" style="padding:2rem;text-align:center;color:#888">Wird geladen...</div>
         </div>
       </section>
 
@@ -1387,6 +1446,7 @@ function goto(page) {
   if (page === 'geldfluss') loadGeldfluss();
   if (page === 'bilanz') initBilanz();
   if (page === 'hero') initHeroPage();
+  if (page === 'coupons') loadCoupons();
 }
 
 // ============================================================
@@ -3952,6 +4012,175 @@ function heroUseAsSlide(url, type) {
   heroTab('slides');
   renderHeroSlideList();
   toast('Als Slide hinzugefügt – zum Speichern "Speichern" klicken', 'info');
+}
+
+// ============================================================
+// GUTSCHEINE / COUPONS
+// ============================================================
+async function loadCoupons() {
+  const list = document.getElementById('couponList');
+  list.innerHTML = '<div style="padding:2rem;text-align:center;color:#888">Wird geladen...</div>';
+  try {
+    const d = await api('/api/admin/coupons');
+    renderCouponList(d.coupons || []);
+  } catch (e) {
+    list.innerHTML = '<div style="padding:1.5rem;color:#c0392b">Fehler: ' + e.message + '</div>';
+  }
+}
+
+function renderCouponList(coupons) {
+  const list = document.getElementById('couponList');
+  if (coupons.length === 0) {
+    list.innerHTML = '<div style="padding:2.5rem;text-align:center;color:#888">Noch keine Gutscheine — "+ Neuer Code" klicken</div>';
+    return;
+  }
+
+  const now = new Date();
+  list.innerHTML = `
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+        <thead>
+          <tr style="background:#faf7f0;border-bottom:2px solid #e8e3d6">
+            <th style="padding:0.7rem 1rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Code</th>
+            <th style="padding:0.7rem 1rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Rabatt</th>
+            <th style="padding:0.7rem 1rem;text-align:right;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Nutzungen</th>
+            <th style="padding:0.7rem 1rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Gültig bis</th>
+            <th style="padding:0.7rem 1rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Status</th>
+            <th style="padding:0.7rem 1rem;text-align:left;color:#6b6b5a;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Stripe</th>
+            <th style="padding:0.7rem 1rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${coupons.map(c => {
+            const expired = c.expires_at && new Date(c.expires_at) < now;
+            const maxed = c.max_uses !== null && c.used_count >= c.max_uses;
+            const effectiveActive = c.active && !expired && !maxed;
+            const statusBg = effectiveActive ? '#dcfce7' : '#fee2e2';
+            const statusColor = effectiveActive ? '#15803d' : '#dc2626';
+            const statusText = effectiveActive ? 'Aktiv' : (expired ? 'Abgelaufen' : (maxed ? 'Limitiert' : 'Inaktiv'));
+            const discountText = c.type === 'percent' ? `${c.value}%` : `€${c.value.toFixed(2)}`;
+            const usageText = c.max_uses ? `${c.used_count} / ${c.max_uses}` : `${c.used_count} / ∞`;
+            const expiresText = c.expires_at ? new Date(c.expires_at).toLocaleDateString('de-DE') : '—';
+
+            return `
+              <tr style="border-bottom:1px solid #f0ebe0">
+                <td style="padding:0.75rem 1rem">
+                  <code style="background:#f5f1e8;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.88rem;letter-spacing:0.05em;font-weight:600">${escapeHtml(c.code)}</code>
+                  ${c.description ? `<div style="font-size:0.75rem;color:#888;margin-top:0.2rem">${escapeHtml(c.description)}</div>` : ''}
+                  ${c.min_order_amount ? `<div style="font-size:0.72rem;color:#888">Min: €${c.min_order_amount.toFixed(2)}</div>` : ''}
+                </td>
+                <td style="padding:0.75rem 1rem">
+                  <span style="font-weight:600;font-size:1rem;color:${c.type === 'percent' ? '#1e40af' : '#15803d'}">${discountText}</span>
+                  <div style="font-size:0.72rem;color:#888">${c.type === 'percent' ? 'Prozent' : 'Festbetrag'}</div>
+                </td>
+                <td style="padding:0.75rem 1rem;text-align:right;font-variant-numeric:tabular-nums">${usageText}</td>
+                <td style="padding:0.75rem 1rem;color:${expired ? '#dc2626' : '#333'}">${expiresText}</td>
+                <td style="padding:0.75rem 1rem">
+                  <span style="background:${statusBg};color:${statusColor};padding:0.2rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:600">${statusText}</span>
+                </td>
+                <td style="padding:0.75rem 1rem">
+                  ${c.stripe_coupon_id
+                    ? `<span style="font-size:0.72rem;color:#15803d;font-family:monospace" title="${escapeHtml(c.stripe_coupon_id)}">✅ ${c.stripe_coupon_id.slice(0,12)}...</span>`
+                    : `<span style="font-size:0.72rem;color:#888">—</span>`
+                  }
+                </td>
+                <td style="padding:0.75rem 1rem;white-space:nowrap">
+                  <button onclick="couponToggle('${c.id}', ${!c.active})" style="background:none;border:1px solid #d4cfc0;padding:0.3rem 0.7rem;border-radius:5px;cursor:pointer;font-size:0.78rem;margin-right:0.3rem">
+                    ${c.active ? 'Deaktivieren' : 'Aktivieren'}
+                  </button>
+                  <button onclick="couponDelete('${c.id}', '${escapeHtml(c.code)}')" style="background:none;border:1px solid #fee2e2;color:#c0392b;padding:0.3rem 0.7rem;border-radius:5px;cursor:pointer;font-size:0.78rem">✕</button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function couponOpenCreate() {
+  document.getElementById('couponCreateForm').style.display = '';
+  document.getElementById('cpCode').focus();
+}
+function couponCancelCreate() {
+  document.getElementById('couponCreateForm').style.display = 'none';
+  ['cpCode','cpValue','cpMaxUses','cpDesc','cpMinOrder'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('cpExpires').value = '';
+  document.getElementById('cpType').value = 'percent';
+  couponTypeChange();
+}
+function couponTypeChange() {
+  const type = document.getElementById('cpType').value;
+  document.getElementById('cpValueLabel').textContent = type === 'percent' ? 'Rabatt (%) *' : 'Rabatt (€) *';
+  document.getElementById('cpValue').placeholder = type === 'percent' ? '10' : '5.00';
+}
+
+async function couponCreate() {
+  const code = document.getElementById('cpCode').value.trim().toUpperCase();
+  const type = document.getElementById('cpType').value;
+  const value = parseFloat(document.getElementById('cpValue').value);
+  const maxUses = document.getElementById('cpMaxUses').value;
+  const expires = document.getElementById('cpExpires').value;
+  const desc = document.getElementById('cpDesc').value.trim();
+  const minOrder = document.getElementById('cpMinOrder').value;
+
+  if (!code) { toast('Code erforderlich', 'err'); return; }
+  if (!value || value <= 0) { toast('Rabattwert erforderlich', 'err'); return; }
+  if (type === 'percent' && value > 100) { toast('Prozent max 100', 'err'); return; }
+
+  const loadingId = showLoadingToast('🎟️ Gutschein wird erstellt...');
+  try {
+    const d = await api('/api/admin/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        type,
+        value,
+        max_uses: maxUses ? parseInt(maxUses) : null,
+        expires_at: expires || null,
+        description: desc,
+        min_order_amount: minOrder ? parseFloat(minOrder) : null
+      })
+    });
+    hideLoadingToast(loadingId);
+    if (!d.success) { toast('Fehler: ' + (d.error || 'unbekannt'), 'err'); return; }
+
+    const stripeOk = d.coupon.stripe_coupon_id ? ' · Stripe ✅' : ' · Stripe ⚠️';
+    toast(`✅ "${code}" erstellt${stripeOk}`, 'ok');
+    couponCancelCreate();
+    loadCoupons();
+  } catch (e) {
+    hideLoadingToast(loadingId);
+    toast('Fehler: ' + e.message, 'err');
+  }
+}
+
+async function couponToggle(id, active) {
+  try {
+    const d = await api('/api/admin/coupons/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active })
+    });
+    if (!d.success) { toast('Fehler', 'err'); return; }
+    toast(active ? '✅ Aktiviert' : '⏸️ Deaktiviert', 'ok');
+    loadCoupons();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function couponDelete(id, code) {
+  if (!confirm(`"${code}" Gutschein wirklich löschen? Dieser wird auch in Stripe gelöscht.`)) return;
+  try {
+    const d = await api('/api/admin/coupons/' + id, { method: 'DELETE' });
+    if (!d.success) { toast('Fehler', 'err'); return; }
+    toast(`"${code}" gelöscht`, 'ok');
+    loadCoupons();
+  } catch (e) { toast(e.message, 'err'); }
 }
 
 function initBilanz() {
