@@ -4542,21 +4542,33 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
         </defs>
       </svg>
 
-      <div class="badge">🌿 Frisch aus Mudanya · Türkei</div>
-      <h2>Willkommen<br><em>bei echtem Olivenöl</em></h2>
-      <p class="sub">Aus Händen, die seit Generationen ernten.<br>Als kleines Dankeschön für deinen ersten Besuch:</p>
+      <div class="badge">🫒 Keby · Mudanya</div>
+      <h2><em>10% Rabatt</em><br>auf deine erste Bestellung</h2>
+      <p class="sub">Hol dir den echten Geschmack der türkischen Ägäis nach Hause.<br>Gib deine E-Mail ein und spare sofort.</p>
 
-      <div class="popup-coupon">
-        <div>
-          <div class="popup-coupon-label">Dein Geschenk</div>
-          <div class="popup-coupon-code" id="popupCode">ERSTBESTELLUNG10</div>
+      <div id="popupEmailForm">
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem">
+          <input id="popupEmail" type="email" placeholder="deine@email.de"
+            style="flex:1;padding:0.7rem 1rem;border-radius:10px;border:1px solid rgba(212,185,60,0.3);background:rgba(255,255,255,0.06);color:#f5edd8;font-family:'Manrope',sans-serif;font-size:0.88rem;outline:none"
+            onfocus="this.style.borderColor='rgba(212,185,60,0.7)'"
+            onblur="this.style.borderColor='rgba(212,185,60,0.3)'"
+            onkeydown="if(event.key==='Enter')kebyPopupSubmit()">
+          <button onclick="kebyPopupSubmit()" style="background:linear-gradient(135deg,#d4b93c,#a8892a);color:#0d1f0a;font-family:'Manrope',sans-serif;font-size:0.88rem;font-weight:600;border:none;border-radius:10px;padding:0.7rem 1.1rem;cursor:pointer;white-space:nowrap">Sichern →</button>
         </div>
-        <button class="popup-coupon-copy" onclick="kebyPopupCopy()">Kopieren</button>
+        <p style="font-family:'Manrope',sans-serif;font-size:0.7rem;color:rgba(245,237,216,0.28);margin:0 0 0.5rem">Kein Spam. Nur dein Rabattcode.</p>
       </div>
 
-      <a href="#urunler" class="popup-cta" onclick="kebyPopupClose()">
-        Jetzt 10% sparen — Ürünleri keşfet →
-      </a>
+      <div id="popupSuccess" style="display:none">
+        <div class="popup-coupon">
+          <div>
+            <div class="popup-coupon-label">Dein Code</div>
+            <div class="popup-coupon-code" id="popupCode">ERSTBESTELLUNG10</div>
+          </div>
+          <button class="popup-coupon-copy" onclick="kebyPopupCopy()">Kopieren</button>
+        </div>
+        <a href="#urunler" class="popup-cta" onclick="kebyPopupClose()">Jetzt entdecken →</a>
+      </div>
+
       <button class="popup-dismiss" onclick="kebyPopupClose()">Vielleicht später</button>
     </div>
   </div>
@@ -4591,6 +4603,22 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
     backdrop.classList.add('visible');
     createSparks();
   }
+
+  window.kebyPopupSubmit = function() {
+    var email = document.getElementById('popupEmail');
+    if (!email) return;
+    var val = email.value.trim();
+    if (!val || !val.includes('@')) {
+      email.style.borderColor = 'rgba(220,80,80,0.7)';
+      email.focus();
+      return;
+    }
+    // E-postayı localStorage'a kaydet (gelecekte email kampanyası için)
+    localStorage.setItem('keby_lead_email', val);
+    // Form gizle, kupon göster
+    document.getElementById('popupEmailForm').style.display = 'none';
+    document.getElementById('popupSuccess').style.display = 'block';
+  };
 
   window.kebyPopupClose = function() {
     var backdrop = document.getElementById('keby-popup-backdrop');
