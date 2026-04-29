@@ -4314,6 +4314,319 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
 </a>
 
 
+<!-- ═══════════ KEBY POPUP — İlk ziyaretçi yakalama ═══════════ -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,400&family=Manrope:wght@400;600&display=swap');
+
+#keby-popup-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(8,16,6,0.72);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+  backdrop-filter: blur(6px);
+}
+#keby-popup-backdrop.visible {
+  opacity: 1; pointer-events: all;
+}
+#keby-popup {
+  position: relative;
+  width: min(480px, 94vw);
+  background: #0d1f0a;
+  border-radius: 24px;
+  overflow: hidden;
+  transform: scale(0.5) translateY(60px);
+  transition: transform 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+#keby-popup-backdrop.visible #keby-popup {
+  transform: scale(1) translateY(0);
+}
+
+/* Damlayan zeytinyağı arka plan */
+.popup-drops {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.drop {
+  position: absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 35% 35%, rgba(212,185,60,0.25), rgba(74,110,20,0.12));
+  border: 1px solid rgba(212,185,60,0.15);
+  animation: floatDrop linear infinite;
+}
+.drop:nth-child(1) { width:180px;height:220px; left:-40px; top:-60px; animation-duration:8s; animation-delay:0s; }
+.drop:nth-child(2) { width:120px;height:150px; right:-30px; top:20px; animation-duration:11s; animation-delay:-3s; }
+.drop:nth-child(3) { width:80px;height:100px; right:60px; bottom:-20px; animation-duration:9s; animation-delay:-5s; }
+.drop:nth-child(4) { width:50px;height:65px; left:80px; bottom:30px; animation-duration:7s; animation-delay:-2s; }
+
+@keyframes floatDrop {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(3deg); }
+  66% { transform: translateY(6px) rotate(-2deg); }
+}
+
+/* Patlama parçacıkları */
+.burst { position:absolute; inset:0; pointer-events:none; }
+.spark {
+  position:absolute; width:6px; height:6px; border-radius:50%;
+  background: #d4b93c;
+  left:50%; top:50%;
+  opacity:0;
+}
+#keby-popup-backdrop.visible .spark {
+  animation: sparkBurst 0.8s ease-out forwards;
+}
+@keyframes sparkBurst {
+  0% { transform: translate(-50%,-50%) scale(0); opacity:1; }
+  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity:0; }
+}
+
+/* İçerik */
+.popup-inner {
+  position: relative; z-index:2;
+  padding: 2.5rem 2.5rem 2rem;
+  text-align: center;
+}
+.popup-badge {
+  display: inline-block;
+  background: rgba(212,185,60,0.15);
+  border: 1px solid rgba(212,185,60,0.4);
+  color: #d4b93c;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  border-radius: 100px;
+  margin-bottom: 1rem;
+}
+.popup-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.7rem, 5vw, 2.3rem);
+  font-weight: 300;
+  color: #f5edd8;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+.popup-title em {
+  font-style: italic;
+  color: #d4b93c;
+}
+.popup-sub {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(245,237,216,0.6);
+  margin: 0 0 1.8rem;
+  line-height: 1.6;
+}
+
+/* Kupon kutusu */
+.popup-coupon {
+  background: rgba(212,185,60,0.08);
+  border: 1.5px dashed rgba(212,185,60,0.5);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.popup-coupon-label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(245,237,216,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.2rem;
+}
+.popup-coupon-code {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #d4b93c;
+  letter-spacing: 0.12em;
+}
+.popup-coupon-copy {
+  background: rgba(212,185,60,0.15);
+  border: 1px solid rgba(212,185,60,0.3);
+  color: #d4b93c;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.popup-coupon-copy:hover { background: rgba(212,185,60,0.25); }
+
+/* CTA Buton */
+.popup-cta {
+  display: block; width: 100%;
+  background: linear-gradient(135deg, #d4b93c, #a8892a);
+  color: #0d1f0a;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(212,185,60,0.3);
+}
+.popup-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(212,185,60,0.45); }
+.popup-cta:active { transform: translateY(0); }
+
+.popup-dismiss {
+  display: block;
+  margin-top: 0.9rem;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(245,237,216,0.35);
+  cursor: pointer;
+  background: none; border: none;
+  transition: color 0.2s;
+}
+.popup-dismiss:hover { color: rgba(245,237,216,0.6); }
+
+/* Zeytinyağı damlası ikonu */
+.popup-drop-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 1rem;
+  animation: dropPulse 2.5s ease-in-out infinite;
+}
+@keyframes dropPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.08) translateY(-3px); }
+}
+
+/* Yeşil çizgi accent */
+.popup-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2a4a1a, #d4b93c, #2a4a1a);
+  background-size: 200% 100%;
+  animation: shineAccent 3s linear infinite;
+}
+@keyframes shineAccent {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+
+<div id="keby-popup-backdrop">
+  <div id="keby-popup">
+    <div class="popup-accent"></div>
+    <div class="popup-drops">
+      <div class="drop"></div>
+      <div class="drop"></div>
+      <div class="drop"></div>
+      <div class="drop"></div>
+    </div>
+    <div class="burst" id="popupBurst"></div>
+    <div class="popup-inner">
+
+      <!-- Zeytinyağı damlası SVG -->
+      <svg class="popup-drop-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M32 8 C32 8, 14 28, 14 40 C14 50.5 22.1 58 32 58 C41.9 58 50 50.5 50 40 C50 28 32 8 32 8Z" fill="url(#dropGrad)" opacity="0.95"/>
+        <path d="M26 38 C28 32, 34 30, 38 34" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="dropGrad" x1="20" y1="10" x2="50" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#d4b93c"/>
+            <stop offset="100%" stop-color="#6b8f1e"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="popup-badge">🌿 Mudanya · Türkiye</div>
+      <h2 class="popup-title">Ihr erstes Mal<br><em>verdient Belohnung</em></h2>
+      <p class="popup-sub">Natives Olivenöl Extra, direkt aus dem Hain.<br>Für Ihre erste Bestellung schenken wir Ihnen:</p>
+
+      <div class="popup-coupon">
+        <div>
+          <div class="popup-coupon-label">Ihr Gutscheincode</div>
+          <div class="popup-coupon-code" id="popupCode">ERSTBESTELLUNG10</div>
+        </div>
+        <button class="popup-coupon-copy" onclick="kebyPopupCopy()">Kopieren</button>
+      </div>
+
+      <a href="#urunler" class="popup-cta" onclick="kebyPopupClose()">
+        10% sparen — Jetzt entdecken →
+      </a>
+      <button class="popup-dismiss" onclick="kebyPopupClose()">Nein danke, ich zahle lieber voll</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'keby_popup_seen_v2';
+  if (localStorage.getItem(STORAGE_KEY)) return;
+
+  // Patlama parçacıkları oluştur
+  function createSparks() {
+    var burst = document.getElementById('popupBurst');
+    if (!burst) return;
+    var count = 16;
+    for (var i = 0; i < count; i++) {
+      var angle = (i / count) * 360;
+      var rad = angle * Math.PI / 180;
+      var dist = 120 + Math.random() * 80;
+      var tx = Math.cos(rad) * dist + 'px';
+      var ty = Math.sin(rad) * dist + 'px';
+      var spark = document.createElement('div');
+      spark.className = 'spark';
+      spark.style.cssText = '--tx:'+tx+';--ty:'+ty+';animation-delay:'+(Math.random()*0.2)+'s;width:'+(4+Math.random()*8)+'px;height:'+(4+Math.random()*8)+'px;background:'+(Math.random()>0.5?'#d4b93c':'#7ab332');
+      burst.appendChild(spark);
+    }
+  }
+
+  function kebyPopupOpen() {
+    var backdrop = document.getElementById('keby-popup-backdrop');
+    if (!backdrop) return;
+    backdrop.classList.add('visible');
+    createSparks();
+  }
+
+  window.kebyPopupClose = function() {
+    var backdrop = document.getElementById('keby-popup-backdrop');
+    if (backdrop) {
+      backdrop.style.opacity = '0';
+      backdrop.style.pointerEvents = 'none';
+      document.getElementById('keby-popup').style.transform = 'scale(0.9) translateY(20px)';
+    }
+    localStorage.setItem(STORAGE_KEY, '1');
+  };
+
+  window.kebyPopupCopy = function() {
+    var code = document.getElementById('popupCode');
+    if (!code) return;
+    navigator.clipboard.writeText(code.textContent).then(function() {
+      var btn = document.querySelector('.popup-coupon-copy');
+      if (btn) {
+        btn.textContent = '✓ Kopiert!';
+        btn.style.background = 'rgba(122,179,50,0.2)';
+        btn.style.borderColor = 'rgba(122,179,50,0.5)';
+        btn.style.color = '#7ab332';
+        setTimeout(function(){ btn.textContent = 'Kopieren'; btn.style = ''; }, 2000);
+      }
+    });
+  };
+
+  // Backdrop tıklayınca kapat
+  document.getElementById('keby-popup-backdrop').addEventListener('click', function(e){
+    if (e.target === this) kebyPopupClose();
+  });
+
+  // 2 saniye sonra patlasın
+  setTimeout(kebyPopupOpen, 2000);
+})();
+</script>
+
 <script src="/index-sync.js?v=3"></script>
 <script src="/cookie-banner.js" defer></script>
 </body>
