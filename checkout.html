@@ -437,6 +437,14 @@ async function initCheckout() {
       throw new Error(d.error || 'Session konnte nicht erstellt werden');
     }
 
+    // İlk sipariş indirimi otomatik uygulandıysa bildirim göster
+    if (d.appliedCoupon && d.appliedCoupon.auto) {
+      const box = document.createElement('div');
+      box.style.cssText = 'background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.88rem;color:#15803d;display:flex;align-items:center;gap:0.5rem';
+      box.innerHTML = '<span style="font-size:1.1rem">🎉</span><span><strong>10% Erstkunden-Rabatt</strong> wurde automatisch angewendet!</span>';
+      document.getElementById('stripe-checkout-mount').before(box);
+    }
+
     // Stripe.js yükle
     if (!window.Stripe) {
       await new Promise((res, rej) => {
