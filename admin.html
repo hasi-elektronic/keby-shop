@@ -106,6 +106,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .badge-sent { background: #d9ecfc; color: var(--info); }
 .badge-done { background: #e5f3e0; color: var(--success); }
 .badge-cancel { background: #fbe0e0; color: var(--danger); }
+.badge-warn { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
 
 /* ============ FORMS ============ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -2566,22 +2567,30 @@ function extractCity(addr) {
 }
 function statusBadge(s) {
   const map = {
-    neu: ['badge-new', 'Yeni'],
-    onaylandi: ['badge-sent', 'Onaylandı'],
-    hazirlaniyor: ['badge-sent', 'Hazırlanıyor'],
-    gonderildi: ['badge-sent', 'Gönderildi'],
-    teslim: ['badge-done', 'Teslim'],
-    iptal: ['badge-cancel', 'İptal']
+    neu:                    ['badge-new',    '🆕 Yeni'],
+    onaylandi:              ['badge-sent',   '✅ Onaylandı'],
+    bezahlt:                ['badge-sent',   '✅ Bezahlt'],
+    hazirlaniyor:           ['badge-sent',   '📦 Hazırlanıyor'],
+    gonderildi:             ['badge-sent',   '🚚 Gönderildi'],
+    teslim:                 ['badge-done',   '✅ Teslim'],
+    iptal:                  ['badge-cancel', '❌ İptal'],
+    storniert:              ['badge-cancel', '❌ Storniert'],
+    zahlung_ausstehend:     ['badge-warn',   '⏳ Zahlung ausstehend'],
+    zahlung_fehlgeschlagen: ['badge-cancel', '❌ Zahlung fehlgeschlagen'],
+    offen:                  ['badge-new',    '🔓 Offen'],
   };
   const [cls, label] = map[s] || ['badge-new', s || 'Yeni'];
   return `<span class="badge ${cls}">${label}</span>`;
 }
 function paymentBadge(p) {
   const map = {
-    stripe: '💳 Stripe',
-    paypal: '🅿️ PayPal',
+    stripe:       '💳 Stripe',
+    paypal:       '🅿️ PayPal',
+    sepa_debit:   '🏦 SEPA',
+    card:         '💳 Karte',
+    klarna:       '🛍️ Klarna',
     ueberweisung: '🏦 Havale',
-    bar: '💵 Nakit'
+    bar:          '💵 Nakit'
   };
   return `<span class="text-sm">${map[p] || p || '—'}</span>`;
 }
