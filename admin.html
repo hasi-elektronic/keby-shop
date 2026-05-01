@@ -1613,6 +1613,15 @@ async function loadImages() {
 // ============================================================
 // DASHBOARD
 // ============================================================
+function dashOpenOrder(id) {
+  // Orders yüklü değilse önce yükle, sonra modal aç
+  if (!orders || orders.length === 0) {
+    loadOrders().then(() => openOrderModal(id));
+  } else {
+    openOrderModal(id);
+  }
+}
+
 function renderDash() {
   const today = new Date().toDateString();
   const thisMonth = new Date().toISOString().slice(0,7);
@@ -1644,13 +1653,17 @@ function renderDash() {
     </div>
   `;
   document.getElementById('dashRecentTbody').innerHTML = orders.slice(0,5).map(o => {
-    const displayName = (!o.name || o.name === 'Stripe Kunde')
+    const displayName = (!o.name || o.name === 'Stripe Kunde' || o.name === 'Stripe Müşteri')
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
+    const items = (o.items || []).map(i => `${i.name} ×${i.qty}`).join(', ') || '—';
     return `
-    <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')" title="Bestelldetails öffnen">
+    <tr style="cursor:pointer" onclick="dashOpenOrder('${o.id}')" title="Bestelldetails öffnen">
       <td><strong>${o.ref || o.id}</strong></td>
-      <td>${displayName}</td>
+      <td>
+        ${displayName}
+        <div style="font-size:0.72rem;color:#888;margin-top:1px">${escapeHtml(o.email || '')}</div>
+      </td>
       <td>€${(parseFloat(o.total)||0).toFixed(2)}</td>
       <td>${statusBadge(o.status)}</td>
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
