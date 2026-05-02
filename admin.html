@@ -1613,13 +1613,18 @@ async function loadImages() {
 // ============================================================
 // DASHBOARD
 // ============================================================
-function dashOpenOrder(id) {
-  // Orders yüklü değilse önce yükle, sonra modal aç
+async function dashOpenOrder(id) {
+  // Orders yüklü değilse önce yükle
   if (!orders || orders.length === 0) {
-    loadOrders().then(() => openOrderModal(id));
-  } else {
-    openOrderModal(id);
+    await loadOrders();
   }
+  // Yine de bulunamazsa ref ile de dene
+  const found = orders.find(o => o.id === id || o.ref === id);
+  if (!found) {
+    // Direkt API'den çek
+    await loadOrders();
+  }
+  openOrderModal(id);
 }
 
 function renderDash() {
