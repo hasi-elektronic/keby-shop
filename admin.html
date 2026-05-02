@@ -1662,7 +1662,7 @@ function renderDash() {
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
     return `
-    <tr style="cursor:pointer" data-oid="${escapeHtml(o.id)}" onclick="dashOpenOrder(this.getAttribute('data-oid'))" title="Bestelldetails öffnen">
+    <tr style="cursor:pointer" data-ref="${escapeHtml(o.ref || o.id)}" onclick="dashOpenOrder(this.dataset.ref)" title="Bestelldetails öffnen">
       <td><strong>${escapeHtml(o.ref || o.id)}</strong></td>
       <td>
         ${displayName}
@@ -1930,7 +1930,7 @@ function renderOrders() {
          </div>`
       : `<button onclick="event.stopPropagation();openTrackingModal('${o.id}')" style="background:none;border:1px dashed #d4cfc0;color:#888;font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:4px;cursor:pointer">+ Tracking</button>`;
     return `
-    <tr style="cursor:pointer" onclick="openOrderModal('${escapeHtml(o.ref || o.id)}')">
+    <tr style="cursor:pointer" data-ref="${escapeHtml(o.ref || o.id)}" onclick="openOrderModal(this.dataset.ref)">
       <td><strong>${o.ref || o.id}</strong></td>
       <td>${displayName}<div class="text-muted text-sm">${escapeHtml(o.email || '')}</div></td>
       <td class="text-sm">${fmtItems(o.items)}</td>
@@ -1942,16 +1942,27 @@ function renderOrders() {
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
       <td>
         <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;font-size:0.7rem;margin-right:0.3rem" onclick="event.stopPropagation();createLieferscheinFromOrder('${o.id}')" title="Lieferschein erstellen">📦 LS</button>
-        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${escapeHtml(o.ref || o.id)}')">Aç</button>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal(this.closest('tr').dataset.ref)">Aç</button>
       </td>
     </tr>`;
   }).join('') || '<tr><td colspan="10" class="text-center text-muted" style="padding:2rem">Keine Bestellungen</td></tr>';
 }
 
-function openOrderModal(id) {
-  editingOrder = orders.find(o => o.id === id || o.ref === id);
-  if (!editingOrder) return;
-  const o = editingOrder;
+function openOrderModal(ref) {
+  editingOrder = orders.find(o => o.ref === ref || o.id === ref);
+  if (!editingOrder) {
+    // Bulunamadı — orders'ı yenile ve tekrar dene
+    loadOrders().then(() => {
+      editingOrder = orders.find(o => o.ref === ref || o.id === ref);
+      if (editingOrder) _openOrderModalUI(editingOrder);
+    });
+    return;
+  }
+  _openOrderModalUI(editingOrder);
+}
+
+function _openOrderModalUI(o) {
+  editingOrder = o;
   document.getElementById('of_ref').value = o.ref || o.id;
   document.getElementById('of_status').value = o.status || 'neu';
   document.getElementById('of_payment').value = (o.payment_method || o.payment || '').toUpperCase().replace('SEPA_DEBIT','SEPA').replace('CARD','Karte');
