@@ -1930,7 +1930,7 @@ function renderOrders() {
          </div>`
       : `<button onclick="event.stopPropagation();openTrackingModal('${o.id}')" style="background:none;border:1px dashed #d4cfc0;color:#888;font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:4px;cursor:pointer">+ Tracking</button>`;
     return `
-    <tr style="cursor:pointer" onclick="openOrderModal('${o.id}')">
+    <tr style="cursor:pointer" onclick="openOrderModal('${escapeHtml(o.ref || o.id)}')">
       <td><strong>${o.ref || o.id}</strong></td>
       <td>${displayName}<div class="text-muted text-sm">${escapeHtml(o.email || '')}</div></td>
       <td class="text-sm">${fmtItems(o.items)}</td>
@@ -1942,14 +1942,14 @@ function renderOrders() {
       <td class="text-muted text-sm">${fmtDate(o.date)}</td>
       <td>
         <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;font-size:0.7rem;margin-right:0.3rem" onclick="event.stopPropagation();createLieferscheinFromOrder('${o.id}')" title="Lieferschein erstellen">📦 LS</button>
-        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${o.id}')">Aç</button>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openOrderModal('${escapeHtml(o.ref || o.id)}')">Aç</button>
       </td>
     </tr>`;
   }).join('') || '<tr><td colspan="10" class="text-center text-muted" style="padding:2rem">Keine Bestellungen</td></tr>';
 }
 
 function openOrderModal(id) {
-  editingOrder = orders.find(o => o.id === id);
+  editingOrder = orders.find(o => o.id === id || o.ref === id);
   if (!editingOrder) return;
   const o = editingOrder;
   document.getElementById('of_ref').value = o.ref || o.id;
