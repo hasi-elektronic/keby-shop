@@ -1662,7 +1662,7 @@ function renderDash() {
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
     return `
-    <tr style="cursor:pointer" data-ref="${escapeHtml(o.ref || o.id)}" onclick="dashOpenOrder(this.dataset.ref)" title="Bestelldetails öffnen">
+    <tr style="cursor:pointer" data-ref="${o.ref || o.id}" onclick="dashOpenOrder(this.dataset.ref)" title="Bestelldetails öffnen">
       <td><strong>${escapeHtml(o.ref || o.id)}</strong></td>
       <td>
         ${displayName}
@@ -1930,7 +1930,7 @@ function renderOrders() {
          </div>`
       : `<button onclick="event.stopPropagation();openTrackingModal('${o.id}')" style="background:none;border:1px dashed #d4cfc0;color:#888;font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:4px;cursor:pointer">+ Tracking</button>`;
     return `
-    <tr style="cursor:pointer" data-ref="${escapeHtml(o.ref || o.id)}" onclick="openOrderModal(this.dataset.ref)">
+    <tr style="cursor:pointer" data-ref="${o.ref || o.id}" onclick="openOrderModal(this.dataset.ref)">
       <td><strong>${o.ref || o.id}</strong></td>
       <td>${displayName}<div class="text-muted text-sm">${escapeHtml(o.email || '')}</div></td>
       <td class="text-sm">${fmtItems(o.items)}</td>
