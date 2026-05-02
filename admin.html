@@ -2105,8 +2105,12 @@ function fillOrderModalCustomer(name, email, phone, addr, stripePayment) {
 
   const mapsLink = document.getElementById('of_addr_maps');
   if (addr) {
-    mapsLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr.replace(/\n/g, ', '));
-    mapsLink.style.display = 'inline';
+    // addr hem string hem object olabilir
+    const addrStr = typeof addr === 'string' ? addr :
+      [addr.line1, addr.line2, addr.postal_code, addr.city, addr.country]
+        .filter(Boolean).join(', ');
+    mapsLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addrStr);
+    mapsLink.style.display = addrStr ? 'inline' : 'none';
   } else mapsLink.style.display = 'none';
 }
 
