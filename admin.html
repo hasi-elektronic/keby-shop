@@ -233,6 +233,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="sb-item" data-page="images" onclick="goto('images')"><span class="sb-ico">🖼️</span> Medien</div>
         <div class="sb-item" data-page="hero" onclick="goto('hero')"><span class="sb-ico">🎬</span> Hero / Galerie</div>
         <div class="sb-item" data-page="coupons" onclick="goto('coupons')"><span class="sb-ico">🎟️</span> Gutscheine</div>
+        <div class="sb-item" data-page="backup" onclick="goto('backup')"><span class="sb-ico">💾</span> Backup</div>
       </nav>
       <div class="sb-foot">
         <div class="sb-logout" onclick="logout()">⎋ Abmelden</div>
@@ -610,6 +611,69 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <!-- Coupon listesi -->
         <div class="card" style="padding:0">
           <div id="couponList" style="padding:2rem;text-align:center;color:#888">Wird geladen...</div>
+        </div>
+      </section>
+
+      <!-- ===== BACKUP ===== -->
+      <section id="page-backup" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">💾 Backup & Wiederherstellung</h1>
+            <div class="page-sub">Daten sichern und wiederherstellen — Bestellungen, Rechnungen, Produkte</div>
+          </div>
+          <button onclick="runBackup()" class="btn btn-primary" style="padding:0.6rem 1.2rem;font-weight:500">
+            💾 Jetzt sichern
+          </button>
+        </div>
+
+        <!-- Status -->
+        <div id="backupStatus" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:0.9rem 1.2rem;margin-bottom:1.2rem">
+          <div id="backupStatusText" style="color:#15803d;font-weight:500"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="card" style="padding:1.2rem;margin-bottom:1.2rem;background:#faf7f0">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+            <div>
+              <div style="font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Was wird gesichert</div>
+              <div style="font-size:0.85rem;color:#333;line-height:1.8">
+                📦 Bestellungen<br>
+                🧾 Rechnungen<br>
+                💰 Geldfluss<br>
+                👥 Kunden<br>
+                🎟️ Gutscheine<br>
+                🛒 Produkte<br>
+                🖼️ Hero Slides
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Wo gespeichert</div>
+              <div style="font-size:0.85rem;color:#333;line-height:1.8">
+                ☁️ Cloudflare R2<br>
+                <code style="font-size:0.78rem;background:#f0ebe0;padding:1px 4px;border-radius:3px">keby-backups</code> Bucket<br>
+                Region: WEUR (Europa)
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem">Empfehlung</div>
+              <div style="font-size:0.85rem;color:#333;line-height:1.8">
+                📅 Vor jeder größeren<br>
+                &nbsp;&nbsp;&nbsp;Änderung sichern<br>
+                📅 Wöchentlich<br>
+                &nbsp;&nbsp;&nbsp;(jeden Montag)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backup listesi -->
+        <div class="card" style="padding:0">
+          <div style="padding:1rem 1.2rem;border-bottom:1px solid #f0ebe0;font-weight:600;font-size:0.9rem">
+            Vorhandene Backups
+          </div>
+          <div id="backupList" style="padding:1.5rem;text-align:center;color:#888">
+            Wird geladen...
+          </div>
         </div>
       </section>
 
@@ -1510,6 +1574,7 @@ function goto(page) {
   if (page === 'bilanz') initBilanz();
   if (page === 'hero') initHeroPage();
   if (page === 'coupons') loadCoupons();
+  if (page === 'backup') loadBackups();
 }
 
 // ============================================================
@@ -4213,6 +4278,108 @@ async function saveTracking() {
   } finally {
     btn.disabled = false;
     btn.textContent = '📦 Versand bestätigen';
+  }
+}
+
+// ============================================================
+// BACKUP
+// ============================================================
+async function runBackup() {
+  const btn = document.querySelector('#page-backup .btn-primary');
+  const status = document.getElementById('backupStatus');
+  const statusText = document.getElementById('backupStatusText');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Wird gesichert...'; }
+  status.style.display = '';
+  statusText.textContent = '⏳ Backup läuft...';
+  status.style.background = '#fef9c3';
+  status.style.borderColor = '#fde68a';
+  statusText.style.color = '#92400e';
+
+  try {
+    const r = await fetch(API + '/api/admin/backup', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Backup fehlgeschlagen');
+
+    status.style.background = '#f0fdf4';
+    status.style.borderColor = '#86efac';
+    statusText.style.color = '#15803d';
+    statusText.innerHTML = `✅ Backup erfolgreich! ${d.files_backed_up} Dateien gesichert — <strong>${d.timestamp}</strong>`;
+    toast(`✅ Backup gespeichert: ${d.files_backed_up} Dateien`, 'ok');
+    loadBackups();
+  } catch (e) {
+    status.style.background = '#fef2f2';
+    status.style.borderColor = '#fca5a5';
+    statusText.style.color = '#dc2626';
+    statusText.textContent = '❌ Fehler: ' + e.message;
+    toast('Backup fehlgeschlagen: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Jetzt sichern'; }
+  }
+}
+
+async function loadBackups() {
+  const list = document.getElementById('backupList');
+  list.innerHTML = '<div style="text-align:center;color:#888;padding:1.5rem">Wird geladen...</div>';
+  try {
+    const d = await api('/api/admin/backups');
+    const backups = d.backups || [];
+    if (backups.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:#888;padding:2rem">Noch keine Backups vorhanden.<br><small>Klicke auf "Jetzt sichern" um das erste Backup zu erstellen.</small></div>';
+      return;
+    }
+    list.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+        <thead>
+          <tr style="background:#faf7f0;border-bottom:1px solid #e8e3d6">
+            <th style="padding:0.7rem 1.2rem;text-align:left;color:#6b6b5a;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Datum</th>
+            <th style="padding:0.7rem 1.2rem;text-align:center;color:#6b6b5a;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Dateien</th>
+            <th style="padding:0.7rem 1.2rem;text-align:right;color:#6b6b5a;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${backups.map((b, i) => `
+            <tr style="border-bottom:1px solid #f5f1e8">
+              <td style="padding:0.75rem 1.2rem">
+                <div style="font-weight:500">${formatBackupDate(b.created_at || b.timestamp)}</div>
+                <div style="font-size:0.72rem;color:#888;font-family:monospace">${b.timestamp}</div>
+              </td>
+              <td style="padding:0.75rem 1.2rem;text-align:center">
+                <span style="background:#e8f0e0;color:#2a4a1a;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.8rem">${b.files} Dateien</span>
+              </td>
+              <td style="padding:0.75rem 1.2rem;text-align:right">
+                ${i > 0 ? `<button onclick="restoreBackup('${b.timestamp}')" style="background:none;border:1px solid #fee2e2;color:#dc2626;padding:0.3rem 0.8rem;border-radius:5px;cursor:pointer;font-size:0.78rem">↩️ Wiederherstellen</button>` : '<span style="font-size:0.75rem;color:#888">Neueste</span>'}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch (e) {
+    list.innerHTML = `<div style="color:#dc2626;padding:1.5rem">Fehler: ${e.message}</div>`;
+  }
+}
+
+function formatBackupDate(ts) {
+  try {
+    return new Date(ts).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch { return ts; }
+}
+
+async function restoreBackup(timestamp) {
+  if (!confirm(`Backup vom ${formatBackupDate(timestamp)} wiederherstellen?\n\nACHTUNG: Aktuelle Daten werden überschrieben!`)) return;
+  if (!confirm('Sicher? Diese Aktion kann nicht rückgängig gemacht werden!')) return;
+
+  toast('⏳ Wiederherstellung läuft...', 'info');
+  try {
+    const d = await api(`/api/admin/backup/restore/${timestamp}`, { method: 'POST' });
+    if (!d.success) throw new Error(d.error || 'Fehler');
+    const restored = d.results.filter(r => r.status === 'restored').length;
+    toast(`✅ ${restored} Dateien wiederhergestellt!`, 'ok');
+    // Sayfayı yenile
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) {
+    toast('❌ Fehler: ' + e.message, 'err');
   }
 }
 
