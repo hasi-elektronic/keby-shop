@@ -4350,7 +4350,7 @@ async function loadBackups() {
                 <span style="background:#e8f0e0;color:#2a4a1a;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.8rem">${b.files} Dateien</span>
               </td>
               <td style="padding:0.75rem 1.2rem;text-align:right">
-                ${i > 0 ? `<button onclick="restoreBackup('${b.timestamp}')" style="background:none;border:1px solid #fee2e2;color:#dc2626;padding:0.3rem 0.8rem;border-radius:5px;cursor:pointer;font-size:0.78rem">↩️ Wiederherstellen</button>` : '<span style="font-size:0.75rem;color:#888">Neueste</span>'}
+                <button onclick="restoreBackup('${b.timestamp}')" style="background:none;border:1px solid #d4cfc0;color:#555;padding:0.3rem 0.8rem;border-radius:5px;cursor:pointer;font-size:0.78rem">↩️ Wiederherstellen</button>
               </td>
             </tr>`).join('')}
         </tbody>
