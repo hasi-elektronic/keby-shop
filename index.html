@@ -2038,28 +2038,32 @@ body { color: #1a1a14; }
 
 /* GALERI MOBILE FIX */
 @media (max-width: 768px) {
-  /* Galeriyi tamamen gizle — mobilde karmaşık */
-  .galeri-desktop-only { display: none !important; }
-
   /* Hero altı galeri section */
   section[style*="padding:1.75rem 3rem"] {
     padding: 1rem 0.75rem !important;
   }
-  /* Galeri satırları: 4 kolon → 2 kolon */
+  /* Galeri: tek kolon, tam ürün görünsün */
   div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"],
   div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"],
   div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"],
   div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] {
     grid-template-columns: 1fr 1fr !important;
     height: auto !important;
-    gap: 0.4rem !important;
+    gap: 0.5rem !important;
   }
-  /* Galeri hücre yüksekliği */
   div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"] > div,
   div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"] > div,
   div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"] > div,
   div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] > div {
-    height: 160px !important;
+    aspect-ratio: 1/1 !important;
+    height: auto !important;
+  }
+  div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"] > div img,
+  div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"] > div img,
+  div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"] > div img,
+  div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] > div img {
+    object-fit: cover !important;
+    object-position: center center !important;
   }
 }
 </style>
