@@ -222,6 +222,9 @@ body { color: #1a1a14; }
       <p class="prod-tagline" data-tr="Sabah sofrasının baş tacı. Kaya tuzu ve sabırla olgunlaştırılmış bu zeytinler; her lokmada Bursa'nın toprağını, Mudanya'nın deniz kokusunu hissettirir." data-de="Die Königin des türkischen Frühstückstisches. Mit Steinsalz traditionell fermentiert — ohne jeden Zusatz.">
         Sabah sofrasının baş tacı. Kaya tuzu ve sabırla olgunlaştırılmış bu zeytinler; her lokmada Bursa'nın toprağını, Mudanya'nın deniz kokusunu hissettirir.
       </p>
+      <div id="stock-badge" style="margin-bottom:0.75rem;display:none">
+        <span id="stock-badge-inner"></span>
+      </div>
       <div class="delivery-row"><div class="dot-green"></div><span data-tr="Teslimat: 1–3 iş günü" data-de="Lieferzeit: ca. 1–3 Tage">Teslimat: 1–3 iş günü</span></div>
       <div class="price-block">
         <div class="price-main">14,99 <span>EUR</span></div>
@@ -420,5 +423,58 @@ document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateC
 </script>
 <script src="/product-sync.js?v=2"></script>
 <script src="/cookie-banner.js" defer></script>
+
+<script>
+(function() {
+  var pid = document.querySelector('meta[name="product-id"]')?.content;
+  if (!pid) return;
+  fetch('https://keby-api.hguencavdi.workers.dev/api/products')
+    .then(r => r.json())
+    .then(d => {
+      var p = (d.products || []).find(x => x.id === pid);
+      if (!p) return;
+      var stock = p.stock || 0;
+      var badge = document.getElementById('stock-badge');
+      var inner = document.getElementById('stock-badge-inner');
+      var addBtn = document.querySelector('.btn-add');
+      var qtyInput = document.getElementById('qty');
+      if (!badge || !inner) return;
+
+      if (stock === 0) {
+        inner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.4rem;background:#fef2f2;color:#dc2626;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600">🔴 <span data-tr="Stokta yok" data-de="Nicht vorrätig">Nicht vorrätig</span></span>';
+        if (addBtn) { addBtn.disabled = true; addBtn.style.opacity = '0.4'; addBtn.style.cursor = 'not-allowed'; }
+        if (qtyInput) { qtyInput.disabled = true; }
+      } else if (stock <= 10) {
+        var lang = document.documentElement.lang || 'tr';
+        var txt = lang === 'de'
+          ? 'Nur noch ' + stock + ' verfügbar!'
+          : 'Son ' + stock + ' adet!';
+        inner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.4rem;background:#fffbeb;color:#d97706;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600">⚡ ' + txt + '</span>';
+      } else {
+        var lang2 = document.documentElement.lang || 'tr';
+        var txt2 = lang2 === 'de'
+          ? 'Auf Lager (' + stock + ' verfügbar)'
+          : 'Stokta (' + stock + ' adet)';
+        inner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.4rem;background:#ecfdf5;color:#059669;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600">✓ ' + txt2 + '</span>';
+      }
+      badge.style.display = 'block';
+
+      // Dil değişince badge güncelle
+      document.querySelectorAll('.lang-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setTimeout(function() {
+            var spans = inner.querySelectorAll('[data-tr],[data-de]');
+            var currentLang = document.documentElement.lang;
+            spans.forEach(function(s) {
+              if (currentLang === 'de' && s.dataset.de) s.textContent = s.dataset.de;
+              else if (s.dataset.tr) s.textContent = s.dataset.tr;
+            });
+          }, 50);
+        });
+      });
+    })
+    .catch(function() {});
+})();
+</script>
 </body>
 </html>
