@@ -228,6 +228,20 @@ body { color: #1a1a14; }
         <div class="price-main">59,90 <span>EUR</span></div>
         <div class="price-sub"><span data-tr="KDV (%7) dahil · + kargo" data-de="inkl. 7% MwSt. · zzgl. Versand">KDV (%7) dahil · + kargo</span></div>
       </div>
+      <!-- ABO TOGGLE -->
+      <div id="abo-section" style="margin-bottom:1.1rem;display:none">
+        <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:0.65rem">
+          <button id="btn-einmalig" onclick="setAboMode(false)" 
+            style="flex:1;padding:0.65rem;border:none;background:var(--olive-dark);color:white;cursor:pointer;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.08em;font-weight:500;transition:all 0.2s"
+            data-tr="Tek Seferlik" data-de="Einmalig">Einmalig</button>
+          <button id="btn-abo" onclick="setAboMode(true)"
+            style="flex:1;padding:0.65rem;border:none;background:var(--cream);color:var(--muted);cursor:pointer;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.08em;font-weight:500;transition:all 0.2s"
+            data-tr="Abonelik" data-de="Abonnieren">Abonnieren</button>
+        </div>
+        <div id="abo-info" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:0.65rem 0.85rem;font-size:0.78rem;color:#166534">
+          <strong>✓ 5% Rabatt</strong> &nbsp;·&nbsp; <span id="abo-interval-text"></span> &nbsp;·&nbsp; <span data-tr="Min. 3 ay" data-de="Mind. 3 Monate">Mind. 3 Monate</span>
+        </div>
+      </div>
       <div class="qty-row">
         <span class="qty-label" data-tr="Adet" data-de="Menge">Adet</span>
         <div class="qty-ctrl">
@@ -481,6 +495,83 @@ document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateC
       });
     })
     .catch(function() {});
+})();
+</script>
+
+<script>
+(function() {
+  var API = 'https://keby-api.hguencavdi.workers.dev';
+  var pid = document.querySelector('meta[name="product-id"]')?.content;
+  var isAbo = false;
+  var aboInfo = {};
+
+  // Abo fiyat bilgisini çek
+  fetch(API + '/api/abo/info')
+    .then(r => r.json())
+    .then(d => {
+      if (!d.success || !d.prices[pid]) return;
+      aboInfo = d.prices[pid];
+      document.getElementById('abo-section').style.display = 'block';
+      document.getElementById('abo-interval-text').textContent = aboInfo.interval;
+    }).catch(function(){});
+
+  window.setAboMode = function(abo) {
+    isAbo = abo;
+    var btnE = document.getElementById('btn-einmalig');
+    var btnA = document.getElementById('btn-abo');
+    var aboInfoEl = document.getElementById('abo-info');
+    var priceEl = document.querySelector('.price-main');
+    
+    if (abo) {
+      btnA.style.background = 'var(--olive-dark)';
+      btnA.style.color = 'white';
+      btnE.style.background = 'var(--cream)';
+      btnE.style.color = 'var(--muted)';
+      aboInfoEl.style.display = 'block';
+      // Abo fiyatını göster
+      if (priceEl && aboInfo.amount) {
+        var discounted = (aboInfo.amount / 100).toFixed(2).replace('.', ',');
+        var eurSpan = priceEl.querySelector('span');
+        priceEl.textContent = discounted + ' ';
+        if (eurSpan) priceEl.appendChild(eurSpan);
+        else { var s = document.createElement('span'); s.textContent = 'EUR'; priceEl.appendChild(s); }
+      }
+    } else {
+      btnE.style.background = 'var(--olive-dark)';
+      btnE.style.color = 'white';
+      btnA.style.background = 'var(--cream)';
+      btnA.style.color = 'var(--muted)';
+      aboInfoEl.style.display = 'none';
+      // Orijinal fiyata dön — product-sync.js halleder veya sayfayı reload
+      location.reload();
+    }
+  };
+
+  // Sepete ekle butonunu override et
+  var origAdd = window.addFromPage;
+  window.addFromPage = function(name, price, img) {
+    if (isAbo && aboInfo.priceId) {
+      // Abo checkout — email sor
+      var email = prompt('Bitte geben Sie Ihre E-Mail-Adresse für das Abo ein:');
+      if (!email) return;
+      fetch(API + '/api/abo/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: pid, email: email })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.url) {
+          window.location.href = d.url;
+        } else {
+          alert('Fehler: ' + (d.error || 'Unbekannt'));
+        }
+      })
+      .catch(function(e) { alert('Fehler: ' + e.message); });
+    } else {
+      origAdd(name, price, img);
+    }
+  };
 })();
 </script>
 </body>
