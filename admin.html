@@ -7468,14 +7468,14 @@ function renderStockGrid() {
     return;
   }
 
-  grid.innerHTML = stockData.map(p => {
+  grid.innerHTML = stockData.map((p, i) => {
     const pct = p.min_stock > 0 ? Math.min(100, Math.round((p.stock / (p.min_stock * 4)) * 100)) : 100;
     const barColor = p.status === 'out' ? '#ef4444' : p.status === 'low' ? '#f59e0b' : '#22c55e';
     const badgeBg = p.status === 'out' ? '#fef2f2' : p.status === 'low' ? '#fffbeb' : '#ecfdf5';
     const badgeColor = p.status === 'out' ? '#dc2626' : p.status === 'low' ? '#d97706' : '#16a34a';
     const badgeText = p.status === 'out' ? '🔴 Nicht vorrätig' : p.status === 'low' ? '⚠️ Mindestbestand' : '✅ Vorrätig';
 
-    return `<div onclick="openStockModal(${JSON.stringify(JSON.stringify(p))})" style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:1.2rem;cursor:pointer;transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.05)" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)'">
+    return `<div data-stock-idx="${i}" onclick="openStockModal(this.dataset.stockIdx)" style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:1.2rem;cursor:pointer;transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.05)" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)'">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem">
         <div style="font-weight:600;font-size:0.95rem;flex:1;margin-right:0.5rem">${p.name}</div>
         <span style="background:${badgeBg};color:${badgeColor};padding:0.2rem 0.6rem;border-radius:20px;font-size:0.72rem;font-weight:600;white-space:nowrap">${badgeText}</span>
@@ -7560,8 +7560,9 @@ function switchLagerTab(tab) {
   });
 }
 
-function openStockModal(pJson) {
-  const p = JSON.parse(pJson);
+function openStockModal(idx) {
+  const p = stockData[parseInt(idx)];
+  if (!p) return;
   document.getElementById('stockModalId').value = p.id;
   document.getElementById('stockModalName').textContent = p.name;
   document.getElementById('stockModalCurrent').textContent = p.stock;
