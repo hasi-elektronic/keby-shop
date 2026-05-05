@@ -436,7 +436,7 @@ html, body {
   }
   
   /* Kalite şeridi */
-  .kalite-serit-inner{grid-template-columns:repeat(3,1fr)!important;}
+  .kalite-serit-inner{grid-template-columns:repeat(2,1fr)!important; gap:0.5rem!important;}
   
   /* Ürünler section */
   #urunler{padding:2rem 0.75rem!important;}
@@ -576,16 +576,16 @@ img, video { max-width: 100%; height: auto; }
   /* ── ÜRÜNLER ── */
   #produkte { padding: 2rem 0.875rem !important; }
   .products-grid {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
     width: 100% !important;
     max-width: 100% !important;
     padding: 0 !important;
   }
   .product-card { width: 100% !important; max-width: 100% !important; }
-  .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
-  .prod-body { padding:0.85rem 0.85rem 0; flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-  .prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+  .prod-img { width:100%; aspect-ratio:4/3; height:auto; object-fit:cover; object-position:center; display:block; transition:transform 0.5s ease; }
+  .prod-body { padding:0.75rem 0.75rem 0; flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+  .prod-name { font-family:"Cormorant Garamond",serif; font-size:0.95rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
   .prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .prod-footer { display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
   .prod-footer > div:first-child { width: 100% !important; }
@@ -669,7 +669,7 @@ img, video { max-width: 100%; height: auto; }
   .footer-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
 
   /* ── TÜM SECTION PADDING'LER ── */
-  section { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  section { padding-left: 1rem !important; padding-right: 1rem !important; }
   
   /* ── GENEL METİNLER ── */
   .section-title { font-size: clamp(1.4rem,5vw,2rem) !important; }
@@ -684,7 +684,7 @@ img, video { max-width: 100%; height: auto; }
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .hero-title { font-size: 1.8rem !important; }
-  .btn-detail, .btn-cart-quick { font-size: 0.62rem !important; padding: 0 0.6rem !important; }
+  .btn-detail, .btn-cart-quick { font-size: 0.6rem !important; padding: 0 0.5rem !important; height: 28px !important; }
 }
 
 
@@ -839,7 +839,7 @@ img, video { max-width: 100%; height: auto; }
     padding: 0.2rem 0.55rem !important;
     border-radius: 3px !important;
   }
-  .prod-name { font-family:"Cormorant Garamond",serif; font-size:1.05rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
+  .prod-name { font-family:"Cormorant Garamond",serif; font-size:0.95rem; font-weight:400; color:var(--olive-dark); margin-bottom:0.3rem; line-height:1.25; overflow:hidden; word-break:break-word; text-decoration:none; }
   .prod-desc { font-size:0.8rem; line-height:1.6; color:var(--muted); margin-bottom:0.6rem; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
 
