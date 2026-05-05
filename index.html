@@ -2042,29 +2042,47 @@ body { color: #1a1a14; }
   section[style*="padding:1.75rem 3rem"] {
     padding: 1rem 0.75rem !important;
   }
-  /* Galeri: tek kolon, tam ürün görünsün */
-  div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"],
-  div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"],
-  div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"],
-  div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] {
+  /* Galeri: sadece ilk satır görünür, 3 resim yan yana */
+  #keby-galerie > div > div:nth-child(2),
+  #keby-galerie > div > div:nth-child(3) {
+    display: none !important;
+  }
+  #keby-galerie > div > div:first-child {
     grid-template-columns: 1fr 1fr 1fr !important;
     height: auto !important;
     gap: 0.4rem !important;
   }
-  div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"] > div,
-  div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"] > div,
-  div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"] > div,
-  div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] > div {
+  #keby-galerie > div > div:first-child > div {
     aspect-ratio: 1/1 !important;
     height: auto !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
   }
-  div[style*="grid-template-columns:1.3fr 1fr 1fr 1fr"] > div img,
-  div[style*="grid-template-columns:1fr 1.3fr 1fr 1fr"] > div img,
-  div[style*="grid-template-columns:1fr 1fr 1fr 1.3fr"] > div img,
-  div[style*="grid-template-columns:1fr 1fr 1.3fr 1fr"] > div img {
+  #keby-galerie > div > div:first-child > div img {
     object-fit: cover !important;
-    object-position: center center !important;
+    object-position: center !important;
+    transition: transform 0.4s ease !important;
   }
+  #keby-galerie > div > div:first-child > div:active img {
+    transform: scale(1.05) !important;
+  }
+  /* Section padding mobilde */
+  #keby-galerie {
+    padding: 1rem 0.75rem !important;
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+  #keby-galerie > div > div:first-child > div {
+    animation: fadeInUp 0.5s ease both;
+  }
+  #keby-galerie > div > div:first-child > div:nth-child(1) { animation-delay: 0s; }
+  #keby-galerie > div > div:first-child > div:nth-child(2) { animation-delay: 0.1s; }
+  #keby-galerie > div > div:first-child > div:nth-child(3) { animation-delay: 0.2s; }
 }
 </style>
   <meta property="og:title" content="Keby – Premium Olivenöl & Oliven aus der Türkei">
@@ -2765,7 +2783,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <!-- HERO ALTI GALERİ + VİDEO -->
-<section class="galeri-desktop-only" style="background:white;padding:1.75rem 3rem 2rem">
+<section class="galeri-desktop-only" id="keby-galerie" style="background:white;padding:1.75rem 3rem 2rem">
   <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:0.6rem">
 
     <!-- Satır 1: 4 eleman -->
