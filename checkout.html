@@ -283,6 +283,11 @@ footer.foot a:hover { text-decoration: underline; }
         <span>Endbetrag</span>
         <span id="couponNewTotalAmount">0,00 €</span>
       </div>
+      <!-- Kargo satırı -->
+      <div id="shippingRow" style="display:flex;justify-content:space-between;font-size:0.85rem;padding:0.4rem 0;border-top:1px solid #e8e3d6;margin-top:0.3rem">
+        <span style="color:#555">Versand</span>
+        <span id="shippingAmount" style="color:#555">wird berechnet…</span>
+      </div>
       <div class="summary-note" data-tr="Versandkostenfrei ab 120 €" data-de="Versandkostenfrei ab 120 €">Versandkostenfrei ab 120 €</div>
     </aside>
   </div>
@@ -326,16 +331,28 @@ function fmt(n) { return (n||0).toFixed(2).replace('.', ',') + ' €'; }
 
 function renderSummary() {
   const items = document.getElementById('summary-items');
-  const total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+  const subtotal = cart.reduce((s, i) => s + i.qty * i.price, 0);
   items.innerHTML = cart.map(i => `
     <div class="summary-item">
       <span class="summary-name">${escHtml(i.name)}<span class="summary-qty">× ${i.qty}</span></span>
       <span class="summary-price">${fmt(i.qty * i.price)}</span>
     </div>
   `).join('');
-  document.getElementById('summary-total').textContent = fmt(total);
 
-  // Uygulanan kupon varsa göster
+  // Kupon varsa indirimli toplam
+  const afterDiscount = _appliedCoupon ? _appliedCoupon.new_total : subtotal;
+
+  // Kargo hesapla
+  const shipping = afterDiscount >= 120 ? 0 : 5.49;
+  const shippingEl = document.getElementById('shippingAmount');
+  if (shippingEl) {
+    shippingEl.textContent = shipping === 0 ? '✅ Kostenlos' : fmt(shipping);
+    shippingEl.style.color = shipping === 0 ? '#16a34a' : '#555';
+  }
+
+  document.getElementById('summary-total').textContent = fmt(subtotal);
+
+  // Kupon satırı
   const discRow = document.getElementById('couponDiscountRow');
   const newTotalRow = document.getElementById('couponNewTotal');
   if (_appliedCoupon) {
@@ -343,7 +360,7 @@ function renderSummary() {
     newTotalRow.style.display = 'flex';
     document.getElementById('couponDiscountLabel').textContent = `Rabatt (${_appliedCoupon.code})`;
     document.getElementById('couponDiscountAmount').textContent = '-' + fmt(_appliedCoupon.discount_amount);
-    document.getElementById('couponNewTotalAmount').textContent = fmt(_appliedCoupon.new_total);
+    document.getElementById('couponNewTotalAmount').textContent = fmt(afterDiscount + shipping);
   } else {
     discRow.style.display = 'none';
     newTotalRow.style.display = 'none';
