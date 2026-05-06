@@ -1314,15 +1314,13 @@ body { color: #1a1a14; }
   left: 0; right: 0;
   z-index: 200;
   height: 80px;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
   padding: 0 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  background: transparent;
-  backdrop-filter: none;
-  /* saturate(1.8);
+  background: rgba(253,252,249,0.95);
+  backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
   border-bottom: 1px solid rgba(61,107,42,0.08);
   box-shadow: 0 2px 24px rgba(0,0,0,0.04);
@@ -1354,7 +1352,7 @@ body { color: #1a1a14; }
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.4rem;
   font-weight: 500;
-  color: white;
+  color: var(--olive-dark);
   letter-spacing: 0.01em;
   line-height: 1;
 }
@@ -1376,7 +1374,7 @@ body { color: #1a1a14; }
   white-space: nowrap;
   position: relative;
 }
-.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover { color: var(--olive-dark); }
 .nav-links a::after {
   content: '';
   position: absolute;
