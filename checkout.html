@@ -426,9 +426,22 @@ function goBack() {
   window.location.href = '/';
 }
 
+let _initInProgress = false;
+
+// Sepet imzası — aynı sepet için aynı session'ı reuse et
+function cartSignature() {
+  const sig = cart.map(i => `${i.id || i.name}:${i.qty}:${i.price}`).join('|')
+    + '#' + (_appliedCoupon ? _appliedCoupon.code : '');
+  return sig;
+}
+
 async function initCheckout() {
   if (!loadCart()) return;
   renderSummary();
+
+  // Çift session önleme — zaten çalışıyorsa veya mount edildiyse çık
+  if (_initInProgress || _stripeCheckout) return;
+  _initInProgress = true;
 
   try {
     const items = cart.map(i => ({
@@ -439,19 +452,45 @@ async function initCheckout() {
       artikel_nr: i.artikel_nr || ''
     }));
 
-    const r = await fetch(API + '/api/stripe/create-checkout-session', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        items,
-        locale: 'de',
-        couponCode: _appliedCoupon ? _appliedCoupon.code : null
-      })
-    });
-    const d = await r.json();
+    // Aynı sepet için önceki clientSecret'i reuse et (sayfa yenilemede yeni session açma)
+    let clientSecret = null;
+    const curSig = cartSignature();
+    try {
+      const cached = sessionStorage.getItem('keby_checkout');
+      if (cached) {
+        const obj = JSON.parse(cached);
+        // 25 dk geçerli (Stripe session ~30dk), aynı sepet imzası ise reuse
+        if (obj.sig === curSig && obj.clientSecret && (Date.now() - obj.ts) < 25 * 60 * 1000) {
+          clientSecret = obj.clientSecret;
+        }
+      }
+    } catch(e) {}
 
-    if (!d.success || !d.clientSecret) {
-      throw new Error(d.error || 'Session konnte nicht erstellt werden');
+    let d;
+    if (clientSecret) {
+      d = { success: true, clientSecret };
+    } else {
+      const r = await fetch(API + '/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          items,
+          locale: 'de',
+          couponCode: _appliedCoupon ? _appliedCoupon.code : null
+        })
+      });
+      d = await r.json();
+
+      if (!d.success || !d.clientSecret) {
+        throw new Error(d.error || 'Session konnte nicht erstellt werden');
+      }
+
+      // Cache'le — sayfa yenilemede aynı session kullanılsın
+      try {
+        sessionStorage.setItem('keby_checkout', JSON.stringify({
+          sig: curSig, clientSecret: d.clientSecret, ts: Date.now()
+        }));
+      } catch(e) {}
     }
 
     // İlk sipariş indirimi otomatik uygulandıysa bildirim göster
@@ -482,6 +521,9 @@ async function initCheckout() {
     checkout.mount('#stripe-checkout-mount');
     _stripeCheckout = checkout;
   } catch (e) {
+    _initInProgress = false;
+    // Hatalı session'ı cache'ten temizle
+    try { sessionStorage.removeItem('keby_checkout'); } catch(_) {}
     document.getElementById('loading-state').style.display = 'none';
     const errBox = document.getElementById('error-box');
     errBox.style.display = 'block';
@@ -498,7 +540,15 @@ window.addEventListener('beforeunload', () => {
 });
 
 // Init
-document.addEventListener('DOMContentLoaded', initCheckout);
+document.addEventListener('DOMContentLoaded', () => {
+  // Ödeme tamamlanıp geri dönüldüyse (stripe_session param) — cache temizle, session açma
+  var params = new URLSearchParams(location.search);
+  if (params.get('stripe_session')) {
+    try { sessionStorage.removeItem('keby_checkout'); } catch(e) {}
+    return; // success sayfası kendi akışını yönetir
+  }
+  initCheckout();
+});
 </script>
 </body>
 </html>
