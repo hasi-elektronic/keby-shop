@@ -248,8 +248,8 @@ footer.page-foot a:hover { text-decoration: underline; }
       <input type="email" id="email" required autocomplete="email" placeholder="ihre@email.de">
 
       <label for="order_ref">Bestellnummer</label>
-      <input type="text" id="order_ref" required autocomplete="off" placeholder="KEBY-XXXXXX" style="text-transform:uppercase;font-family:monospace">
-      <div class="help">Die Bestellnummer finden Sie in Ihrer Bestellbestätigungs-E-Mail (z.B. KEBY-ABC123)</div>
+      <input type="text" id="order_ref" required autocomplete="off" placeholder="KB-2026-001" style="text-transform:uppercase;font-family:monospace">
+      <div class="help">Die Bestellnummer finden Sie in Ihrer Bestellbestätigungs-E-Mail (z.B. KB-2026-001)</div>
 
       <button type="submit" class="primary" id="submitBtn">Bestellung anzeigen</button>
     </form>
@@ -322,7 +322,7 @@ async function lookup(e) {
 
 function renderOrder(order) {
   const card = document.getElementById('resultCard');
-  const fmt = (n) => '€ ' + (n||0).toFixed(2).replace('.', ',');
+  const fmt = (n) => '€ ' + parseFloat(n||0).toFixed(2).replace('.', ',');
   const fmtDate = (s) => s ? new Date(s).toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) : '—';
 
   const statusLabels = {
