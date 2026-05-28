@@ -1515,9 +1515,22 @@ body { color: #1a1a14; }
 .nav-cart:hover { background: var(--olive); }
 
 /* ================ KARGO BANNER (rotasyonlu) ================ */
+/* yol çizgileri animasyonu */
+@keyframes road-move {
+  from { background-position-x: 0; }
+  to   { background-position-x: -80px; }
+}
+/* kamyon soldan sağa */
+@keyframes truck-drive {
+  0%   { transform: translateX(-80px); opacity: 0; }
+  8%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 80px)); opacity: 0; }
+}
+
 .kargo-banner {
   position: fixed;
-  top: 96px;
+  top: 112px; /* top-bar(32) + mainNav(80) */
   left: 0; right: 0;
   z-index: 99;
   background: var(--olive-dark);
@@ -1529,7 +1542,32 @@ body { color: #1a1a14; }
   justify-content: center;
   transition: top 0.35s ease, transform 0.35s ease;
 }
-.kargo-banner.scrolled { top: 64px; }
+/* yol çizgisi - banner ortasında ince şerit */
+.kargo-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 5px; left: 0; right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.25) 0px,
+    rgba(255,255,255,0.25) 32px,
+    transparent 32px,
+    transparent 48px
+  );
+  background-size: 80px 2px;
+  animation: road-move 0.7s linear infinite;
+  pointer-events: none;
+}
+.kargo-truck {
+  position: absolute;
+  font-size: 1.1rem;
+  bottom: 2px;
+  animation: truck-drive 6s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+.kargo-banner.scrolled { top: 80px; } /* sadece mainNav(80) */
 .kargo-banner.hide { transform: translateY(-100%); }
 .kargo-rotate {
   position: relative;
@@ -1546,17 +1584,18 @@ body { color: #1a1a14; }
   letter-spacing: 0.08em;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(100%);
+  transform: translateX(-40px);
   transition: opacity 0.5s ease, transform 0.5s ease;
   padding: 0 1rem;
+  z-index: 1;
 }
 .kargo-slide.active {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 .kargo-slide.exiting {
   opacity: 0;
-  transform: translateY(-100%);
+  transform: translateX(40px);
 }
 
 .cart-count {
@@ -2186,6 +2225,7 @@ body { color: #1a1a14; }
 
 <!-- KARGO BANNER (rotasyonlu) -->
 <div id="kargoBanner" class="kargo-banner">
+  <span class="kargo-truck">🚚</span>
   <div class="kargo-rotate">
     <div class="kargo-slide" data-tr="🚚 120 € üzeri ücretsiz kargo" data-de="🚚 Ab 120 € versandkostenfrei">🚚 120 € üzeri ücretsiz kargo</div>
     <div class="kargo-slide" data-tr="⏱️ 1–3 günde teslimat" data-de="⏱️ 1–3 Tage Lieferzeit">⏱️ 1–3 günde teslimat</div>
@@ -2195,7 +2235,7 @@ body { color: #1a1a14; }
 </div>
 
 <!-- HERO -->
-<section id="hero-section" style="position:relative;height:calc(100svh - 132px);width:100%;max-width:100vw;min-height:520px;overflow:hidden;margin-top:132px;display:block">
+<section id="hero-section" style="position:relative;height:calc(100svh - 148px);width:100%;max-width:100vw;min-height:520px;overflow:hidden;margin-top:148px;display:block">
 
   <!-- SLIDES — dinamik (slides.json'dan yüklenir) -->
   <div id="kslides-container">
