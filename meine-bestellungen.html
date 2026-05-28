@@ -326,10 +326,12 @@ function renderOrder(order) {
   const fmtDate = (s) => s ? new Date(s).toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'}) : '—';
 
   const statusLabels = {
-    'onaylandi': { label: 'Bestätigt', cls: '' },
-    'versendet': { label: 'Versendet', cls: '' },
-    'abgeschlossen': { label: 'Abgeschlossen', cls: '' },
-    'storniert': { label: 'Storniert', cls: 'warn' }
+    'bezahlt': { label: '✅ Bezahlt', cls: '' },
+    'zahlung_ausstehend': { label: '⏳ Zahlung ausstehend', cls: 'warn' },
+    'onaylandi': { label: '✅ Bestätigt', cls: '' },
+    'versendet': { label: '🚚 Versendet', cls: '' },
+    'abgeschlossen': { label: '✅ Abgeschlossen', cls: '' },
+    'storniert': { label: '❌ Storniert', cls: 'warn' }
   };
   const status = statusLabels[order.status] || { label: order.status || 'In Bearbeitung', cls: 'warn' };
   const paymentLabels = {
@@ -386,7 +388,13 @@ function renderOrder(order) {
         </div>
         <div class="info-block">
           <div class="lbl">Lieferadresse</div>
-          <div class="val">${escapeHtml(order.address || '—')}</div>
+          <div class="val">${(() => {
+            const a = order.address;
+            if (!a) return '—';
+            if (typeof a === 'string') return escapeHtml(a);
+            const parts = [a.line1, a.line2, a.postal_code && a.city ? a.postal_code + ' ' + a.city : (a.city || ''), a.country].filter(Boolean);
+            return escapeHtml(parts.join(', '));
+          })()}</div>
         </div>
       </div>
 
