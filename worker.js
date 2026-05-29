@@ -1491,8 +1491,8 @@ var worker_default = {
     const isAdmin = tokenFromHeader ? await validateSession(env, tokenFromHeader) : false;
 
     // ============ IMAGE PROXY (R2 → public) ============
-    if (path.startsWith("/img/")) {
-      const raw = path.replace("/img/", "");
+    if (path.startsWith("/keby/") || path.startsWith("/img/")) {
+      const raw = path.startsWith("/keby/") ? path.slice(1) : path.replace("/img/", "");
       const key = raw.includes("/") ? raw : "keby/" + raw;
       const obj = await env.KEBY_R2.get(key);
       if (!obj) return new Response("Not found", { status: 404 });
