@@ -3678,11 +3678,11 @@ Wichtig:
         if (!obj) {
           // Default slides (mevcut hardcoded'dan)
           const defaults = [
-            { id: "s1", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg", alt: "Keby 750ml Zeytinyağı", order: 0 },
-            { id: "s2", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg", alt: "Keby Tanıtım", order: 1 },
-            { id: "s3", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg", alt: "Keby Ürünler", order: 2 },
-            { id: "s4", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg", alt: "Keby Kahvaltı", order: 3 },
-            { id: "s5", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg", alt: "Keby Zeytin", order: 4 }
+            { id: "s1", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-zeytin-park.jpg", alt: "Keby 750ml Zeytinyağı", order: 0 },
+            { id: "s2", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-kahvalti-sofrasi.jpg", alt: "Keby Tanıtım", order: 1 },
+            { id: "s3", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-gunbatimi.jpg", alt: "Keby Ürünler", order: 2 },
+            { id: "s4", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-750ml-bahce.jpg", alt: "Keby Kahvaltı", order: 3 },
+            { id: "s5", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-tanitim.jpg", alt: "Keby Zeytin", order: 4 }
           ];
           return jsonResp({ success: true, slides: defaults });
         }
@@ -3715,11 +3715,11 @@ Wichtig:
         const obj = await env.KEBY_R2.get("keby/data/slides.json");
         if (!obj) {
           const defaults = [
-            { id: "s1", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-zeytin-park.jpg", alt: "Keby", order: 0 },
-            { id: "s2", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-kahvalti-sofrasi.jpg", alt: "Keby", order: 1 },
-            { id: "s3", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-gunbatimi.jpg", alt: "Keby", order: 2 },
-            { id: "s4", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-750ml-bahce.jpg", alt: "Keby", order: 3 },
-            { id: "s5", type: "image", src: "https://keby-api.hguencavdi.workers.dev/img/keby/keby-urunler-tanitim.jpg", alt: "Keby", order: 4 }
+            { id: "s1", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-zeytin-park.jpg", alt: "Keby", order: 0 },
+            { id: "s2", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-kahvalti-sofrasi.jpg", alt: "Keby", order: 1 },
+            { id: "s3", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-gunbatimi.jpg", alt: "Keby", order: 2 },
+            { id: "s4", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-750ml-bahce.jpg", alt: "Keby", order: 3 },
+            { id: "s5", type: "image", src: "https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-tanitim.jpg", alt: "Keby", order: 4 }
           ];
           return new Response(JSON.stringify(defaults), {
             headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60", "Access-Control-Allow-Origin": "*" }
@@ -4907,7 +4907,7 @@ https://keby.shop`;
                 const htmlBody = `
 <div style="font-family:'Inter',Arial,sans-serif;color:#2a2a22;line-height:1.6;max-width:560px;margin:0 auto;padding:20px">
   <div style="text-align:center;padding:20px 0;border-bottom:2px solid #3d6b2a;margin-bottom:24px">
-    <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby" style="height:54px;display:block;margin:0 auto 8px">
+    <img src="https://keby-api.hguencavdi.workers.dev/keby/logo-new.png" alt="Keby" style="height:54px;display:block;margin:0 auto 8px">
     <div style="color:#6b6b5a;font-size:11px;letter-spacing:2px;text-transform:uppercase">Premium Olivenöl</div>
   </div>
 
@@ -5740,7 +5740,7 @@ footer.invoice-footer a{color:var(--olive)}
 
   <div class="header">
     <div class="brand">
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
+      <img src="https://keby-api.hguencavdi.workers.dev/keby/logo-new.png" alt="Keby">
       <div>
         <div class="brand-name">Keby</div>
         <div class="brand-tag">Premium Olivenöl</div>
@@ -6152,7 +6152,7 @@ footer .col strong {
 
   <div class="header">
     <div class="brand">
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby" style="height:44px;display:block;margin-bottom:3px">
+      <img src="https://keby-api.hguencavdi.workers.dev/keby/logo-new.png" alt="Keby" style="height:44px;display:block;margin-bottom:3px">
       <div class="brand-tag">Premium Olivenöl</div>
     </div>
     <div class="invoice-info">

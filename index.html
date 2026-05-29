@@ -1515,17 +1515,12 @@ body { color: #1a1a14; }
 .nav-cart:hover { background: var(--olive); }
 
 /* ================ KARGO BANNER (rotasyonlu) ================ */
-/* yol çizgileri animasyonu */
-@keyframes road-move {
-  from { background-position-x: 0; }
-  to   { background-position-x: -80px; }
-}
-/* kamyon soldan sağa */
+/* yol çizgileri kaldırıldı *//* kamyon soldan sağa */
 @keyframes truck-drive {
-  0%   { transform: translateX(-80px); opacity: 0; }
-  8%   { opacity: 1; }
-  88%  { opacity: 1; }
-  100% { transform: translateX(calc(100vw + 80px)); opacity: 0; }
+  0%   { left: -80px; opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: calc(100% + 80px); opacity: 0; }
 }
 
 .kargo-banner {
@@ -1542,30 +1537,16 @@ body { color: #1a1a14; }
   justify-content: center;
   transition: top 0.35s ease, transform 0.35s ease;
 }
-/* yol çizgisi - banner ortasında ince şerit */
-.kargo-banner::after {
-  content: '';
-  position: absolute;
-  bottom: 5px; left: 0; right: 0;
-  height: 2px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(255,255,255,0.25) 0px,
-    rgba(255,255,255,0.25) 32px,
-    transparent 32px,
-    transparent 48px
-  );
-  background-size: 80px 2px;
-  animation: road-move 0.7s linear infinite;
-  pointer-events: none;
-}
+/* yol çizgisi pseudo element kaldırıldı */
 .kargo-truck {
   position: absolute;
   font-size: 1.1rem;
   bottom: 2px;
-  animation: truck-drive 6s linear infinite;
+  animation: truck-drive 16s linear infinite;
   pointer-events: none;
   z-index: 2;
+  display: inline-block;
+  transform: scaleX(-1);
 }
 .kargo-banner.scrolled { top: 80px; } /* sadece mainNav(80) */
 .kargo-banner.hide { transform: translateY(-100%); }
@@ -2131,7 +2112,7 @@ body { color: #1a1a14; }
 </style>
   <meta property="og:title" content="Keby – Premium Olivenöl & Oliven aus der Türkei">
   <meta property="og:description" content="Kaltgepresstes natives Olivenöl extra und schwarze Oliven aus Mudanya, Bursa. Direkt vom Erzeuger – ohne Zwischenhändler.">
-  <meta property="og:image" content="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-urunler-gunbatimi.jpg">
+  <meta property="og:image" content="https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-gunbatimi.jpg">
   <meta property="og:url" content="https://keby.shop">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
@@ -2162,7 +2143,7 @@ body { color: #1a1a14; }
 <!-- ANA NAV -->
 <nav id="mainNav">
   <a href="index.html" class="nav-logo" aria-label="Keby">
-    <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebylogo-new.png" alt="Keby">
+    <img src="https://keby-api.hguencavdi.workers.dev/keby/kebylogo-new.png" alt="Keby">
     <span class="nav-wordmark">Keby</span>
   </a>
 
@@ -2241,9 +2222,9 @@ body { color: #1a1a14; }
   <div id="kslides-container">
     <!-- Fallback: ilk slide hardcoded (JS yüklenene kadar görünür) -->
     <div class="kslide" id="kslide-fallback" style="position:absolute;inset:0;opacity:1;transition:opacity 1s;z-index:1;background:#1a2818">
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-zeytin-park.jpg" alt="" aria-hidden="true" style="position:absolute;inset:-10%;width:120%;height:120%;object-fit:cover;object-position:center;filter:blur(40px) brightness(0.4) saturate(1.2)" loading="eager">
+      <img src="https://keby-api.hguencavdi.workers.dev/keby/keby-zeytin-park.jpg" alt="" aria-hidden="true" style="position:absolute;inset:-10%;width:120%;height:120%;object-fit:cover;object-position:center;filter:blur(40px) brightness(0.4) saturate(1.2)" loading="eager">
       <div style="position:absolute;inset:0;background:rgba(10,20,8,0.25);z-index:1"></div>
-      <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-zeytin-park.jpg" alt="Keby" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:2" loading="eager">
+      <img src="https://keby-api.hguencavdi.workers.dev/keby/keby-zeytin-park.jpg" alt="Keby" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:2" loading="eager">
     </div>
   </div>
   <!-- OVERLAY -->
@@ -2834,20 +2815,20 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Satır 1: 4 eleman -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.6rem">
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-kahvalti-sofrasi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby-kahvalti-sofrasi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Frühstückstisch" data-tr="Kahvaltı Sofrası">Frühstückstisch</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193003000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193003000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="750ML Flasche" data-tr="750ml Şişe">750ML Flasche</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-zeytin-park.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby-zeytin-park.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Schwarze Oliven" data-tr="Siyah Zeytin">Schwarze Oliven</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
         <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
-          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/kebygaleri-video-1.mp4" type="video/mp4">
+          <source src="https://keby-api.hguencavdi.workers.dev/keby/kebygaleri-video-1.mp4" type="video/mp4">
         </video>
         <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
           <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -2859,12 +2840,12 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Satır 2: 4 eleman -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.6rem">
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="5L Kanister" data-tr="5L Teneke">5L Kanister</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
         <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
-          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/kebygaleri-video-2.mp4" type="video/mp4">
+          <source src="https://keby-api.hguencavdi.workers.dev/keby/kebygaleri-video-2.mp4" type="video/mp4">
         </video>
         <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
           <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -2872,11 +2853,11 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-urunler-gunbatimi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby-urunler-gunbatimi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Aus Mudanya" data-tr="Mudanya'dan">Aus Mudanya</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS_3.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS_3.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Die Keby Familie" data-tr="Keby Ailesi">Die Keby Familie</p></div>
       </div>
     </div>
@@ -2884,16 +2865,16 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Satır 3: 4 eleman -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.6rem">
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_192255000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_192255000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Morgengenuss" data-tr="Sabah Keyfi">Morgengenuss</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193002000_iOS.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193002000_iOS.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Kalt gepresst" data-tr="Soğuk Sıkım">Kalt gepresst</p></div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
         <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
-          <source src="https://keby-api.hguencavdi.workers.dev/img/keby/kebygaleri-video-3.mp4" type="video/mp4">
+          <source src="https://keby-api.hguencavdi.workers.dev/keby/kebygaleri-video-3.mp4" type="video/mp4">
         </video>
         <div style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.45);border-radius:3px;padding:0.15rem 0.35rem;display:flex;align-items:center;gap:0.2rem">
           <svg width="7" height="7" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -2901,7 +2882,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4">
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS_1.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block">
         <div style="position:absolute;bottom:0;left:0;right:0;padding:0.5rem 0.7rem;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)"><p style="color:white;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;margin:0" data-de="Premium Qualität" data-tr="Premium Kalite">Premium Qualität</p></div>
       </div>
     </div>
@@ -2921,9 +2902,9 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="produkt-olivenoel-750ml.html" class="prod-card" data-product-id="olivenoel-750ml">
         <div class="prod-carousel" id="pc1">
           <div class="prod-track" id="pc1-track">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193003000_iOS_1.jpg" style="object-position:center 15%" alt="750ml şişe" style="object-position:center 15%" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193002000_iOS.jpg" alt="Keby ürünler" style="object-position:center 40%" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193003000_iOS_2.jpg" alt="Keby tanıtım" style="object-position:center top" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193003000_iOS_1.jpg" style="object-position:center 15%" alt="750ml şişe" style="object-position:center 15%" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193002000_iOS.jpg" alt="Keby ürünler" style="object-position:center 40%" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193003000_iOS_2.jpg" alt="Keby tanıtım" style="object-position:center top" loading="lazy">
           
           
           </div>
@@ -2949,7 +2930,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div style="display:flex;gap:0.35rem">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_193003000_iOS_1.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/keby/keby20260423_193003000_iOS_1.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
@@ -2958,9 +2939,9 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="produkt-kanister-5l.html" class="prod-card" data-product-id="kanister-5l">
         <div class="prod-carousel" id="pc2">
           <div class="prod-track" id="pc2-track">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS.jpg" alt="5L bidon" style="object-position:center 40%" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS_1.jpg" alt="Keby tanıtım" style="object-position:center top" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS_2.jpg" alt="Keby şişe" style="object-position:center 15%" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS.jpg" alt="5L bidon" style="object-position:center 40%" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS_1.jpg" alt="Keby tanıtım" style="object-position:center top" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS_2.jpg" alt="Keby şişe" style="object-position:center 15%" loading="lazy">
           
           
           </div>
@@ -2986,7 +2967,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div style="display:flex;gap:0.35rem">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_201131000_iOS.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/keby/keby20260423_201131000_iOS.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
@@ -2995,9 +2976,9 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="produkt-oliven-schwarz.html" class="prod-card" data-product-id="oliven-schwarz">
         <div class="prod-carousel" id="pc3">
           <div class="prod-track" id="pc3-track">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_192255000_iOS_1.jpg" style="object-position:center center" alt="Zeytin kavanoz" style="object-position:center center" loading="eager">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_192255000_iOS.jpg" alt="Kahvaltı zeytini" style="object-position:center 30%" loading="lazy">
-            <img src="https://keby-api.hguencavdi.workers.dev/img/keby/keby20260423_192255000_iOS_1.jpg" alt="Zeytin" style="object-position:center center" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_192255000_iOS_1.jpg" style="object-position:center center" alt="Zeytin kavanoz" style="object-position:center center" loading="eager">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_192255000_iOS.jpg" alt="Kahvaltı zeytini" style="object-position:center 30%" loading="lazy">
+            <img src="https://keby-api.hguencavdi.workers.dev/keby/keby20260423_192255000_iOS_1.jpg" alt="Zeytin" style="object-position:center center" loading="lazy">
           
           
           </div>
@@ -3022,7 +3003,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div style="display:flex;gap:0.35rem">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
-            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/img/keby/kebykeby-oelige-schwarze-oliven-900g.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
+            <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/keby/keby-oelige-schwarze-oliven-900g.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
         </div>
       </a>
@@ -3160,7 +3141,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       <!-- Marka -->
       <div>
-        <img src="https://keby-api.hguencavdi.workers.dev/img/keby/kebylogo-new.png" 
+        <img src="https://keby-api.hguencavdi.workers.dev/keby/kebylogo-new.png" 
              alt="Keby" style="width:60px;height:60px;object-fit:contain;margin-bottom:1rem;filter:brightness(0) invert(1)">
         <p style="font-size:0.85rem;line-height:1.7;color:#b8c4a8;max-width:280px;margin:0 0 1.25rem"
            data-tr="Türkiye'nin Mudanya bölgesinden, soğuk sıkım premium zeytinyağı. Doğrudan üreticiden sofranıza."
