@@ -234,6 +234,21 @@ footer.foot a:hover { text-decoration: underline; }
     <div class="checkout-form">
       <h2 data-tr="Zahlungsmethode wählen" data-de="Zahlungsmethode wählen">Zahlungsmethode wählen</h2>
 
+      <!-- PayPal Express -->
+      <div id="paypal-express-wrap" style="margin-bottom:1.2rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem">
+          <div style="flex:1;height:1px;background:#e0d9cc"></div>
+          <span style="font-size:0.7rem;color:#888;letter-spacing:0.06em;white-space:nowrap">ODER MIT PAYPAL</span>
+          <div style="flex:1;height:1px;background:#e0d9cc"></div>
+        </div>
+        <div id="paypal-button-container"></div>
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.75rem">
+          <div style="flex:1;height:1px;background:#e0d9cc"></div>
+          <span style="font-size:0.7rem;color:#888;letter-spacing:0.06em;white-space:nowrap">ODER MIT KARTE / SEPA / KLARNA</span>
+          <div style="flex:1;height:1px;background:#e0d9cc"></div>
+        </div>
+      </div>
+
       <div id="stripe-checkout-mount"></div>
 
       <div id="error-box" class="error-box" style="display:none"></div>
@@ -559,6 +574,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 400);
   }
 });
+</script>
+
+<!-- PayPal JS SDK — dinamik yükleme -->
+<script>
+(async function initPayPalButton() {
+  const API = 'https://keby-api.hguencavdi.workers.dev';
+  try {
+    const res = await fetch(API + '/api/paypal/client-id');
+    const { clientId } = await res.json();
+    if (!clientId) return;
+
+    // SDK yükle
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&locale=de_DE&intent=capture`;
+    script.onload = function() {
+      const container = document.getElementById('paypal-button-container');
+      if (!container || typeof paypal === 'undefined') return;
+
+      paypal.Buttons({
+        style: { layout:'vertical', color:'gold', shape:'rect', label:'paypal', height:48 },
+
+        createOrder: async function() {
+          // Sepeti localStorage'dan al
+          let cartItems = [];
+          try { cartItems = JSON.parse(localStorage.getItem('keby_cart') || '[]'); } catch(e){}
+          if (!cartItems.length) { alert('Sepet boş'); return; }
+
+          const total = cartItems.reduce(function(s,i){ return s + (i.price * i.qty); }, 0);
+
+          const r = await fetch(API + '/api/paypal/create-order', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              amount: total.toFixed(2),
+              currency: 'EUR',
+              items: cartItems
+            })
+          });
+          const d = await r.json();
+          return d.id; // PayPal order ID
+        },
+
+        onApprove: async function(data) {
+          const r = await fetch(API + '/api/paypal/capture', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ orderID: data.orderID })
+          });
+          const d = await r.json();
+          if (d.success || d.status === 'COMPLETED') {
+            try { localStorage.removeItem('keby_cart'); } catch(e){}
+            window.location.href = '/checkout.html?paypal_success=1&ref=' + (d.orderNumber || data.orderID);
+          } else {
+            alert('PayPal Zahlung fehlgeschlagen.');
+          }
+        },
+
+        onError: function(err) {
+          console.error('PayPal Fehler:', err);
+          alert('PayPal Fehler. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsmethode.');
+        }
+      }).render('#paypal-button-container');
+    };
+    document.head.appendChild(script);
+  } catch(e) {
+    console.warn('PayPal init failed:', e);
+    var wrap = document.getElementById('paypal-express-wrap');
+    if (wrap) wrap.style.display = 'none';
+  }
+})();
 </script>
 </body>
 </html>

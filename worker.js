@@ -5548,6 +5548,51 @@ https://keby.shop`;
     }
 
     // ============ PAYPAL ============
+    // GET /api/paypal/client-id
+    if (request.method === "GET" && path === "/api/paypal/client-id") {
+      return new Response(JSON.stringify({ clientId: env.PAYPAL_CLIENT_ID }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+
+    // POST /api/paypal/create-order
+    if (request.method === "POST" && path === "/api/paypal/create-order") {
+      try {
+        const { amount, currency, items } = await request.json();
+        const authRes = await fetch(PAYPAL_API + "/v1/oauth2/token", {
+          method: "POST",
+          headers: {
+            Authorization: "Basic " + btoa(env.PAYPAL_CLIENT_ID + ":" + env.PAYPAL_SECRET),
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "grant_type=client_credentials"
+        });
+        const authData = await authRes.json();
+        const token = authData.access_token;
+
+        const orderRes = await fetch(PAYPAL_API + "/v2/checkout/orders", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            intent: "CAPTURE",
+            purchase_units: [{
+              amount: { currency_code: currency || "EUR", value: String(amount) },
+              description: "Keby Shop Bestellung"
+            }]
+          })
+        });
+        const orderData = await orderRes.json();
+        return new Response(JSON.stringify({ id: orderData.id }), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      } catch(e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+      }
+    }
+
     if (request.method === "POST" && path === "/api/paypal/capture") {
       try {
         const { orderID } = await request.json();
