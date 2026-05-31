@@ -548,6 +548,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return; // success sayfası kendi akışını yönetir
   }
   initCheckout();
+  // ?method=paypal gelirse PayPal sekmesini otomatik aç
+  if (params.get('method') === 'paypal') {
+    setTimeout(function() {
+      var ppBtn = document.querySelector('[data-method="paypal"], #tab-paypal, .tab-paypal, button[onclick*="paypal"], .method-paypal');
+      if (ppBtn) ppBtn.click();
+      // Yoksa scroll down to PayPal section
+      var ppSection = document.getElementById('paypal-section') || document.querySelector('.paypal-section');
+      if (ppSection) ppSection.scrollIntoView({behavior:'smooth'});
+    }, 400);
+  }
 });
 </script>
 </body>
