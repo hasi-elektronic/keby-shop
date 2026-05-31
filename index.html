@@ -1968,11 +1968,7 @@ body { color: #1a1a14; }
   }
   .kargo-banner.scrolled { top: 56px !important; }
   .kargo-slide { font-size: 0.66rem; letter-spacing: 0.04em; }
-  /* Hero offset */
-  #hero-section {
-    margin-top: 124px !important;  /* 36 + 56 + 32 = 124 */
-    height: calc(100svh - 124px) !important;
-  }
+  /* Hero offset — JS ile dinamik hesaplanıyor */
 
   /* Mobile menü - search ve düzen */
   .nav-mobile-menu {
@@ -2216,7 +2212,7 @@ body { color: #1a1a14; }
 </div>
 
 <!-- HERO -->
-<section id="hero-section" style="position:relative;height:calc(100svh - 148px);width:100%;max-width:100vw;min-height:520px;overflow:hidden;margin-top:148px;display:block">
+<section id="hero-section" style="position:relative;width:100%;max-width:100vw;min-height:520px;overflow:hidden;display:block">
 
   <!-- SLIDES — dinamik (slides.json'dan yüklenir) -->
   <div id="kslides-container">
@@ -3377,6 +3373,36 @@ function setLang(l) {
   if (mbTr) mbTr.className = l === 'tr' ? 'active' : '';
   if (mbDe) mbDe.className = l === 'de' ? 'active' : '';
 }
+
+
+// ════════ HERO OFFSET — DİNAMİK ════════
+function adjustHeroOffset() {
+  var hero = document.getElementById('hero-section');
+  if (!hero) return;
+  var topBar = document.getElementById('topBar');
+  var nav    = document.getElementById('mainNav');
+  var kargo  = document.getElementById('kargoBanner');
+
+  var h = 0;
+  if (topBar && !topBar.classList.contains('hide')) {
+    h += topBar.getBoundingClientRect().height;
+  }
+  if (nav) {
+    h += nav.getBoundingClientRect().height;
+  }
+  if (kargo && !kargo.classList.contains('hide') && getComputedStyle(kargo).transform === 'none') {
+    h += kargo.getBoundingClientRect().height;
+  }
+  h = Math.max(h, 80); // minimum 80px
+  hero.style.marginTop = h + 'px';
+  hero.style.height = 'calc(100svh - ' + h + 'px)';
+  hero.style.minHeight = '480px';
+}
+
+window.addEventListener('load',   adjustHeroOffset);
+window.addEventListener('resize', adjustHeroOffset);
+setTimeout(adjustHeroOffset, 100);
+setTimeout(adjustHeroOffset, 600);
 
 // ════════ HEADER SCROLL DAVRANIŞI ════════
 (function() {
