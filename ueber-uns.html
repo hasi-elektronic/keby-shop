@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Über uns – Keby</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -359,8 +359,12 @@ document.addEventListener('DOMContentLoaded', function() {
     entries.forEach(function(e) {
       if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05, rootMargin: '0px 0px 300px 0px' });
   document.querySelectorAll('.fade-in').forEach(function(el) { io.observe(el); });
+  // GÜVENLİK FALLBACK: 1.5sn sonra tüm fade-in görünür (JS/observer çalışmazsa içerik kaybolmasın)
+  setTimeout(function(){
+    document.querySelectorAll('.fade-in:not(.visible)').forEach(function(el){ el.classList.add('visible'); });
+  }, 1500);
 });
 </script>
 <script src="/cookie-banner.js" defer></script>

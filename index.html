@@ -3790,8 +3790,12 @@ document.addEventListener('DOMContentLoaded', function() {
         obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05, rootMargin: '0px 0px 300px 0px' });
   document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+  // GÜVENLİK FALLBACK: içerik kaybolmasın
+  setTimeout(function(){
+    document.querySelectorAll('.fade-in:not(.visible)').forEach(function(el){ el.classList.add('visible'); });
+  }, 1500);
 });
 
 function toggleSSS(el) {
@@ -4609,6 +4613,11 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   padding: 2.5rem 2.5rem 2rem;
   text-align: center;
 }
+@media (max-width: 480px) {
+  #keby-popup { width: 92vw; max-height: 88vh; overflow-y: auto; border-radius: 18px; }
+  .popup-inner { padding: 2.5rem 1.5rem 1.75rem; }
+  .popup-drop-icon { width: 52px !important; height: 52px !important; }
+}
 .popup-badge {
   display: inline-block;
   background: rgba(212,185,60,0.15);
@@ -4707,13 +4716,30 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   display: block;
   margin-top: 0.9rem;
   font-family: 'Manrope', sans-serif;
-  font-size: 0.78rem;
-  color: rgba(245,237,216,0.35);
+  font-size: 0.85rem;
+  color: rgba(245,237,216,0.6);
   cursor: pointer;
   background: none; border: none;
+  text-decoration: underline;
   transition: color 0.2s;
 }
-.popup-dismiss:hover { color: rgba(245,237,216,0.6); }
+.popup-dismiss:hover { color: rgba(245,237,216,0.9); }
+/* Köşe kapatma butonu */
+.popup-x {
+  position: absolute;
+  top: 0.9rem; right: 0.9rem;
+  z-index: 10;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(245,237,216,0.85);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.popup-x:hover { background: rgba(255,255,255,0.22); }
 
 /* Zeytinyağı damlası ikonu */
 .popup-drop-icon {
@@ -4753,6 +4779,7 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
     <div class="burst" id="popupBurst"></div>
     <div class="popup-inner">
 
+      <button class="popup-x" onclick="kebyPopupClose()" aria-label="Schließen">✕</button>
       <!-- Zeytinyağı damlası SVG -->
       <svg class="popup-drop-icon" viewBox="0 0 64 64" fill="none">
         <path d="M32 8 C32 8, 14 28, 14 40 C14 50.5 22.1 58 32 58 C41.9 58 50 50.5 50 40 C50 28 32 8 32 8Z" fill="url(#dropGrad)" opacity="0.95"/>
