@@ -3677,9 +3677,8 @@ function checkoutKlarna() {
 
 function checkoutPaypal() {
   if (!cart.length) return;
-  var total = cart.reduce((s, i) => s + i.qty * i.price, 0).toFixed(2);
-  showToast(_lang === 'tr' ? "PayPal'a yönlendiriliyor..." : 'Weiterleitung zu PayPal...');
-  setTimeout(() => window.open('https://paypal.me/kebyshop/' + total + 'EUR', '_blank'), 600);
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e){}
+  window.location.href = '/checkout.html';
 }
 
 function checkoutIban() {
@@ -3711,10 +3710,9 @@ function checkoutIban() {
 }
 function closeModal() { document.getElementById('paymentModal').classList.remove('open'); }
 function payWithPaypal() {
-  var total = cart.reduce((s, i) => s + i.qty * i.price, 0).toFixed(2);
-  closeModal();
-  showToast(_lang === 'tr' ? "PayPal'a yönlendiriliyor..." : 'Weiterleitung zu PayPal...');
-  setTimeout(() => window.open('https://paypal.me/kebyshop/' + total + 'EUR', '_blank'), 600);
+  if (!cart.length) return;
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e){}
+  window.location.href = '/checkout.html';
 }
 function toggleMethod(id) {
   var el = document.getElementById('method-' + id);

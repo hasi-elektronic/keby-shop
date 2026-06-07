@@ -5568,6 +5568,11 @@ https://keby.shop`;
           body: "grant_type=client_credentials"
         });
         const authData = await authRes.json();
+        if (!authData.access_token) {
+          return new Response(JSON.stringify({ error: "PayPal auth failed", detail: authData }), {
+            status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+          });
+        }
         const token = authData.access_token;
 
         const orderRes = await fetch(PAYPAL_API + "/v2/checkout/orders", {

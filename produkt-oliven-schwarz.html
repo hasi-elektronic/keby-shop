@@ -68,6 +68,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;padding:0 1.5rem
 .btn-add{width:100%;background:var(--olive-dark);color:white;border:none;padding:1rem;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background 0.2s;margin-bottom:0.65rem;display:flex;align-items:center;justify-content:center;gap:0.5rem}
 .btn-add:hover{background:var(--olive)}
 .btn-pp{width:100%;background:#ffc439;border:none;padding:0.8rem;cursor:pointer;border-radius:3px;font-size:0.85rem;font-weight:700;color:#003087}
+.btn-buy-now{width:100%;background:#c4a24a;border:none;padding:0.85rem;cursor:pointer;border-radius:3px;font-size:0.85rem;font-weight:600;color:#2a4a1a;letter-spacing:0.05em;text-transform:uppercase;transition:background 0.2s}
+.btn-buy-now:hover{background:#b08f3c}
 .prod-attrs{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
 .attr{font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--olive);background:rgba(61,107,42,0.07);padding:0.2rem 0.55rem;border-radius:2px;border:1px solid rgba(61,107,42,0.14)}
 
@@ -295,7 +297,9 @@ body { color: #1a1a14; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         <span data-tr="Sepete Ekle" data-de="In den Warenkorb">Sepete Ekle</span>
       </button>
-      <button class="btn-pp" onclick="paypalDirect(14.99)"><span data-tr="PayPal ile Hemen Öde" data-de="Jetzt mit PayPal zahlen">PayPal ile Hemen Öde</span></button>
+      <button class="btn-buy-now" onclick="buyNow(14.99)">
+        <span data-tr="Hemen Al" data-de="Sofort kaufen">Hemen Al</span>
+      </button>
       <div class="prod-attrs">
         <span class="attr" data-tr="Geleneksel" data-de="Traditionell">Geleneksel</span>
         <span class="attr" data-tr="900g Kavanoz" data-de="900g Glas">900g Kavanoz</span>
@@ -382,7 +386,6 @@ body { color: #1a1a14; }
       <span class="cart-total-price" id="cartTotal">0,00 €</span>
     </div>
     <button class="btn-checkout-s" onclick="paypalCart()" data-tr="Ödemeye Geç →" data-de="Zur Kasse gehen →">Ödemeye Geç →</button>
-    <button class="btn-pp-s" onclick="paypalCart()">PayPal</button>
     <p class="cart-note-s" data-tr="120 € üzeri kargo bedava" data-de="Versandkostenfrei ab 120 €">120 € üzeri kargo bedava</p>
   </div>
 </div>
@@ -470,7 +473,10 @@ function paypalDirect(price) {
 },600);
 }
 function paypalCart() {
-  var total = cart.reduce(function(s,i){return s+i.qty*i.price;},0).toFixed(2);
+  if (!cart.length) { showToast(_lang==='tr'?'Sepet boş':'Warenkorb leer'); return; }
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e){}
+  window.location.href = '/checkout.html';
+},0).toFixed(2);
   showToast(_lang==='tr'?"PayPal'a yönlendiriliyor...":'Weiterleitung zu PayPal...');
   setTimeout(function(){window.open('https://paypal.me/kebyshop/'+total+'EUR','_blank');},600);
 }

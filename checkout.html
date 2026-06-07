@@ -88,8 +88,10 @@ h1 {
   align-items: start;
 }
 @media (max-width: 880px) {
-  .layout { grid-template-columns: 1fr; }
-  .order-summary { order: -1; }
+  .layout { grid-template-columns: 1fr; gap: 1.2rem; }
+  .order-summary { order: -1; position: static !important; }
+  .checkout-form { padding: 1rem 0.9rem; }
+  #stripe-checkout-mount { min-height: 500px; }
 }
 
 /* Sticky right summary */
@@ -235,7 +237,7 @@ footer.foot a:hover { text-decoration: underline; }
       <h2 data-tr="Zahlungsmethode wählen" data-de="Zahlungsmethode wählen">Zahlungsmethode wählen</h2>
 
       <!-- PayPal Express -->
-      <div id="paypal-express-wrap" style="margin-bottom:1.2rem">
+      <div id="paypal-express-wrap" style="display:none" style="margin-bottom:1.2rem">
         <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem">
           <div style="flex:1;height:1px;background:#e0d9cc"></div>
           <span style="font-size:0.7rem;color:#888;letter-spacing:0.06em;white-space:nowrap">ODER MIT PAYPAL</span>
@@ -393,7 +395,9 @@ async function applyCoupon() {
     _appliedCoupon = null;
     document.getElementById('couponInput').value = '';
     msg.innerHTML = '';
+    btn.textContent = 'Anwenden';
     renderSummary();
+    reloadCheckout(); // Stripe formunu kuponsuz yeniden yükle
     return;
   }
 
@@ -428,6 +432,7 @@ async function applyCoupon() {
       msg.innerHTML = `<span style="color:#16a34a">✅ ${escHtml(d.coupon.description || discText)} angewendet</span>`;
       btn.textContent = 'Entfernen';
       renderSummary();
+      reloadCheckout(); // Stripe ödeme formunu indirimli yeniden yükle
     }
   } catch (e) {
     msg.innerHTML = `<span style="color:#c0392b">Fehler: ${escHtml(e.message)}</span>`;
@@ -545,6 +550,25 @@ async function initCheckout() {
     errBox.innerHTML = '❌ ' + escHtml(e.message) +
       '<br><br><a href="/" style="color:#3d6b2a;font-weight:600">← Zurück zum Shop</a>';
   }
+}
+
+// Kupon değişince Stripe ödeme formunu yeniden oluştur (yeni indirimli session)
+async function reloadCheckout() {
+  // Mevcut Stripe checkout'u kapat
+  if (_stripeCheckout) {
+    try { _stripeCheckout.destroy(); } catch(e) {}
+    _stripeCheckout = null;
+  }
+  _initInProgress = false;
+  // Eski session cache'ini temizle (kupon imzası değişti)
+  try { sessionStorage.removeItem('keby_checkout'); } catch(e) {}
+  // Mount alanını temizle + loading göster
+  var mount = document.getElementById('stripe-checkout-mount');
+  if (mount) mount.innerHTML = '';
+  var loading = document.getElementById('loading-state');
+  if (loading) loading.style.display = 'block';
+  // Yeniden başlat
+  await initCheckout();
 }
 
 // Kullanıcı sayfayı kapatırken/dışarı tıkladığında temizle
