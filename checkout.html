@@ -625,7 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
           try { cartItems = JSON.parse(localStorage.getItem('keby_cart') || '[]'); } catch(e){}
           if (!cartItems.length) { alert('Sepet boş'); return; }
 
-          const total = cartItems.reduce(function(s,i){ return s + (i.price * i.qty); }, 0);
+          const subtotal = cartItems.reduce(function(s,i){ return s + (i.price * i.qty); }, 0);
+          // Kupon indirimi
+          const discount = _appliedCoupon ? (_appliedCoupon.discount_amount || 0) : 0;
+          const afterDiscount = Math.max(0, subtotal - discount);
+          // Kargo: 120€ üstü ücretsiz, altı 5.49€
+          const shipping = afterDiscount >= 120 ? 0 : 5.49;
+          const total = afterDiscount + shipping;
 
           const r = await fetch(API + '/api/paypal/create-order', {
             method: 'POST',
@@ -633,7 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({
               amount: total.toFixed(2),
               currency: 'EUR',
-              items: cartItems
+              items: cartItems,
+              couponCode: _appliedCoupon ? _appliedCoupon.code : null,
+              discount: discount.toFixed(2),
+              shipping: shipping.toFixed(2)
             })
           });
           const d = await r.json();

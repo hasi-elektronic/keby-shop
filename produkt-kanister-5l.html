@@ -480,26 +480,22 @@ function updateCartUI() {
 }
 function toggleCart() { document.getElementById('cartPanel').classList.toggle('open'); document.getElementById('cartOverlay').classList.toggle('open'); }
 function openCart() { document.getElementById('cartPanel').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
-function paypalDirect(price) {
-  var qty = parseInt(document.getElementById('qty').value||1);
-  var productName = document.querySelector('h1')?.textContent?.trim() || 'Ürün';
-  var imgSrc = document.getElementById('mainImg')?.src || '';
-  var item = {name: productName, price: price, qty: qty, img: imgSrc};
-  var existing = [];
-  try { existing = JSON.parse(localStorage.getItem('keby_cart')||'[]'); } catch(e){}
-  var found = existing.find(function(x){return x.name===item.name;});
-  if(found) { found.qty += qty; } else { existing.push(item); }
-  try { localStorage.setItem('keby_cart', JSON.stringify(existing)); } catch(e){}
-  window.location.href = '/checkout.html?method=paypal';
-},600);
-}
+
 function paypalCart() {
   if (!cart.length) { showToast(_lang==='tr'?'Sepet boş':'Warenkorb leer'); return; }
   try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e){}
   window.location.href = '/checkout.html';
-},0).toFixed(2);
-  showToast(_lang==='tr'?"PayPal'a yönlendiriliyor...":'Weiterleitung zu PayPal...');
-  setTimeout(function(){window.open('https://paypal.me/kebyshop/'+total+'EUR','_blank');},600);
+}
+function buyNow(price) {
+  var qty = parseInt(document.getElementById('qty').value||1);
+  var productName = document.querySelector('h1')?.textContent?.trim() || 'Ürün';
+  var imgSrc = document.getElementById('mainImg')?.src || '';
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem('keby_cart')||'[]'); } catch(e){}
+  var found = existing.find(function(x){return x.name===productName;});
+  if(found) { found.qty += qty; } else { existing.push({name:productName,price:price,qty:qty,img:imgSrc}); }
+  try { localStorage.setItem('keby_cart', JSON.stringify(existing)); } catch(e){}
+  window.location.href = '/checkout.html';
 }
 function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2500); }
 function changeQty(d) { var el=document.getElementById('qty'); if(el) el.value=Math.max(1,parseInt(el.value||1)+d); }
