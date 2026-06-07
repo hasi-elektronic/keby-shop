@@ -237,7 +237,7 @@ footer.foot a:hover { text-decoration: underline; }
       <h2 data-tr="Zahlungsmethode wählen" data-de="Zahlungsmethode wählen">Zahlungsmethode wählen</h2>
 
       <!-- PayPal Express -->
-      <div id="paypal-express-wrap" style="display:none" style="margin-bottom:1.2rem">
+      <div id="paypal-express-wrap" style="margin-bottom:1.2rem">
         <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem">
           <div style="flex:1;height:1px;background:#e0d9cc"></div>
           <span style="font-size:0.7rem;color:#888;letter-spacing:0.06em;white-space:nowrap">ODER MIT PAYPAL</span>
@@ -641,15 +641,22 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         onApprove: async function(data) {
+          let cartItems = [];
+          try { cartItems = JSON.parse(localStorage.getItem('keby_cart') || '[]'); } catch(e){}
           const r = await fetch(API + '/api/paypal/capture', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ orderID: data.orderID })
+            body: JSON.stringify({
+              orderID: data.orderID,
+              items: cartItems,
+              couponCode: _appliedCoupon ? _appliedCoupon.code : null
+            })
           });
           const d = await r.json();
           if (d.success || d.status === 'COMPLETED') {
             try { localStorage.removeItem('keby_cart'); } catch(e){}
-            window.location.href = '/checkout.html?paypal_success=1&ref=' + (d.orderNumber || data.orderID);
+            try { sessionStorage.removeItem('keby_checkout'); } catch(e){}
+            window.location.href = '/checkout.html?paypal_success=1&ref=' + (d.orderNumber || d.ref || data.orderID);
           } else {
             alert('PayPal Zahlung fehlgeschlagen.');
           }

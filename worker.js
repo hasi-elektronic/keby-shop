@@ -4294,8 +4294,8 @@ Sitemap: https://keby.shop/sitemap.xml`,
         body.append("shipping_address_collection[allowed_countries][]", "FR");
         body.append("phone_number_collection[enabled]", "true");
 
-        // Ödeme yöntemleri — explicit liste (embedded_page modu için gerekli)
-        const allMethods = ["sepa_debit", "card", "klarna", "paypal", "link"];
+        // Ödeme yöntemleri — PayPal HARİÇ (PayPal ayrı buton ile)
+        const allMethods = ["sepa_debit", "card", "klarna", "link"];
         allMethods.forEach(m => body.append("payment_method_types[]", m));
 
         // Line items
@@ -5555,6 +5555,7 @@ https://keby.shop`;
       });
     }
 
+
     // POST /api/paypal/create-order
     if (request.method === "POST" && path === "/api/paypal/create-order") {
       try {
@@ -5562,7 +5563,7 @@ https://keby.shop`;
         const authRes = await fetch(PAYPAL_API + "/v1/oauth2/token", {
           method: "POST",
           headers: {
-            Authorization: "Basic " + btoa(env.PAYPAL_CLIENT_ID + ":" + env.PAYPAL_SECRET),
+            Authorization: "Basic " + btoa(env.PAYPAL_CLIENT_ID + ":" + env.PAYPAL_CLIENT_SECRET),
             "Content-Type": "application/x-www-form-urlencoded"
           },
           body: "grant_type=client_credentials"
@@ -5586,7 +5587,17 @@ https://keby.shop`;
             purchase_units: [{
               amount: { currency_code: currency || "EUR", value: String(amount) },
               description: "Keby Shop Bestellung"
-            }]
+            }],
+            payment_source: {
+              paypal: {
+                experience_context: {
+                  shipping_preference: "GET_FROM_FILE",
+                  user_action: "PAY_NOW",
+                  brand_name: "Keby Shop",
+                  locale: "de-DE"
+                }
+              }
+            }
           })
         });
         const orderData = await orderRes.json();
@@ -5600,11 +5611,11 @@ https://keby.shop`;
 
     if (request.method === "POST" && path === "/api/paypal/capture") {
       try {
-        const { orderID } = await request.json();
+        const { orderID, items, couponCode } = await request.json();
         const authRes = await fetch(PAYPAL_API + "/v1/oauth2/token", {
           method: "POST",
           headers: {
-            Authorization: "Basic " + btoa(env.PAYPAL_CLIENT_ID + ":" + env.PAYPAL_SECRET),
+            Authorization: "Basic " + btoa(env.PAYPAL_CLIENT_ID + ":" + env.PAYPAL_CLIENT_SECRET),
             "Content-Type": "application/x-www-form-urlencoded"
           },
           body: "grant_type=client_credentials"
@@ -5621,22 +5632,34 @@ https://keby.shop`;
         if (result.status === "COMPLETED") {
           const orders = await getOrders(env);
           if (!orders.find(o => o.paypalOrderId === orderID)) {
+            const cap = result.purchase_units?.[0]?.payments?.captures?.[0];
+            const shipping = result.purchase_units?.[0]?.shipping;
+            const ref = "KEBY-" + orderID.slice(-6).toUpperCase();
             orders.unshift({
               id: "ord_pp_" + orderID,
-              ref: "KEBY-" + orderID.slice(-6).toUpperCase(),
-              name: result.payer?.name?.given_name + " " + (result.payer?.name?.surname || ""),
+              ref: ref,
+              name: (result.payer?.name?.given_name || "") + " " + (result.payer?.name?.surname || ""),
               email: result.payer?.email_address || "",
+              address: shipping?.address ? {
+                line1: shipping.address.address_line_1 || "",
+                line2: shipping.address.address_line_2 || "",
+                city: shipping.address.admin_area_2 || "",
+                postal_code: shipping.address.postal_code || "",
+                country: shipping.address.country_code || "DE"
+              } : null,
               payment: "paypal",
               paypalOrderId: orderID,
               status: "onaylandi",
-              items: [],
-              total: parseFloat(result.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || 0),
+              items: Array.isArray(items) ? items : [],
+              coupon: couponCode || null,
+              total: parseFloat(cap?.amount?.value || 0),
               date: new Date().toISOString()
             });
             await putOrders(env, orders);
           }
         }
-        return jsonResp({ success: true, result });
+        const ref2 = "KEBY-" + orderID.slice(-6).toUpperCase();
+        return jsonResp({ success: true, result, ref: ref2, orderNumber: ref2 });
       } catch (e) {
         return errResp(e.message, 500);
       }
