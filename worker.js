@@ -151,22 +151,25 @@ async function saveStockMovements(env, movements) {
 
 // ============ MERKEZİ MAIL GÖNDERİMİ ============
 // Önce Cloudflare Email Service (env.EMAIL binding), başarısızsa Resend fallback.
-async function sendMail(env, { to, subject, html, replyTo }) {
+async function sendMail(env, { to, subject, html, replyTo, bcc }) {
   const fromAddr = "noreply@keby.shop";
   const fromName = "Keby";
-  const recipients = Array.isArray(to) ? to : [to];
+  const toList = Array.isArray(to) ? to : [to];
+  const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
   // 1) Cloudflare Email Service dene
   if (env.EMAIL) {
     try {
-      for (const rcpt of recipients) {
-        const msg = createMimeMessage();
-        msg.setSender({ name: fromName, addr: fromAddr });
-        msg.setRecipient(rcpt);
-        if (replyTo) msg.setHeader("Reply-To", replyTo);
-        msg.setSubject(subject);
-        msg.addMessage({ contentType: "text/html", data: html });
-        const email = new EmailMessage(fromAddr, rcpt, msg.asRaw());
-        await env.EMAIL.send(email);
+      // Tek MIME: To header'da sadece müşteri görünür, bcc gizli kalır
+      const msg = createMimeMessage();
+      msg.setSender({ name: fromName, addr: fromAddr });
+      msg.setRecipients(toList);
+      if (replyTo) msg.setHeader("Reply-To", replyTo);
+      msg.setSubject(subject);
+      msg.addMessage({ contentType: "text/html", data: html });
+      const raw = msg.asRaw();
+      // Envelope seviyesinde hem to hem bcc alıcılarına gönder (bcc header'da yok)
+      for (const rcpt of [...toList, ...bccList]) {
+        await env.EMAIL.send(new EmailMessage(fromAddr, rcpt, raw));
       }
       return { ok: true, provider: "cloudflare" };
     } catch (e) {
@@ -177,15 +180,17 @@ async function sendMail(env, { to, subject, html, replyTo }) {
   // 2) Resend fallback
   if (env.RESEND_API_KEY) {
     try {
+      const body = {
+        from: fromName + " <noreply@machbar24.com>",
+        reply_to: replyTo || "info@keby.shop",
+        to: toList,
+        subject, html
+      };
+      if (bccList.length) body.bcc = bccList;
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: fromName + " <noreply@machbar24.com>",
-          reply_to: replyTo || "info@keby.shop",
-          to: recipients,
-          subject, html
-        })
+        body: JSON.stringify(body)
       });
       const d = await r.json();
       return { ok: !d.error, provider: "resend", id: d.id, error: d.error };
@@ -1880,24 +1885,15 @@ var worker_default = {
 
         // Müşteriye tracking maili gönder
         let emailSent = false;
-        if (send_email !== false && order.email && env.RESEND_API_KEY) {
+        if (send_email !== false && order.email) {
           try {
             const emailHtml = buildTrackingEmailHtml(order);
-            const emailRes = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: {
-                Authorization: "Bearer " + env.RESEND_API_KEY,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                from: "Keby <noreply@machbar24.com>",
-                to: [order.email],
-                subject: `Ihr Paket ist unterwegs 📦 — Bestellung ${order.ref || order.id}`,
-                html: emailHtml
-              })
+            const r = await sendMail(env, {
+              to: order.email,
+              subject: `Ihr Paket ist unterwegs 📦 — Bestellung ${order.ref || order.id}`,
+              html: emailHtml
             });
-            const emailData = await emailRes.json();
-            emailSent = !emailData.statusCode || emailData.statusCode < 400;
+            emailSent = r.ok;
           } catch (e) {
             console.error("Tracking email:", e);
           }
@@ -4689,17 +4685,12 @@ Sitemap: https://keby.shop/sitemap.xml`,
   </div>
 </div></body></html>`;
 
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  from: "Keby <noreply@machbar24.com>",
-                  reply_to: "info@keby.shop",
-                  to: [newOrder.email],
-                  bcc: ["info@keby.shop"],
-                  subject,
-                  html
-                })
+              await sendMail(env, {
+                to: newOrder.email,
+                bcc: ["info@keby.shop"],
+                replyTo: "info@keby.shop",
+                subject,
+                html
               }).catch(e => console.error("Mail:", e));
             }
           }
@@ -4722,13 +4713,9 @@ Sitemap: https://keby.shop/sitemap.xml`,
 
             // Onay maili
             if (order.email && env.RESEND_API_KEY) {
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  from: "Keby <noreply@machbar24.com>",
-                  reply_to: "info@keby.shop",
-                  to: [order.email],
+              await sendMail(env, {
+                  replyTo: "info@keby.shop",
+                  to: order.email,
                   bcc: ["info@keby.shop"],
                   subject: `✅ Zahlung bestätigt — ${order.ref}`,
                   html: `<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:500px;margin:32px auto;padding:24px;background:#f0fdf4;border-radius:12px;border:1px solid #86efac">
@@ -4737,7 +4724,6 @@ Sitemap: https://keby.shop/sitemap.xml`,
                     <p style="color:#15803d;font-size:13px">Wir bereiten deine Bestellung jetzt für den Versand vor.</p>
                     <p style="font-size:13px;color:#666;margin-top:16px">Keby · <a href="https://keby.shop" style="color:#15803d">keby.shop</a></p>
                   </div>`
-                })
               }).catch(e => console.error("SEPA confirm mail:", e));
             }
           }
@@ -4757,20 +4743,15 @@ Sitemap: https://keby.shop/sitemap.xml`,
             await putOrders(env, orders);
 
             if (order.email && env.RESEND_API_KEY) {
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  from: "Keby <noreply@machbar24.com>",
-                  reply_to: "info@keby.shop",
-                  to: [order.email],
+              await sendMail(env, {
+                  replyTo: "info@keby.shop",
+                  to: order.email,
                   subject: `Zahlung fehlgeschlagen — ${order.ref}`,
                   html: `<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:500px;margin:32px auto;padding:24px;background:#fef2f2;border-radius:12px;border:1px solid #fca5a5">
                     <h2 style="color:#dc2626">❌ Zahlung fehlgeschlagen</h2>
                     <p style="color:#991b1b">Deine SEPA-Lastschrift für Bestellung <strong>${order.ref}</strong> konnte leider nicht eingezogen werden.</p>
                     <p style="font-size:13px;color:#666">Bitte kontaktiere uns: <a href="mailto:info@keby.shop">info@keby.shop</a></p>
                   </div>`
-                })
               }).catch(e => console.error("SEPA fail mail:", e));
             }
           }
@@ -5765,18 +5746,13 @@ https://keby.shop`;
     <strong style="color:#2a4a1a">Keby Shop</strong> · <a href="https://keby.shop" style="color:#2a4a1a">keby.shop</a>
   </div>
 </div></body></html>`;
-              const mailTo = newOrder.email ? [newOrder.email] : ["info@keby.shop"];
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  from: "Keby <noreply@machbar24.com>",
-                  reply_to: "info@keby.shop",
-                  to: mailTo,
-                  bcc: newOrder.email ? ["info@keby.shop"] : undefined,
-                  subject: `✅ Bestellbestätigung — ${newOrder.ref} (PayPal)`,
-                  html
-                })
+              const mailTo = newOrder.email ? newOrder.email : "info@keby.shop";
+              await sendMail(env, {
+                to: mailTo,
+                bcc: newOrder.email ? ["info@keby.shop"] : undefined,
+                replyTo: "info@keby.shop",
+                subject: `✅ Bestellbestätigung — ${newOrder.ref} (PayPal)`,
+                html
               }).catch(e => console.error("PayPal mail:", e));
             }
           }
