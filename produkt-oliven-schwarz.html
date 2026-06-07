@@ -538,5 +538,15 @@ document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateC
     .catch(function() {});
 })();
 </script>
+
+<script>
+// pageshow-cart-sync: bfcache (geri/ileri) dönüşünde sepeti localStorage'dan yenile
+window.addEventListener('pageshow', function(e) {
+  try {
+    cart = JSON.parse(localStorage.getItem('keby_cart') || '[]');
+    if (typeof updateCartUI === 'function') updateCartUI();
+  } catch(err) {}
+});
+</script>
 </body>
 </html>

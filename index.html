@@ -353,7 +353,7 @@ footer {
 
 /* ── ÜRÜN KART BUTONLARI ── */
 .prod-footer-btns { display:flex; gap:0.4rem; align-items:center; }
-.btn-detail, .btn-cart-quick {
+.btn-detail, .btn-cart-quick, .btn-addcart {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -465,9 +465,9 @@ html, body {
   .prod-img { width:100%; height:160px; object-fit:cover; object-position:center top; display:block; transition:transform 0.5s ease; }
   
   /* Ürün footer butonlar */
-  .prod-footer { display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
-  .prod-footer-btns{width:100%!important;}
-  .btn-detail,.btn-cart-quick{flex:1!important;justify-content:center!important;height:40px!important;}
+  .prod-footer { display:flex; flex-direction:column; align-items:stretch; gap:0.6rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
+  .prod-footer-btns{width:100%!important; display:flex; gap:0.4rem;}
+  .btn-detail,.btn-cart-quick,.btn-addcart{flex:1!important;justify-content:center!important;height:40px!important;}
   .prod-price { font-family:"Cormorant Garamond",serif; font-size:1.25rem; font-weight:600; color:var(--olive-dark); line-height:1; }
   
   /* Features */
@@ -607,7 +607,7 @@ img, video { max-width: 100%; height: auto; }
   .prod-footer { display:flex; align-items:center; justify-content:space-between; gap:0.4rem; padding:0.6rem 0.85rem 0.85rem; border-top:1px solid var(--border); margin-top:auto; }
   .prod-footer > div:first-child { width: 100% !important; }
   .prod-footer-btns { width: 100% !important; }
-  .btn-detail, .btn-cart-quick {
+  .btn-detail, .btn-cart-quick, .btn-addcart {
     flex: 1 !important;
     height: 40px !important;
     font-size: 0.68rem !important;
@@ -701,7 +701,7 @@ img, video { max-width: 100%; height: auto; }
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .hero-title { font-size: 1.8rem !important; }
-  .btn-detail, .btn-cart-quick { font-size: 0.6rem !important; padding: 0 0.5rem !important; height: 28px !important; }
+  .btn-detail, .btn-cart-quick, .btn-addcart { font-size: 0.6rem !important; padding: 0 0.5rem !important; height: 28px !important; }
 }
 
 
@@ -2941,7 +2941,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="prod-price">14,99 €</div>
             <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
-          <div style="display:flex;gap:0.35rem">
+          <div class="prod-footer-btns">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
             <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 750ml',14.99,'https://keby-api.hguencavdi.workers.dev/keby/20260423_193003000_iOS-1.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
@@ -2978,7 +2978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="prod-price">59,90 €</div>
             <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
-          <div style="display:flex;gap:0.35rem">
+          <div class="prod-footer-btns">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
             <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Sızma Zeytinyağı 5L Bidon',59.90,'https://keby-api.hguencavdi.workers.dev/keby/kanister-5l.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
@@ -3014,7 +3014,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="prod-price">14,99 €</div>
             <div class="prod-tax" data-tr="KDV dahil · + kargo" data-de="inkl. MwSt. · zzgl. Versand">KDV dahil · + kargo</div>
           </div>
-          <div style="display:flex;gap:0.35rem">
+          <div class="prod-footer-btns">
             <span class="btn-detail" data-tr="Detaylar" data-de="Details">Detaylar</span>
             <button class="btn-addcart" onclick="event.preventDefault();event.stopPropagation();quickAdd('Yağlı Siyah Zeytin 900g',14.99,'https://keby-api.hguencavdi.workers.dev/keby/oliven-outdoor-new.jpg')" data-tr="+ Sepet" data-de="+ Warenkorb">+ Sepet</button>
           </div>
@@ -4893,5 +4893,15 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
 
 <script src="/index-sync.js?v=3"></script>
 <script src="/cookie-banner.js" defer></script>
+
+<script>
+// pageshow-cart-sync: bfcache (geri/ileri) dönüşünde sepeti localStorage'dan yenile
+window.addEventListener('pageshow', function(e) {
+  try {
+    cart = JSON.parse(localStorage.getItem('keby_cart') || '[]');
+    if (typeof updateCartUI === 'function') updateCartUI();
+  } catch(err) {}
+});
+</script>
 </body>
 </html>
