@@ -1,6 +1,9 @@
 // Keby Worker v4 — Modern Admin + Full Product CRUD + Image Management
 // Secrets come from environment bindings (no hardcoded credentials)
 
+import { EmailMessage } from "cloudflare:email";
+import { createMimeMessage } from "mimetext";
+
 var PAYPAL_API = "https://api-m.paypal.com";
 
 var CORS = {
@@ -144,6 +147,53 @@ async function saveStockMovements(env, movements) {
     JSON.stringify(trimmed),
     { httpMetadata: { contentType: "application/json" } }
   );
+}
+
+// ============ MERKEZİ MAIL GÖNDERİMİ ============
+// Önce Cloudflare Email Service (env.EMAIL binding), başarısızsa Resend fallback.
+async function sendMail(env, { to, subject, html, replyTo }) {
+  const fromAddr = "noreply@keby.shop";
+  const fromName = "Keby";
+  const recipients = Array.isArray(to) ? to : [to];
+  // 1) Cloudflare Email Service dene
+  if (env.EMAIL) {
+    try {
+      for (const rcpt of recipients) {
+        const msg = createMimeMessage();
+        msg.setSender({ name: fromName, addr: fromAddr });
+        msg.setRecipient(rcpt);
+        if (replyTo) msg.setHeader("Reply-To", replyTo);
+        msg.setSubject(subject);
+        msg.addMessage({ contentType: "text/html", data: html });
+        const email = new EmailMessage(fromAddr, rcpt, msg.asRaw());
+        await env.EMAIL.send(email);
+      }
+      return { ok: true, provider: "cloudflare" };
+    } catch (e) {
+      console.error("CF Email hata, Resend'e geçiliyor:", e.message);
+      // fallthrough → Resend
+    }
+  }
+  // 2) Resend fallback
+  if (env.RESEND_API_KEY) {
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: fromName + " <noreply@machbar24.com>",
+          reply_to: replyTo || "info@keby.shop",
+          to: recipients,
+          subject, html
+        })
+      });
+      const d = await r.json();
+      return { ok: !d.error, provider: "resend", id: d.id, error: d.error };
+    } catch (e) {
+      return { ok: false, provider: "resend", error: e.message };
+    }
+  }
+  return { ok: false, error: "Mail servisi yapılandırılmamış" };
 }
 
 // Stok düş (sipariş tamamlandığında)
@@ -5607,6 +5657,17 @@ https://keby.shop`;
       } catch(e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
       }
+    }
+
+    // ── TEST: CF Email Service doğrulama (geçici) ──
+    if (request.method === "GET" && path === "/api/test-cf-email") {
+      const to = "info@keby.shop"; // sabit — spam önleme
+      const res = await sendMail(env, {
+        to,
+        subject: "Keby — Cloudflare Email Test",
+        html: "<div style=\"font-family:sans-serif;padding:20px\"><h2 style=\"color:#2a4a1a\">✅ Cloudflare Email Service çalışıyor!</h2><p>Bu test maili Keby worker'ından gönderildi.</p></div>"
+      });
+      return jsonResp({ test: "cf-email", to, ...res });
     }
 
     if (request.method === "POST" && path === "/api/paypal/capture") {
