@@ -5635,7 +5635,7 @@ https://keby.shop`;
             const cap = result.purchase_units?.[0]?.payments?.captures?.[0];
             const shipping = result.purchase_units?.[0]?.shipping;
             const ref = "KEBY-" + orderID.slice(-6).toUpperCase();
-            orders.unshift({
+            const newOrder = {
               id: "ord_pp_" + orderID,
               ref: ref,
               name: (result.payer?.name?.given_name || "") + " " + (result.payer?.name?.surname || ""),
@@ -5649,14 +5649,77 @@ https://keby.shop`;
               } : null,
               payment: "paypal",
               paypalOrderId: orderID,
-              status: "onaylandi",
+              status: "bezahlt",
               items: Array.isArray(items) ? items : [],
               coupon: couponCode || null,
               total: parseFloat(cap?.amount?.value || 0),
               date: new Date().toISOString()
-            });
+            };
+            orders.unshift(newOrder);
             await putOrders(env, orders);
+
+            // Stok düşümü (PayPal ödemesi anında tamamlanır)
+            if (newOrder.items && newOrder.items.length) {
+              try { await deductStock(env, newOrder.items, newOrder.ref); } catch(e) { console.error("Stock:", e); }
+            }
+
+            // ── Sipariş maili: müşteriye + admin'e (info@keby.shop) ──
+            if (env.RESEND_API_KEY) {
+              const it = newOrder.items;
+              const itemRows = it.map(i =>
+                `<tr><td style="padding:6px 0;border-bottom:1px solid #f0ebe0">${i.name}</td>
+                 <td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ebe0">× ${i.qty}</td>
+                 <td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ebe0">€${(i.price * i.qty).toFixed(2)}</td></tr>`
+              ).join("");
+              const addr = newOrder.address;
+              const addrBlock = addr ? `
+                <div style="background:#faf7f0;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;color:#444">
+                  <strong style="color:#2a4a1a">Lieferadresse</strong><br>
+                  ${newOrder.name}<br>
+                  ${addr.line1}${addr.line2 ? "<br>"+addr.line2 : ""}<br>
+                  ${addr.postal_code} ${addr.city}<br>
+                  ${addr.country}
+                </div>` : "";
+              const couponBlock = newOrder.coupon
+                ? `<tr><td colspan="2" style="padding:6px 0;color:#15803d">Rabatt (${newOrder.coupon})</td><td style="text-align:right;color:#15803d">angewendet</td></tr>`
+                : "";
+              const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f5f1e8;margin:0;padding:0">
+<div style="max-width:560px;margin:32px auto;background:white;border-radius:12px;overflow:hidden">
+  <div style="background:#2a4a1a;padding:24px 32px">
+    <h1 style="color:white;margin:0;font-size:1.3rem;font-weight:500">✅ Vielen Dank für deine Bestellung!</h1>
+    <p style="color:rgba(255,255,255,0.7);margin:6px 0 0;font-size:0.85rem">${newOrder.ref} · Bezahlt mit PayPal</p>
+  </div>
+  <div style="padding:28px 32px">
+    <p style="color:#333;margin:0 0 16px">Hallo ${newOrder.name || "Kunde"},</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px">
+      ${itemRows}
+      ${couponBlock}
+      <tr><td colspan="2" style="padding:10px 0;font-weight:600">Gesamt (inkl. Versand)</td>
+          <td style="text-align:right;font-weight:600">€${newOrder.total.toFixed(2)}</td></tr>
+    </table>
+    ${addrBlock}
+    <p style="font-size:13px;color:#666;margin-top:20px">Bei Fragen: <a href="mailto:info@keby.shop" style="color:#2a4a1a">info@keby.shop</a></p>
+  </div>
+  <div style="background:#faf7f0;padding:16px 32px;text-align:center;font-size:12px;color:#888">
+    <strong style="color:#2a4a1a">Keby Shop</strong> · <a href="https://keby.shop" style="color:#2a4a1a">keby.shop</a>
+  </div>
+</div></body></html>`;
+              const mailTo = newOrder.email ? [newOrder.email] : ["info@keby.shop"];
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  from: "Keby <noreply@machbar24.com>",
+                  reply_to: "info@keby.shop",
+                  to: mailTo,
+                  bcc: newOrder.email ? ["info@keby.shop"] : undefined,
+                  subject: `✅ Bestellbestätigung — ${newOrder.ref} (PayPal)`,
+                  html
+                })
+              }).catch(e => console.error("PayPal mail:", e));
+            }
           }
+          await putOrders(env, orders);
         }
         const ref2 = "KEBY-" + orderID.slice(-6).toUpperCase();
         return jsonResp({ success: true, result, ref: ref2, orderNumber: ref2 });
