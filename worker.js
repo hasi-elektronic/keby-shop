@@ -156,28 +156,7 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
   const fromName = "Keby";
   const toList = Array.isArray(to) ? to : [to];
   const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
-  // 1) Cloudflare Email Service dene
-  if (env.EMAIL) {
-    try {
-      // Tek MIME: To header'da sadece müşteri görünür, bcc gizli kalır
-      const msg = createMimeMessage();
-      msg.setSender({ name: fromName, addr: fromAddr });
-      msg.setRecipients(toList);
-      if (replyTo) msg.setHeader("Reply-To", replyTo);
-      msg.setSubject(subject);
-      msg.addMessage({ contentType: "text/html", data: html });
-      const raw = msg.asRaw();
-      // Envelope seviyesinde hem to hem bcc alıcılarına gönder (bcc header'da yok)
-      for (const rcpt of [...toList, ...bccList]) {
-        await env.EMAIL.send(new EmailMessage(fromAddr, rcpt, raw));
-      }
-      return { ok: true, provider: "cloudflare" };
-    } catch (e) {
-      console.error("CF Email hata, Resend'e geçiliyor:", e.message);
-      // fallthrough → Resend
-    }
-  }
-  // 2) Resend fallback
+  // 1) Resend (kanıtlanmış teslimat) — ÖNCELİKLİ
   if (env.RESEND_API_KEY) {
     try {
       const body = {
@@ -193,9 +172,28 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
         body: JSON.stringify(body)
       });
       const d = await r.json();
-      return { ok: !d.error, provider: "resend", id: d.id, error: d.error };
+      if (!d.error) return { ok: true, provider: "resend", id: d.id };
+      console.error("Resend hata, CF Email'e geçiliyor:", JSON.stringify(d.error));
     } catch (e) {
-      return { ok: false, provider: "resend", error: e.message };
+      console.error("Resend exception, CF Email'e geçiliyor:", e.message);
+    }
+  }
+  // 2) Cloudflare Email Service — fallback (Beta, teslimat garantisiz)
+  if (env.EMAIL) {
+    try {
+      const msg = createMimeMessage();
+      msg.setSender({ name: fromName, addr: fromAddr });
+      msg.setRecipients(toList);
+      if (replyTo) msg.setHeader("Reply-To", replyTo);
+      msg.setSubject(subject);
+      msg.addMessage({ contentType: "text/html", data: html });
+      const raw = msg.asRaw();
+      for (const rcpt of [...toList, ...bccList]) {
+        await env.EMAIL.send(new EmailMessage(fromAddr, rcpt, raw));
+      }
+      return { ok: true, provider: "cloudflare" };
+    } catch (e) {
+      return { ok: false, provider: "cloudflare", error: e.message };
     }
   }
   return { ok: false, error: "Mail servisi yapılandırılmamış" };
@@ -5661,7 +5659,8 @@ https://keby.shop`;
 
     // ── TEST: CF Email Service doğrulama (geçici) ──
     if (request.method === "GET" && path === "/api/test-cf-email") {
-      const to = "info@keby.shop"; // sabit — spam önleme
+      const _u = new URL(request.url);
+      const to = _u.searchParams.get("to") || "info@keby.shop";
       const res = await sendMail(env, {
         to,
         subject: "Keby — Cloudflare Email Test",
