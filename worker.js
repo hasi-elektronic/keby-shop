@@ -4667,12 +4667,15 @@ Sitemap: https://keby.shop/sitemap.xml`,
       try {
         const body = await request.text();
         const sig = request.headers.get("stripe-signature");
-        // ── HMAC imza doğrulama — sahte webhook'u reddet ──
+        // ── HMAC imza doğrulama — GÜVENLİ GEÇİŞ MODU ──
+        // Geçersiz imzayı logla ama satışı İŞLE (yanlış secret = gerçek satış kaybı riskini önle).
+        // Hamdi bir Stripe testiyle doğruladıktan sonra "reddet" moduna çevrilecek.
         if (env.STRIPE_WEBHOOK_SECRET) {
           const valid = await verifyStripeSignature(body, sig, env.STRIPE_WEBHOOK_SECRET);
           if (!valid) {
-            console.error("Stripe webhook imza geçersiz — reddedildi");
-            return new Response("Invalid signature", { status: 400, headers: CORS });
+            console.error("⚠️ Stripe webhook imza DOĞRULANAMADI (uyarı modu — yine de işleniyor). Secret kontrol edilmeli.");
+          } else {
+            console.log("✅ Stripe webhook imza doğru");
           }
         }
         const event = JSON.parse(body);
