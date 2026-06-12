@@ -156,7 +156,26 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
   const fromName = "Keby";
   const toList = Array.isArray(to) ? to : [to];
   const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
-  // 1) Resend (kanıtlanmış teslimat) — ÖNCELİKLİ
+  const text = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 3000);
+  // 1) Cloudflare Email Service — yeni object API (öncelikli)
+  if (env.EMAIL) {
+    try {
+      const msg = {
+        to: toList,
+        from: { email: fromAddr, name: fromName },
+        subject,
+        html,
+        text,
+        replyTo: replyTo || "info@keby.shop"
+      };
+      if (bccList.length) msg.bcc = bccList;
+      const result = await env.EMAIL.send(msg);
+      return { ok: true, provider: "cloudflare", id: result && result.messageId };
+    } catch (e) {
+      console.error("CF Email hata, Resend'e geçiliyor:", e.message);
+    }
+  }
+  // 2) Resend fallback
   if (env.RESEND_API_KEY) {
     try {
       const body = {
@@ -172,31 +191,13 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
         body: JSON.stringify(body)
       });
       const d = await r.json();
-      if (!d.error) return { ok: true, provider: "resend", id: d.id };
-      console.error("Resend hata, CF Email'e geçiliyor:", JSON.stringify(d.error));
+      if (r.ok && !d.error && d.id) return { ok: true, provider: "resend", id: d.id };
+      console.error("Resend hata (" + r.status + "):", JSON.stringify(d));
     } catch (e) {
-      console.error("Resend exception, CF Email'e geçiliyor:", e.message);
+      console.error("Resend exception:", e.message);
     }
   }
-  // 2) Cloudflare Email Service — fallback (Beta, teslimat garantisiz)
-  if (env.EMAIL) {
-    try {
-      const msg = createMimeMessage();
-      msg.setSender({ name: fromName, addr: fromAddr });
-      msg.setRecipients(toList);
-      if (replyTo) msg.setHeader("Reply-To", replyTo);
-      msg.setSubject(subject);
-      msg.addMessage({ contentType: "text/html", data: html });
-      const raw = msg.asRaw();
-      for (const rcpt of [...toList, ...bccList]) {
-        await env.EMAIL.send(new EmailMessage(fromAddr, rcpt, raw));
-      }
-      return { ok: true, provider: "cloudflare" };
-    } catch (e) {
-      return { ok: false, provider: "cloudflare", error: e.message };
-    }
-  }
-  return { ok: false, error: "Mail servisi yapılandırılmamış" };
+  return { ok: false, error: "Mail gönderilemedi" };
 }
 
 // Stok düş (sipariş tamamlandığında)
