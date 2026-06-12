@@ -5590,7 +5590,26 @@ https://keby.shop`;
     // POST /api/paypal/create-order
     if (request.method === "POST" && path === "/api/paypal/create-order") {
       try {
-        const { amount, currency, items } = await request.json();
+        const { currency, items, couponCode } = await request.json();
+        // ── Sunucu tarafı tutar hesabı — frontend 'amount'una GÜVENME (güvenlik + indirim doğruluğu) ──
+        const lineItems = Array.isArray(items) ? items : [];
+        const subtotal = lineItems.reduce((s, it) => s + (parseFloat(it.price) || 0) * (parseFloat(it.qty || it.quantity || 1)), 0);
+        let discount = 0;
+        if (couponCode) {
+          const coupons = await getCoupons(env);
+          const coupon = coupons.find(c => c.code === String(couponCode).toUpperCase().trim() && c.active);
+          if (coupon &&
+              !(coupon.expires_at && new Date(coupon.expires_at) < new Date()) &&
+              !(coupon.max_uses !== null && coupon.used_count >= coupon.max_uses) &&
+              !(coupon.min_order_amount && subtotal < coupon.min_order_amount)) {
+            if (coupon.type === "percent") discount = subtotal * (coupon.value / 100);
+            else discount = Math.min(coupon.value, subtotal);
+            discount = Math.round(discount * 100) / 100;
+          }
+        }
+        const afterDiscount = Math.max(0, subtotal - discount);
+        const shipFee = afterDiscount >= 120 ? 0 : 5.49;
+        const finalTotal = (afterDiscount + shipFee).toFixed(2);
         const authRes = await fetch(PAYPAL_API + "/v1/oauth2/token", {
           method: "POST",
           headers: {
@@ -5616,7 +5635,7 @@ https://keby.shop`;
           body: JSON.stringify({
             intent: "CAPTURE",
             purchase_units: [{
-              amount: { currency_code: currency || "EUR", value: String(amount) },
+              amount: { currency_code: currency || "EUR", value: finalTotal },
               description: "Keby Shop Bestellung"
             }],
             payment_source: {
@@ -5632,7 +5651,7 @@ https://keby.shop`;
           })
         });
         const orderData = await orderRes.json();
-        return new Response(JSON.stringify({ id: orderData.id }), {
+        return new Response(JSON.stringify({ id: orderData.id, serverTotal: finalTotal, discount, subtotal }), {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
       } catch(e) {
