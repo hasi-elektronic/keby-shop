@@ -602,8 +602,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ödeme tamamlanıp geri dönüldüyse (stripe_session param) — cache temizle, session açma
   var params = new URLSearchParams(location.search);
   if (params.get('stripe_session')) {
-    try { sessionStorage.removeItem('keby_checkout'); } catch(e) {}
-    return; // success sayfası kendi akışını yönetir
+    try { sessionStorage.removeItem('keby_checkout'); localStorage.removeItem('keby_cart'); } catch(e) {}
+    showOrderSuccess('');
+    return;
   }
   // PayPal ödemesi başarıyla tamamlandı — teşekkür ekranı göster, checkout açma
   if (params.get('paypal_success')) {
