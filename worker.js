@@ -200,6 +200,69 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
   return { ok: false, error: "Mail gönderilemedi" };
 }
 
+// Stripe webhook HMAC-SHA256 imza doğrulama (sahte webhook reddi)
+async function verifyStripeSignature(body, sigHeader, secret) {
+  if (!sigHeader || !secret) return false;
+  let t = null, v1 = null;
+  sigHeader.split(",").forEach(kv => {
+    const i = kv.indexOf("=");
+    const k = kv.slice(0, i), val = kv.slice(i + 1);
+    if (k === "t") t = val;
+    if (k === "v1") v1 = val;
+  });
+  if (!t || !v1) return false;
+  if (Math.abs(Date.now() / 1000 - parseInt(t)) > 300) return false; // 5 dk tolerans
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(t + "." + body));
+  const expected = [...new Uint8Array(sigBuf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  if (expected.length !== v1.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ v1.charCodeAt(i);
+  return diff === 0;
+}
+
+// Sepet ürünlerinin fiyatını SUNUCU tarafında doğrula — frontend 'price' değerine ASLA güvenme.
+// products.json'dan gerçek fiyatı çeker. Bilinmeyen/pasif ürün → reddet.
+async function resolveCartPrices(env, items) {
+  const products = await getProducts(env);
+  const byKey = {};
+  for (const p of products) {
+    if (p.id) byKey[String(p.id)] = p;
+    if (p.artikel_nr) byKey[String(p.artikel_nr)] = p;
+    if (p.slug) byKey[String(p.slug)] = p;
+  }
+  const resolved = [];
+  let subtotal = 0;
+  for (const it of (Array.isArray(items) ? items : [])) {
+    const key = String(it.id || it.productId || it.artikel_nr || "").trim();
+    let p = key && byKey[key];
+    if (!p) {
+      const nm = String(it.name || "").trim().toLowerCase();
+      p = products.find(x =>
+        (x.name_de && x.name_de.toLowerCase() === nm) ||
+        (x.name_tr && x.name_tr.toLowerCase() === nm)
+      );
+    }
+    if (!p || p.active === false) {
+      return { error: "Ungültiges Produkt im Warenkorb: " + (it.name || key || "?") };
+    }
+    const qty = Math.max(1, parseInt(it.qty || it.quantity || 1) || 1);
+    const price = Math.round((parseFloat(p.price) || 0) * 100) / 100;
+    subtotal += price * qty;
+    resolved.push({
+      id: p.id,
+      name: p.name_de || p.name_tr || it.name || "Produkt",
+      price, qty,
+      artikel_nr: p.artikel_nr || "",
+      img: it.img || (p.images && p.images[0]) || p.thumb || ""
+    });
+  }
+  return { items: resolved, subtotal: Math.round(subtotal * 100) / 100 };
+}
+
 // Sipariş onay (Bestätigung) maili HTML — teşekkür + detay
 function buildOrderConfirmationHTML(o) {
   const it = o.items || [];
@@ -4363,8 +4426,11 @@ Sitemap: https://keby.shop/sitemap.xml`,
         const { items, customerEmail, locale, preferredMethod, couponCode } = await request.json();
         if (!items || items.length === 0) return errResp("Cart is empty");
 
-        // Sipariş toplamını hesapla (kargo için)
-        const orderSubtotal = items.reduce((sum, it) => sum + (parseFloat(it.price) || 0) * (parseInt(it.qty) || 1), 0);
+        // ── Sunucu tarafı fiyat doğrulama — frontend 'price' değerine GÜVENME ──
+        const priced = await resolveCartPrices(env, items);
+        if (priced.error) return errResp(priced.error, 400);
+        const safeItems = priced.items;
+        const orderSubtotal = priced.subtotal;
         const shippingCost = orderSubtotal >= 120 ? 0 : 5.49;
 
         const body = new URLSearchParams();
@@ -4388,21 +4454,18 @@ Sitemap: https://keby.shop/sitemap.xml`,
         const allMethods = ["sepa_debit", "card", "klarna", "link"];
         allMethods.forEach(m => body.append("payment_method_types[]", m));
 
-        // Line items
-        items.forEach((it, idx) => {
-          const name = it.name || it.title || it.productId || "Produkt";
-          const price = parseFloat(it.price) || 0;
-          const qty = parseInt(it.qty) || 1;
-          body.append(`line_items[${idx}][quantity]`, String(qty));
+        // Line items — SUNUCU fiyatlarıyla (resolveCartPrices, frontend price yok sayılır)
+        safeItems.forEach((it, idx) => {
+          body.append(`line_items[${idx}][quantity]`, String(it.qty));
           body.append(`line_items[${idx}][price_data][currency]`, "eur");
-          body.append(`line_items[${idx}][price_data][unit_amount]`, String(Math.round(price * 100)));
-          body.append(`line_items[${idx}][price_data][product_data][name]`, name);
+          body.append(`line_items[${idx}][price_data][unit_amount]`, String(Math.round(it.price * 100)));
+          body.append(`line_items[${idx}][price_data][product_data][name]`, it.name);
           if (it.artikel_nr) {
             body.append(`line_items[${idx}][price_data][product_data][metadata][artikel_nr]`, it.artikel_nr);
           }
         });
 
-        body.append("metadata[items_json]", JSON.stringify(items));
+        body.append("metadata[items_json]", JSON.stringify(safeItems));
         body.append("metadata[source]", "keby_shop_v4_embedded");
         body.append("metadata[subtotal]", orderSubtotal.toFixed(2));
         body.append("metadata[shipping_cost]", shippingCost.toFixed(2));
@@ -4604,10 +4667,12 @@ Sitemap: https://keby.shop/sitemap.xml`,
       try {
         const body = await request.text();
         const sig = request.headers.get("stripe-signature");
-        if (sig && env.STRIPE_WEBHOOK_SECRET) {
-          const ts = sig.match(/t=(\d+)/)?.[1];
-          if (ts && Math.abs(Date.now() / 1000 - parseInt(ts)) > 300) {
-            return new Response("Webhook expired", { status: 400, headers: CORS });
+        // ── HMAC imza doğrulama — sahte webhook'u reddet ──
+        if (env.STRIPE_WEBHOOK_SECRET) {
+          const valid = await verifyStripeSignature(body, sig, env.STRIPE_WEBHOOK_SECRET);
+          if (!valid) {
+            console.error("Stripe webhook imza geçersiz — reddedildi");
+            return new Response("Invalid signature", { status: 400, headers: CORS });
           }
         }
         const event = JSON.parse(body);
@@ -4687,7 +4752,7 @@ Sitemap: https://keby.shop/sitemap.xml`,
             }
 
             // Mail gönder
-            if (newOrder.email && env.RESEND_API_KEY) {
+            if (newOrder.email && (env.EMAIL || env.RESEND_API_KEY)) {
               const subject = isPaid
                 ? `Bestellbestätigung — ${newOrder.ref}`
                 : `Bestellung eingegangen — Bankbestätigung ausstehend — ${newOrder.ref}`;
@@ -4756,7 +4821,7 @@ Sitemap: https://keby.shop/sitemap.xml`,
             await putOrders(env, orders);
 
             // Onay maili
-            if (order.email && env.RESEND_API_KEY) {
+            if (order.email && (env.EMAIL || env.RESEND_API_KEY)) {
               await sendMail(env, {
                   replyTo: "info@keby.shop",
                   to: order.email,
@@ -4786,7 +4851,7 @@ Sitemap: https://keby.shop/sitemap.xml`,
             order.notes = "❌ SEPA Lastschrift fehlgeschlagen";
             await putOrders(env, orders);
 
-            if (order.email && env.RESEND_API_KEY) {
+            if (order.email && (env.EMAIL || env.RESEND_API_KEY)) {
               await sendMail(env, {
                   replyTo: "info@keby.shop",
                   to: order.email,
@@ -4909,7 +4974,7 @@ Sitemap: https://keby.shop/sitemap.xml`,
             const customerEmail = billing.email || pi.metadata?.email || "";
             const customerName = (shipping && shipping.name) || billing.name || "Kundin/Kunde";
 
-            if (customerEmail && env.RESEND_API_KEY) {
+            if (customerEmail && (env.EMAIL || env.RESEND_API_KEY)) {
               try {
                 // Lazy-generate fatura
                 const invResult = await getOrCreateInvoice(env, orderId);
@@ -5635,9 +5700,14 @@ https://keby.shop`;
     if (request.method === "POST" && path === "/api/paypal/create-order") {
       try {
         const { currency, items, couponCode } = await request.json();
-        // ── Sunucu tarafı tutar hesabı — frontend 'amount'una GÜVENME (güvenlik + indirim doğruluğu) ──
-        const lineItems = Array.isArray(items) ? items : [];
-        const subtotal = lineItems.reduce((s, it) => s + (parseFloat(it.price) || 0) * (parseFloat(it.qty || it.quantity || 1)), 0);
+        // ── Sunucu tarafı fiyat doğrulama — frontend 'price' değerine GÜVENME ──
+        const priced = await resolveCartPrices(env, items);
+        if (priced.error) {
+          return new Response(JSON.stringify({ error: priced.error }), {
+            status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+          });
+        }
+        const subtotal = priced.subtotal;
         let discount = 0;
         if (couponCode) {
           const coupons = await getCoupons(env);
@@ -5731,6 +5801,9 @@ https://keby.shop`;
     if (request.method === "POST" && path === "/api/paypal/capture") {
       try {
         const { orderID, items, couponCode } = await request.json();
+        // Sipariş kaydı/maili için sunucu fiyatlı items (ödeme zaten alındı → eşleşmezse frontend fallback)
+        const _priced = await resolveCartPrices(env, items);
+        const safeItems = (_priced && !_priced.error) ? _priced.items : (Array.isArray(items) ? items : []);
         const authRes = await fetch(PAYPAL_API + "/v1/oauth2/token", {
           method: "POST",
           headers: {
@@ -5769,7 +5842,7 @@ https://keby.shop`;
               payment: "paypal",
               paypalOrderId: orderID,
               status: "bezahlt",
-              items: Array.isArray(items) ? items : [],
+              items: safeItems,
               coupon: couponCode || null,
               total: parseFloat(cap?.amount?.value || 0),
               date: new Date().toISOString()
@@ -5783,7 +5856,7 @@ https://keby.shop`;
             }
 
             // ── Sipariş maili: müşteriye + admin'e (info@keby.shop) ──
-            if (env.RESEND_API_KEY) {
+            if (env.EMAIL || env.RESEND_API_KEY) {
               const it = newOrder.items;
               const itemRows = it.map(i =>
                 `<tr><td style="padding:6px 0;border-bottom:1px solid #f0ebe0">${i.name}</td>
