@@ -60,4 +60,33 @@
     <priority>0.3</priority>
   </url>
 
+
+  <url>
+    <loc>https://keby.shop/ratgeber</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-gutes-olivenoel-erkennen</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-saeuregehalt-olivenoel</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-richtig-lagern</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>
