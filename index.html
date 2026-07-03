@@ -3037,6 +3037,29 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 <!-- FEATURES -->
+<!-- INFO / SEO SECTION -->
+<section id="keby-info" style="background:var(--white);padding:3.5rem 2rem">
+  <div style="max-width:860px;margin:0 auto">
+
+    <div class="lang-block-de">
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem">Direkt vom Erzeuger</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark);margin-bottom:1.2rem;line-height:1.25">Olivenöl aus der Türkei – direkt aus Mudanya</h2>
+      <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Keby bringt natives Olivenöl extra von der türkischen Marmaraküste nach Deutschland – ohne Zwischenhändler, ohne Kompromisse. Unsere Oliven wachsen in Mudanya bei Bursa, wo Meeresklima und Sonne ein einzigartiges Aromaprofil schaffen. Geerntet wird von Hand, gepresst innerhalb von 24 Stunden – kalt, bei unter 27&nbsp;°C, ungefiltert.</p>
+      <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Das Ergebnis spricht für sich: <strong style="color:var(--olive-dark)">Säuregehalt von nur 0,33&nbsp;%</strong> – amtlich laborgeprüft und weit unter dem Grenzwert für natives Olivenöl extra (0,8&nbsp;%). Ernte 2025/26, ohne Konservierungsstoffe oder Zusätze.</p>
+      <p style="color:var(--muted);line-height:1.8">Sie möchten mehr wissen? In unserem <a href="/ratgeber" style="color:var(--olive-dark);text-decoration:underline">Ratgeber</a> erklären wir, <a href="/ratgeber-gutes-olivenoel-erkennen" style="color:var(--olive-dark);text-decoration:underline">woran man gutes Olivenöl erkennt</a>, was der <a href="/ratgeber-saeuregehalt-olivenoel" style="color:var(--olive-dark);text-decoration:underline">Säuregehalt</a> wirklich bedeutet und wie die <a href="/ratgeber-tuerkische-kueche-zeytinyagli" style="color:var(--olive-dark);text-decoration:underline">türkische Küche</a> Olivenöl feiert.</p>
+    </div>
+
+    <div class="lang-block-tr" style="display:none">
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem">Üreticiden Doğrudan</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark);margin-bottom:1.2rem;line-height:1.25">Türkiye'den zeytinyağı – doğrudan Mudanya'dan</h2>
+      <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Keby, Marmara kıyısının sızma zeytinyağını aracısız olarak Almanya'ya getirir. Zeytinlerimiz Bursa Mudanya'da yetişir – deniz iklimi ile güneşin buluştuğu bu topraklar, yağa eşsiz bir aroma kazandırır. Elle toplanır, hasattan 24 saat içinde 27&nbsp;°C altında soğuk sıkılır, filtresiz şişelenir.</p>
+      <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Sonuç ortada: <strong style="color:var(--olive-dark)">asit oranı sadece %0,33</strong> – resmi laboratuvar analiziyle belgeli, sızma sınırının (%0,8) çok altında. 2025/26 hasadı, koruyucu ve katkı maddesi yok.</p>
+      <p style="color:var(--muted);line-height:1.8">Daha fazlası için <a href="/ratgeber" style="color:var(--olive-dark);text-decoration:underline">Rehber</a> bölümümüze göz atın: iyi zeytinyağı nasıl anlaşılır, asit oranı ne anlama gelir, zeytinyağlı Türk mutfağı nasıl yapılır.</p>
+    </div>
+
+  </div>
+</section>
+
 <section id="vorteile" style="background:var(--olive-dark);padding:2.5rem 3rem">
   <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;align-items:start">
 
@@ -4916,6 +4939,22 @@ window.addEventListener('pageshow', function(e) {
     if (typeof updateCartUI === 'function') updateCartUI();
   } catch(err) {}
 });
+</script>
+<script>
+(function(){
+  function _kebyInfoLang(l){
+    document.querySelectorAll('.lang-block-tr').forEach(function(e){e.style.display = l==='tr' ? '' : 'none';});
+    document.querySelectorAll('.lang-block-de').forEach(function(e){e.style.display = l==='de' ? '' : 'none';});
+  }
+  var _orig = window.setLang;
+  if (typeof _orig === 'function') {
+    window.setLang = function(l){ _orig(l); _kebyInfoLang(l); };
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var l = localStorage.getItem('keby_lang') || (navigator.language.indexOf('tr')===0 ? 'tr' : 'de');
+    _kebyInfoLang(l);
+  });
+})();
 </script>
 </body>
 </html>
