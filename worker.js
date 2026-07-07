@@ -4772,6 +4772,16 @@ Sitemap: https://keby.shop/sitemap.xml`,
                  <td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ebe0">€${(i.price * i.qty).toFixed(2)}</td></tr>`
               ).join("");
 
+              const sAddr = newOrder.address;
+              const addrBlock = (sAddr && (sAddr.line1 || sAddr.city)) ? `
+                <div style="background:#faf7f0;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;color:#444">
+                  <strong style="color:#2a4a1a">Lieferadresse</strong><br>
+                  ${newOrder.name}<br>
+                  ${sAddr.line1}${sAddr.line2 ? "<br>"+sAddr.line2 : ""}<br>
+                  ${sAddr.postal_code} ${sAddr.city}<br>
+                  ${sAddr.country}${newOrder.phone ? "<br>Tel: "+newOrder.phone : ""}
+                </div>` : "";
+
               const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f5f1e8;margin:0;padding:0">
 <div style="max-width:560px;margin:32px auto;background:white;border-radius:12px;overflow:hidden">
   <div style="background:#2a4a1a;padding:24px 32px">
@@ -4788,6 +4798,7 @@ Sitemap: https://keby.shop/sitemap.xml`,
       <tr><td colspan="2" style="padding:10px 0;font-weight:600">Gesamt</td>
           <td style="text-align:right;font-weight:600">€${newOrder.total}</td></tr>
     </table>
+    ${addrBlock}
     <p style="font-size:13px;color:#666;margin-top:20px">
       Bei Fragen: <a href="mailto:info@keby.shop" style="color:#2a4a1a">info@keby.shop</a>
     </p>
