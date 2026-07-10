@@ -157,23 +157,27 @@ async function sendMail(env, { to, subject, html, replyTo, bcc }) {
   const toList = Array.isArray(to) ? to : [to];
   const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
   const text = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 3000);
-  // 1) Cloudflare Email Service — yeni object API (öncelikli)
+  // 1) Cloudflare Email Service — yeni object API (öncelikli), geçici hatalara karşı 2 deneme
   if (env.EMAIL) {
-    try {
-      const msg = {
-        to: toList,
-        from: { email: fromAddr, name: fromName },
-        subject,
-        html,
-        text,
-        replyTo: replyTo || "info@keby.shop"
-      };
-      if (bccList.length) msg.bcc = bccList;
-      const result = await env.EMAIL.send(msg);
-      return { ok: true, provider: "cloudflare", id: result && result.messageId };
-    } catch (e) {
-      console.error("CF Email hata, Resend'e geçiliyor:", e.message);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const msg = {
+          to: toList,
+          from: { email: fromAddr, name: fromName },
+          subject,
+          html,
+          text,
+          replyTo: replyTo || "info@keby.shop"
+        };
+        if (bccList.length) msg.bcc = bccList;
+        const result = await env.EMAIL.send(msg);
+        return { ok: true, provider: "cloudflare", id: result && result.messageId, attempt };
+      } catch (e) {
+        console.error(`CF Email hata (deneme ${attempt}/2):`, e.message);
+        if (attempt === 1) await new Promise(r => setTimeout(r, 700));
+      }
     }
+    console.error("CF Email 2 denemede de başarısız, Resend'e geçiliyor");
   }
   // 2) Resend fallback
   if (env.RESEND_API_KEY) {
