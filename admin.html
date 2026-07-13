@@ -2096,7 +2096,7 @@ function renderOrders() {
       ? `<span style="color:#999;font-style:italic">Misafir</span>`
       : escapeHtml(o.name);
     const invoiceCell = o.invoice_number
-      ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung öffnen">📄 ${o.invoice_number}</a>`
+      ? `<a href="${API}/api/invoice/${encodeURIComponent(o.id)}?s=${encodeURIComponent(TOKEN)}" target="_blank" onclick="event.stopPropagation()" style="color:#3d6b2a;font-size:0.78rem;text-decoration:none;background:#e8f0e0;padding:0.2rem 0.5rem;border-radius:4px;white-space:nowrap" title="Rechnung öffnen">📄 ${o.invoice_number}</a>`
       : `<span style="color:#bbb;font-size:0.75rem">—</span>`;
     const trackingCell = o.tracking_number
       ? `<div style="font-size:0.72rem">
@@ -2389,7 +2389,7 @@ async function generateInvoice() {
 
   // Wenn Rechnung bereits existiert, direkt öffnen
   if (editingOrder.invoice_number) {
-    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
+    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id) + '?s=' + encodeURIComponent(TOKEN);
     window.open(url, '_blank');
     return;
   }
@@ -2424,7 +2424,7 @@ async function generateInvoice() {
     renderOrders();
 
     // In neuem Tab öffnen
-    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id);
+    const url = API + '/api/invoice/' + encodeURIComponent(editingOrder.id) + '?s=' + encodeURIComponent(TOKEN);
     window.open(url, '_blank');
   } catch (e) {
     toast(e.message, 'err');
@@ -2787,9 +2787,9 @@ function fmtDate(d) {
 }
 function fmtItems(items) {
   if (!items) return '—';
-  if (typeof items === 'string') { try { items = JSON.parse(items); } catch { return items.slice(0,40); } }
+  if (typeof items === 'string') { try { items = JSON.parse(items); } catch { return escapeHtml(items.slice(0,40)); } }
   if (!Array.isArray(items)) return '—';
-  return items.slice(0,2).map(i => `${i.qty || 1}× ${i.name || i.title || '?'}`).join(', ') + (items.length > 2 ? ` +${items.length-2}` : '');
+  return items.slice(0,2).map(i => `${i.qty || 1}× ${escapeHtml(i.name || i.title || '?')}`).join(', ') + (items.length > 2 ? ` +${items.length-2}` : '');
 }
 function extractCity(addr) {
   if (!addr) return '';
@@ -3045,7 +3045,7 @@ function renderInvoiceDetail(inv) {
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">${statusBadges}</div>
       </div>
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
-        <button class="btn btn-secondary" onclick="window.open(API + '/api/invoice/${escapeHtml(inv.order_id)}', '_blank')" style="padding:0.4rem 0.8rem;font-size:0.85rem">🌐 HTML</button>
+        <button class="btn btn-secondary" onclick="window.open(API + '/api/invoice/${escapeHtml(inv.order_id)}?s=' + encodeURIComponent(TOKEN), '_blank')" style="padding:0.4rem 0.8rem;font-size:0.85rem">🌐 HTML</button>
         <button class="btn btn-secondary" onclick="downloadInvoicePDF('${escapeHtml(inv.order_id)}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">📄 PDF</button>
         ${!inv.stornoed_at && !inv.storno_for
           ? `<button class="btn btn-danger" onclick="closeInvoiceDetailModal();stornoInvoice('${escapeHtml(inv.order_id)}','${escapeHtml(inv.number)}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">🚫 Storno</button>`
@@ -3510,7 +3510,7 @@ async function saveManualInvoice(sendMail) {
         }
       } else {
         // PDF öffnen (druckbar)
-        window.open(API + '/api/invoice/' + encodeURIComponent(d.invoice.order_id), '_blank');
+        window.open(API + '/api/invoice/' + encodeURIComponent(d.invoice.order_id) + '?s=' + encodeURIComponent(TOKEN), '_blank');
       }
     }
   } catch (e) {

@@ -267,11 +267,16 @@ async function resolveCartPrices(env, items) {
   return { items: resolved, subtotal: Math.round(subtotal * 100) / 100 };
 }
 
+// HTML escape helper (email/HTML injection koruması — SAST Finding #5, 2026-07-13)
+function escapeHtmlMail(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
 // Sipariş onay (Bestätigung) maili HTML — teşekkür + detay
 function buildOrderConfirmationHTML(o) {
   const it = o.items || [];
   const itemRows = it.map(i =>
-    `<tr><td style="padding:6px 0;border-bottom:1px solid #f0ebe0">${i.name}</td>
+    `<tr><td style="padding:6px 0;border-bottom:1px solid #f0ebe0">${escapeHtmlMail(i.name)}</td>
      <td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ebe0">× ${i.qty}</td>
      <td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ebe0">€${(i.price * i.qty).toFixed(2)}</td></tr>`
   ).join("");
@@ -279,23 +284,23 @@ function buildOrderConfirmationHTML(o) {
   const addrBlock = addr ? `
     <div style="background:#faf7f0;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;color:#444">
       <strong style="color:#2a4a1a">Lieferadresse</strong><br>
-      ${o.name}<br>
-      ${addr.line1}${addr.line2 ? "<br>"+addr.line2 : ""}<br>
-      ${addr.postal_code} ${addr.city}<br>
-      ${addr.country}
+      ${escapeHtmlMail(o.name)}<br>
+      ${escapeHtmlMail(addr.line1)}${addr.line2 ? "<br>"+escapeHtmlMail(addr.line2) : ""}<br>
+      ${escapeHtmlMail(addr.postal_code)} ${escapeHtmlMail(addr.city)}<br>
+      ${escapeHtmlMail(addr.country)}
     </div>` : "";
   const couponBlock = o.coupon
-    ? `<tr><td colspan="2" style="padding:6px 0;color:#15803d">Rabatt (${o.coupon})</td><td style="text-align:right;color:#15803d">angewendet</td></tr>`
+    ? `<tr><td colspan="2" style="padding:6px 0;color:#15803d">Rabatt (${escapeHtmlMail(o.coupon)})</td><td style="text-align:right;color:#15803d">angewendet</td></tr>`
     : "";
   const payLabel = o.payment === "paypal" ? "PayPal" : (o.payment === "stripe" ? "Kreditkarte" : (o.payment || ""));
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f5f1e8;margin:0;padding:0">
 <div style="max-width:560px;margin:32px auto;background:white;border-radius:12px;overflow:hidden">
   <div style="background:#2a4a1a;padding:24px 32px">
     <h1 style="color:white;margin:0;font-size:1.3rem;font-weight:500">✅ Vielen Dank für deine Bestellung!</h1>
-    <p style="color:rgba(255,255,255,0.7);margin:6px 0 0;font-size:0.85rem">${o.ref}${payLabel ? " · Bezahlt mit "+payLabel : ""}</p>
+    <p style="color:rgba(255,255,255,0.7);margin:6px 0 0;font-size:0.85rem">${escapeHtmlMail(o.ref)}${payLabel ? " · Bezahlt mit "+escapeHtmlMail(payLabel) : ""}</p>
   </div>
   <div style="padding:28px 32px">
-    <p style="color:#333;margin:0 0 16px">Hallo ${o.name || "Kunde"},</p>
+    <p style="color:#333;margin:0 0 16px">Hallo ${escapeHtmlMail(o.name) || "Kunde"},</p>
     <p style="color:#555;margin:0 0 16px;font-size:14px">vielen Dank für deinen Einkauf bei Keby! Deine Bestellung ist bei uns eingegangen und wird bearbeitet. Du erhältst eine weitere Nachricht, sobald sie versandt wird.</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px">
       ${itemRows}
@@ -1624,8 +1629,8 @@ var worker_default = {
     // Session doğrula
     async function validateSession(env, sessionId) {
       if (!sessionId || sessionId.length < 10) return false;
-      // Eski btoa token — backward compat (yeni session sistemi deploy edilmeden önce girişler için)
-      if (sessionId === btoa(env.ADMIN_PASSWORD)) return true;
+      // GÜVENLİK: Eski btoa(ADMIN_PASSWORD) backward-compat bypass'ı kaldırıldı (2026-07-13, SAST Finding #1).
+      // Bu, ADMIN_PASSWORD'ü bilen herkese süresiz/iptal edilemez admin erişimi veriyordu.
       try {
         const obj = await env.KEBY_R2.get(`keby/auth/sessions/${sessionId}.json`);
         if (!obj) return false;
@@ -1654,7 +1659,13 @@ var worker_default = {
     const tokenFromHeader = auth.startsWith("Bearer ") ? auth.slice(7) : "";
 
     // isAdmin: session validate (async)
-    const isAdmin = tokenFromHeader ? await validateSession(env, tokenFromHeader) : false;
+    // Not: window.open()/<a href> ile açılan linkler Authorization header gönderemez,
+    // bu yüzden bu tür GET-only admin görünümleri için ?s=<sessionToken> query param'ı
+    // da (Bearer header ile aynı validateSession mantığıyla) kabul ediyoruz.
+    const sessionFromQuery = url.searchParams.get("s") || "";
+    const isAdmin = tokenFromHeader
+      ? await validateSession(env, tokenFromHeader)
+      : (sessionFromQuery ? await validateSession(env, sessionFromQuery) : false);
 
     // ============ IMAGE PROXY (R2 → public) ============
     if (path.startsWith("/keby/") || path.startsWith("/img/")) {
@@ -1713,7 +1724,15 @@ var worker_default = {
       }
 
       const { password } = await request.json().catch(() => ({}));
-      if (password !== env.ADMIN_PASSWORD) {
+      // Timing-safe karşılaştırma (SAST Finding #7, 2026-07-13)
+      const timingSafeEqual = (a, b) => {
+        a = String(a || ""); b = String(b || "");
+        if (a.length !== b.length) return false;
+        let diff = 0;
+        for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+        return diff === 0;
+      };
+      if (!timingSafeEqual(password, env.ADMIN_PASSWORD)) {
         return errResp("Ungültiges Passwort", 401);
       }
 
@@ -5365,6 +5384,13 @@ https://keby.shop`;
     }
 
     if (request.method === "GET" && path.startsWith("/api/invoice/") && !path.endsWith("/pdf-html") && !path.endsWith("/pdf") && !path.includes("/download/")) {
+      // GÜVENLİK (SAST Finding #3, 2026-07-13): Bu route eskiden hiçbir auth kontrolü yapmadan
+      // herhangi bir orderId için fatura döndürüyordu. Order ID'ler "KB-"+Date.now() formatında
+      // tahmin edilebilir olduğundan bu bir IDOR açığıydı. Artık sadece admin (Bearer veya ?s=
+      // session token) erişebilir. Müşteri tarafı için token'lı /download/:token route'u kullanılıyor.
+      if (!isAdmin) {
+        return new Response("Unauthorized", { status: 401, headers: { ...CORS, "Content-Type": "text/plain" } });
+      }
       try {
         const orderId = decodeURIComponent(path.replace("/api/invoice/", ""));
         const invoice = await getInvoice(env, orderId);
@@ -5382,6 +5408,10 @@ https://keby.shop`;
 
     // PDF-friendly version (no @page, no external fonts, no actions bar)
     if (request.method === "GET" && path.startsWith("/api/invoice/") && path.endsWith("/pdf-html")) {
+      // GÜVENLİK (SAST Finding #3, 2026-07-13): aynı IDOR fix — admin-only.
+      if (!isAdmin) {
+        return new Response("Unauthorized", { status: 401, headers: { ...CORS, "Content-Type": "text/plain" } });
+      }
       try {
         const orderId = decodeURIComponent(path.replace("/api/invoice/", "").replace("/pdf-html", ""));
         const invoice = await getInvoice(env, orderId);
@@ -5792,9 +5822,11 @@ https://keby.shop`;
     }
 
     // ── ADMIN: Eksik Bestätigung maillerini tekrar gönder ──
-    if (request.method === "GET" && path === "/api/admin/resend-confirmations") {
+    if (request.method === "GET" && path === "/api/admin/resend-confirmations" && isAdmin) {
+      // GÜVENLİK (SAST Finding #2, 2026-07-13): Eskiden ?key=ADMIN_PASSWORD ile doğrulanıyordu —
+      // şifre düz metin olarak URL'de (server logları, tarayıcı geçmişi) sızıyordu.
+      // Artık diğer tüm admin route'ları gibi Bearer/session tabanlı isAdmin kontrolü kullanıyor.
       const _u = new URL(request.url);
-      if (_u.searchParams.get("key") !== env.ADMIN_PASSWORD) return jsonResp({ error: "unauthorized" }, 401);
       const refsParam = _u.searchParams.get("refs") || "";
       const targetRefs = refsParam.split(",").map(s => s.trim()).filter(Boolean);
       if (!targetRefs.length) return jsonResp({ error: "refs param gerekli (virgülle ayır)" }, 400);
