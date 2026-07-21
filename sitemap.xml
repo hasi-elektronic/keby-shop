@@ -63,9 +63,20 @@
 
   <url>
     <loc>https://keby.shop/ratgeber</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tr"/>
   </url>
 
   <url>
@@ -73,6 +84,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-gutes-olivenoel-erkennen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-gutes-olivenoel-erkennen-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-gutes-olivenoel-erkennen-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-gutes-olivenoel-erkennen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-gutes-olivenoel-erkennen-tr"/>
   </url>
 
   <url>
@@ -80,6 +102,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-saeuregehalt-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-saeuregehalt-olivenoel-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-saeuregehalt-olivenoel-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-saeuregehalt-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-saeuregehalt-olivenoel-tr"/>
   </url>
 
   <url>
@@ -87,14 +120,35 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-richtig-lagern"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-richtig-lagern-tr"/>
   </url>
 
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-richtig-lagern-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-richtig-lagern"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-richtig-lagern-tr"/>
+  </url>
 
   <url>
     <loc>https://keby.shop/ratgeber-kaltgepresst-bedeutung</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-kaltgepresst-bedeutung"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-kaltgepresst-bedeutung-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-kaltgepresst-bedeutung-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-kaltgepresst-bedeutung"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-kaltgepresst-bedeutung-tr"/>
   </url>
 
   <url>
@@ -102,6 +156,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-braten-erhitzen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-braten-erhitzen-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-braten-erhitzen-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-braten-erhitzen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-braten-erhitzen-tr"/>
   </url>
 
   <url>
@@ -109,6 +174,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-gefiltert-ungefiltert"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-gefiltert-ungefiltert-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-gefiltert-ungefiltert-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-gefiltert-ungefiltert"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-gefiltert-ungefiltert-tr"/>
   </url>
 
   <url>
@@ -116,14 +192,35 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-tuerkisches-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tuerkisches-olivenoel-tr"/>
   </url>
 
+  <url>
+    <loc>https://keby.shop/ratgeber-tuerkisches-olivenoel-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-tuerkisches-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tuerkisches-olivenoel-tr"/>
+  </url>
 
   <url>
     <loc>https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tuerkische-kueche-zeytinyagli-tr"/>
   </url>
 
   <url>
@@ -131,6 +228,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-mhd-haltbarkeit"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-mhd-haltbarkeit-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-mhd-haltbarkeit-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-mhd-haltbarkeit"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-mhd-haltbarkeit-tr"/>
   </url>
 
   <url>
@@ -138,6 +246,17 @@
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-bio-olivenoel-siegel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-bio-olivenoel-siegel-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-bio-olivenoel-siegel-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-bio-olivenoel-siegel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-bio-olivenoel-siegel-tr"/>
   </url>
 
   <url>
@@ -145,6 +264,17 @@
     <lastmod>2026-07-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-direktimport-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-direktimport-olivenoel-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-direktimport-olivenoel-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-direktimport-olivenoel"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-direktimport-olivenoel-tr"/>
   </url>
 
   <url>
@@ -152,6 +282,17 @@
     <lastmod>2026-07-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-etikett-lesen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-etikett-lesen-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-etikett-lesen-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-etikett-lesen"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-etikett-lesen-tr"/>
   </url>
 
   <url>
@@ -159,6 +300,17 @@
     <lastmod>2026-07-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenernte-mudanya"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenernte-mudanya-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenernte-mudanya-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenernte-mudanya"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenernte-mudanya-tr"/>
   </url>
 
   <url>
@@ -166,6 +318,17 @@
     <lastmod>2026-07-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-dosierung-alltag"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-dosierung-alltag-tr"/>
+  </url>
+
+  <url>
+    <loc>https://keby.shop/ratgeber-olivenoel-dosierung-alltag-tr</loc>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber-olivenoel-dosierung-alltag"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-olivenoel-dosierung-alltag-tr"/>
   </url>
 
 </urlset>

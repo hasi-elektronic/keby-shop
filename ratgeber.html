@@ -8,6 +8,8 @@
 <title>Olivenöl Ratgeber – 14 Artikel von Keby | Keby Ratgeber</title>
 <meta name="description" content="Woran erkennt man gutes Olivenöl? Was bedeutet Säuregehalt? Wie lagert man richtig? 14 ehrliche Ratgeber-Artikel von Keby – laufend erweitert.">
 <link rel="canonical" href="https://keby.shop/ratgeber" />
+<link rel="alternate" hreflang="de" href="https://keby.shop/ratgeber" />
+<link rel="alternate" hreflang="tr" href="https://keby.shop/ratgeber-tr" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18124902120"></script>
 <script>
@@ -39,6 +41,11 @@ nav{position:fixed;top:0;left:0;right:0;height:60px;padding:0 2rem;display:flex;
 .nav-logo img{width:38px;height:38px;object-fit:contain}
 .nav-back{display:flex;align-items:center;gap:0.4rem;color:var(--muted);text-decoration:none;font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s}
 .nav-back:hover{color:var(--olive-dark)}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.lang-pill-static{display:inline-flex;background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:2px}
+.lp-btn{font-size:0.7rem;font-weight:500;letter-spacing:0.05em;padding:0.28rem 0.6rem;border-radius:11px;color:var(--muted);text-decoration:none;transition:background .2s,color .2s}
+.lp-btn.active{background:var(--olive-dark);color:#fff}
+.lp-btn:not(.active):hover{color:var(--olive-dark)}
 .wrap{margin-top:60px;max-width:1180px;margin-left:auto;margin-right:auto;padding:3.5rem 2rem 5rem}
 .hero{max-width:700px;margin-bottom:1rem}
 .tag{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-text);font-weight:500;margin-bottom:0.6rem}
@@ -61,12 +68,15 @@ p{margin-bottom:1.1rem}
 footer{border-top:1px solid var(--border);padding:2rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;font-size:0.82rem;color:var(--muted);margin-top:1rem}
 footer a{color:var(--muted);text-decoration:none}
 footer a:hover{color:var(--olive-dark)}
-@media(max-width:640px){h1{font-size:1.9rem}.wrap{padding:2.5rem 1.3rem 4rem}.acards{grid-template-columns:1fr}}</style>
+@media(max-width:640px){h1{font-size:1.9rem}.wrap{padding:2.5rem 1.3rem 4rem}.acards{grid-template-columns:1fr}.nav-back span{display:none}}</style>
 </head>
 <body>
 <nav>
   <a href="/" class="nav-logo"><img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby"></a>
-  <a href="/" class="nav-back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>Zurück zum Shop</span></a>
+  <div class="nav-right">
+    <div class="lang-pill-static"><a href="/ratgeber" class="lp-btn active">DE</a><a href="/ratgeber-tr" class="lp-btn">TR</a></div>
+    <a href="/" class="nav-back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>Zurück zum Shop</span></a>
+  </div>
 </nav>
 <div class="wrap">
 <div class="hero">
