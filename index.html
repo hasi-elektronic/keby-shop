@@ -2172,7 +2172,7 @@ gtag("config", "AW-18124902120");
   <!-- Desktop menü -->
   <ul class="nav-links">
     <li><a href="index.html#produkte" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a></li>
-    <li><a href="/ratgeber" data-tr="Rehber" data-de="Ratgeber">Rehber</a></li>
+    <li><a href="/ratgeber" data-tr="Rehber" data-de="Ratgeber" data-href-tr="/ratgeber-tr" data-href-de="/ratgeber">Rehber</a></li>
     <li><a href="vision.html" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a></li>
     <li><a href="ueber-uns.html" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a></li>
     <li><a href="ueber-uns.html#kontakt" data-tr="İletişim" data-de="Kontakt">İletişim</a></li>
@@ -2214,7 +2214,7 @@ gtag("config", "AW-18124902120");
   <div class="nav-mobile-search-results" id="navMobileSearchResults"></div>
 
   <a href="index.html#produkte" onclick="closeMobileMenu()" data-tr="Ürünlerimiz" data-de="Produkte">Ürünlerimiz</a>
-  <a href="/ratgeber" onclick="closeMobileMenu()" data-tr="Rehber" data-de="Ratgeber">Rehber</a>
+  <a href="/ratgeber" onclick="closeMobileMenu()" data-tr="Rehber" data-de="Ratgeber" data-href-tr="/ratgeber-tr" data-href-de="/ratgeber">Rehber</a>
   <a href="vision.html" onclick="closeMobileMenu()" data-tr="Vizyon" data-de="Vision &amp; Ziele">Vizyon</a>
   <a href="ueber-uns.html" onclick="closeMobileMenu()" data-tr="Hakkımızda" data-de="Über uns">Hakkımızda</a>
   <a href="ueber-uns.html#kontakt" onclick="closeMobileMenu()" data-tr="İletişim" data-de="Kontakt">İletişim</a>
@@ -3054,7 +3054,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--olive-dark);margin-bottom:1.2rem;line-height:1.25">Türkiye'den zeytinyağı – doğrudan Mudanya'dan</h2>
       <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Keby, Marmara kıyısının sızma zeytinyağını aracısız olarak Almanya'ya getirir. Zeytinlerimiz Bursa Mudanya'da yetişir – deniz iklimi ile güneşin buluştuğu bu topraklar, yağa eşsiz bir aroma kazandırır. Elle toplanır, hasattan 24 saat içinde 27&nbsp;°C altında soğuk sıkılır, filtresiz şişelenir.</p>
       <p style="color:var(--muted);line-height:1.8;margin-bottom:1rem">Sonuç ortada: <strong style="color:var(--olive-dark)">asit oranı sadece %0,33</strong> – resmi laboratuvar analiziyle belgeli, sızma sınırının (%0,8) çok altında. 2025/26 hasadı, koruyucu ve katkı maddesi yok.</p>
-      <p style="color:var(--muted);line-height:1.8">Daha fazlası için <a href="/ratgeber" style="color:var(--olive-dark);text-decoration:underline">Rehber</a> bölümümüze göz atın: iyi zeytinyağı nasıl anlaşılır, asit oranı ne anlama gelir, zeytinyağlı Türk mutfağı nasıl yapılır.</p>
+      <p style="color:var(--muted);line-height:1.8">Daha fazlası için <a href="/ratgeber-tr" style="color:var(--olive-dark);text-decoration:underline">Rehber</a> bölümümüze göz atın: <a href="/ratgeber-gutes-olivenoel-erkennen-tr" style="color:var(--olive-dark);text-decoration:underline">iyi zeytinyağı nasıl anlaşılır</a>, <a href="/ratgeber-saeuregehalt-olivenoel-tr" style="color:var(--olive-dark);text-decoration:underline">asit oranı ne anlama gelir</a> ve <a href="/ratgeber-tuerkische-kueche-zeytinyagli-tr" style="color:var(--olive-dark);text-decoration:underline">zeytinyağlı Türk mutfağı</a> nasıl yapılır.</p>
     </div>
 
   </div>
@@ -3255,7 +3255,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div style="display:flex;gap:1.5rem">
         <a href="/ratgeber" style="color:#7a8a6a;text-decoration:none;font-size:0.78rem;transition:color 0.2s"
            onmouseover="this.style.color='#c4a24a'" onmouseout="this.style.color='#7a8a6a'"
-           data-de="Ratgeber" data-tr="Rehber">Ratgeber</a>
+           data-de="Ratgeber" data-tr="Rehber" data-href-tr="/ratgeber-tr" data-href-de="/ratgeber">Ratgeber</a>
         <a href="impressum.html" style="color:#7a8a6a;text-decoration:none;font-size:0.78rem;transition:color 0.2s"
            onmouseover="this.style.color='#c4a24a'" onmouseout="this.style.color='#7a8a6a'"
            data-de="Impressum" data-tr="Künye">Impressum</a>
@@ -4945,6 +4945,9 @@ window.addEventListener('pageshow', function(e) {
   function _kebyInfoLang(l){
     document.querySelectorAll('.lang-block-tr').forEach(function(e){e.style.display = l==='tr' ? '' : 'none';});
     document.querySelectorAll('.lang-block-de').forEach(function(e){e.style.display = l==='de' ? '' : 'none';});
+    document.querySelectorAll('[data-href-tr][data-href-de]').forEach(function(e){
+      e.setAttribute('href', l === 'tr' ? e.dataset.hrefTr : e.dataset.hrefDe);
+    });
   }
   var _orig = window.setLang;
   if (typeof _orig === 'function') {
