@@ -4903,7 +4903,9 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
   window.kebyPopupCopy = function() {
     var code = document.getElementById('popupCode');
     if (!code) return;
-    navigator.clipboard.writeText(code.textContent).then(function() {
+    var text = code.textContent;
+
+    function showCopied() {
       var btn = document.querySelector('.popup-coupon-copy');
       if (btn) {
         btn.textContent = '✓ Kopiert!';
@@ -4912,7 +4914,40 @@ function showStripeReturnMessage(type, msgTr, msgDe, paymentIntentId) {
         btn.style.color = '#7ab332';
         setTimeout(function(){ btn.textContent = 'Kopieren'; btn.style = ''; }, 2000);
       }
-    });
+    }
+
+    function legacyCopy() {
+      // Fallback für In-App-Browser (Instagram/Facebook/WhatsApp WebView),
+      // wo navigator.clipboard oft fehlt oder blockiert ist.
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) { showCopied(); return true; }
+      } catch (e) {}
+      return false;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(showCopied).catch(function() {
+        if (!legacyCopy()) {
+          var btn = document.querySelector('.popup-coupon-copy');
+          if (btn) btn.textContent = 'Code: ' + text;
+        }
+      });
+    } else {
+      if (!legacyCopy()) {
+        var btn = document.querySelector('.popup-coupon-copy');
+        if (btn) btn.textContent = 'Code: ' + text;
+      }
+    }
   };
 
   // Backdrop tıklayınca kapat
