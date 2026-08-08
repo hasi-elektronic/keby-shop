@@ -3755,8 +3755,24 @@ function toggleMethod(id) {
   if (!wasOpen) el.classList.add('open');
 }
 function copyIban() {
-  navigator.clipboard.writeText('DE91604500500030230981')
-    .then(() => showToast(_lang === 'tr' ? 'IBAN kopyalandı ✓' : 'IBAN kopiert ✓'));
+  var iban = 'DE91604500500030230981';
+  var okMsg = _lang === 'tr' ? 'IBAN kopyalandı ✓' : 'IBAN kopiert ✓';
+  function legacy() {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = iban; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, iban.length);
+      var ok = document.execCommand('copy'); document.body.removeChild(ta);
+      return ok;
+    } catch(e) { return false; }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(iban).then(() => showToast(okMsg)).catch(() => {
+      if (legacy()) showToast(okMsg); else showToast(iban);
+    });
+  } else {
+    if (legacy()) showToast(okMsg); else showToast(iban);
+  }
 }
 
 // ── KUPON & GETDİSCOUNT ──

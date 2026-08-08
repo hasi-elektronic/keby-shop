@@ -228,6 +228,10 @@ gtag("config", "AW-18124902120");
 </head>
 <body>
 <div class="page">
+  <div id="inAppWarning" style="display:none;background:#c0392b;color:#fff;padding:0.7rem 1rem;font-size:0.85rem;text-align:center;line-height:1.5">
+    <span data-tr="⚠️ Bu tarayıcıda (Instagram/Facebook/TikTok içi) ödeme bazen çalışmıyor." data-de="⚠️ In diesem In-App-Browser (Instagram/Facebook/TikTok) funktioniert die Zahlung manchmal nicht.">⚠️ In diesem In-App-Browser (Instagram/Facebook/TikTok) funktioniert die Zahlung manchmal nicht.</span>
+    <strong data-tr="Sağ üstteki ⋮ menüsünden 'Tarayıcıda aç' seç." data-de="Bitte oben rechts ⋮ antippen und „Im Browser öffnen" wählen.">Bitte oben rechts ⋮ antippen und „Im Browser öffnen" wählen.</strong>
+  </div>
   <header class="top">
     <a href="/" class="brand">
       <img src="https://keby-api.hguencavdi.workers.dev/img/keby/logo-new.png" alt="Keby">
@@ -728,6 +732,26 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('PayPal init failed:', e);
     var wrap = document.getElementById('paypal-express-wrap');
     if (wrap) wrap.style.display = 'none';
+  }
+})();
+</script>
+<script>
+// In-App-Browser-Erkennung (Instagram, Facebook, TikTok, WhatsApp, Line, Snapchat) —
+// diese WebViews blockieren oft Clipboard-API, Third-Party-Cookies und Stripe-iFrames,
+// was Checkout/Zahlung stillschweigend brechen kann. Nutzer proaktiv warnen.
+(function(){
+  var ua = navigator.userAgent || '';
+  var isInApp = /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\/|Snapchat|WhatsApp/i.test(ua);
+  if (isInApp) {
+    var el = document.getElementById('inAppWarning');
+    if (el) el.style.display = 'block';
+    try {
+      fetch('https://keby-api.hguencavdi.workers.dev/api/log-client-event', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({event:'inapp_browser_checkout', ua: ua, page: location.pathname})
+      }).catch(function(){});
+    } catch(e){}
   }
 })();
 </script>

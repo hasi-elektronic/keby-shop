@@ -4381,6 +4381,28 @@ Sitemap: https://keby.shop/sitemap.xml`,
       return jsonResp({ success: true, coupon });
     }
 
+    // POST /api/log-client-event — leichtes Client-Event-Logging (z.B. In-App-Browser-Erkennung im Checkout)
+    // Zweck: Probleme wie "Bestellung geht nicht" frühzeitig sichtbar machen, statt erst durch Kundenbeschwerden zu erfahren.
+    if (request.method === "POST" && path === "/api/log-client-event") {
+      try {
+        const body = await request.json().catch(() => ({}));
+        console.log("[client-event]", JSON.stringify({
+          event: body.event || "unknown",
+          ua: (body.ua || "").slice(0, 300),
+          page: body.page || "",
+          ts: new Date().toISOString()
+        }));
+        try {
+          const key = `keby/logs/client-events/${new Date().toISOString().slice(0,10)}.jsonl`;
+          const existing = await env.KEBY_R2.get(key);
+          const prevText = existing ? await existing.text() : "";
+          const line = JSON.stringify({ event: body.event, ua: body.ua, page: body.page, ts: new Date().toISOString() }) + "\n";
+          await env.KEBY_R2.put(key, prevText + line);
+        } catch (e) { /* R2-Logging optional, darf Request nicht blockieren */ }
+      } catch (e) {}
+      return jsonResp({ success: true, logged: true });
+    }
+
     // POST /api/coupon/validate — kodu doğrula + indirim hesapla (public, checkout'tan çağrılır)
     if (request.method === "POST" && path === "/api/coupon/validate") {
       try {
