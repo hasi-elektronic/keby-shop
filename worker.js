@@ -4403,6 +4403,30 @@ Sitemap: https://keby.shop/sitemap.xml`,
       return jsonResp({ success: true, logged: true });
     }
 
+    // GET /api/admin/client-events — Systemgesundheit: wer trifft auf bekannte Risiko-Situationen (z.B. In-App-Browser im Checkout)
+    if (request.method === "GET" && path === "/api/admin/client-events" && isAdmin) {
+      try {
+        const days = 7;
+        const out = [];
+        const now = new Date();
+        for (let i = 0; i < days; i++) {
+          const d = new Date(now.getTime() - i * 86400000).toISOString().slice(0, 10);
+          const key = `keby/logs/client-events/${d}.jsonl`;
+          const obj = await env.KEBY_R2.get(key);
+          if (obj) {
+            const text = await obj.text();
+            text.trim().split("\n").filter(Boolean).forEach(line => {
+              try { out.push(JSON.parse(line)); } catch (e) {}
+            });
+          }
+        }
+        out.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+        return jsonResp({ success: true, count: out.length, events: out.slice(0, 500) });
+      } catch (e) {
+        return errResp(e.message, 500);
+      }
+    }
+
     // POST /api/coupon/validate — kodu doğrula + indirim hesapla (public, checkout'tan çağrılır)
     if (request.method === "POST" && path === "/api/coupon/validate") {
       try {
