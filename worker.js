@@ -1819,7 +1819,7 @@ var worker_default = {
 
     // ============ ADMIN: ORDERS ============
     if (request.method === "GET" && (path === "/api/orders" || path === "/api/admin/orders")) {
-      if (path === "/api/admin/orders" && !isAdmin) return errResp("Unauthorized", 401);
+      if (!isAdmin) return errResp("Unauthorized", 401);
       const orders = await getOrders(env);
       return jsonResp({ success: true, orders });
     }
@@ -2071,6 +2071,7 @@ var worker_default = {
 
 
     if (request.method === "GET" && path === "/api/customers") {
+      if (!isAdmin) return errResp("Unauthorized", 401);
       const customers = await getCustomers(env);
       return jsonResp({ success: true, customers });
     }
@@ -4736,16 +4737,11 @@ Sitemap: https://keby.shop/sitemap.xml`,
       try {
         const body = await request.text();
         const sig = request.headers.get("stripe-signature");
-        // ── HMAC imza doğrulama — GÜVENLİ GEÇİŞ MODU ──
-        // Geçersiz imzayı logla ama satışı İŞLE (yanlış secret = gerçek satış kaybı riskini önle).
-        // Hamdi bir Stripe testiyle doğruladıktan sonra "reddet" moduna çevrilecek.
-        if (env.STRIPE_WEBHOOK_SECRET) {
-          const valid = await verifyStripeSignature(body, sig, env.STRIPE_WEBHOOK_SECRET);
-          if (!valid) {
-            console.error("⚠️ Stripe webhook imza DOĞRULANAMADI (uyarı modu — yine de işleniyor). Secret kontrol edilmeli.");
-          } else {
-            console.log("✅ Stripe webhook imza doğru");
-          }
+        // Fail-closed: missing/invalid signature or missing STRIPE_WEBHOOK_SECRET → 400.
+        // Do not parse or process the body unless verifyStripeSignature() succeeds.
+        const valid = await verifyStripeSignature(body, sig, env.STRIPE_WEBHOOK_SECRET);
+        if (!valid) {
+          return errResp("Invalid signature", 400);
         }
         const event = JSON.parse(body);
 
