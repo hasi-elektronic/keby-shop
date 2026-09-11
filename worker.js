@@ -61,7 +61,7 @@ function getDefaultProducts() {
       id: "oliven-schwarz", slug: "produkt-oliven-schwarz",
       active: true, sort: 3,
       name_tr: "Yağlı Siyah Zeytin 900g", name_de: "Schwarze Oliven in Öl 900g",
-      price: 14.99, mwst: "19%", stock: 80,
+      price: 14.99, mwst: "7%", stock: 80,
       short_tr: "Sofra zeytini.", short_de: "Tafeloliven.",
       desc_tr: "", desc_de: "",
       images: [], thumb: ""
@@ -254,6 +254,13 @@ async function resolveCartPrices(env, items) {
       return { error: "Ungültiges Produkt im Warenkorb: " + (it.name || key || "?") };
     }
     const qty = Math.max(1, parseInt(it.qty || it.quantity || 1) || 1);
+    const stock = p.stock != null ? p.stock : Infinity;
+    if (stock <= 0) {
+      return { error: "AUSVERKAUFT: \"" + (p.name_de || p.name_tr || p.id) + "\" ist aktuell nicht verfügbar. Bitte aus dem Warenkorb entfernen." };
+    }
+    if (qty > stock) {
+      return { error: "Nur noch " + stock + " Stück von \"" + (p.name_de || p.name_tr || p.id) + "\" verfügbar. Bitte Menge anpassen." };
+    }
     const price = Math.round((parseFloat(p.price) || 0) * 100) / 100;
     subtotal += price * qty;
     resolved.push({

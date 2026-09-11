@@ -295,7 +295,7 @@ gtag("config", "AW-18124902120");
       <div class="delivery-row"><div class="dot-green"></div><span data-tr="Teslimat: 1–3 iş günü" data-de="Lieferzeit: ca. 1–3 Tage">Teslimat: 1–3 iş günü</span></div>
       <div class="price-block">
         <div class="price-main">14,99 <span>EUR</span></div>
-        <div class="price-sub"><span data-tr="KDV (%19) dahil · + kargo" data-de="inkl. 19% MwSt. · zzgl. Versand">KDV (%19) dahil · + kargo</span></div>
+        <div class="price-sub"><span data-tr="KDV (%7) dahil · + kargo" data-de="inkl. 7% MwSt. · zzgl. Versand">KDV (%7) dahil · + kargo</span></div>
       </div>
       <div class="qty-row">
         <span class="qty-label" data-tr="Adet" data-de="Menge">Adet</span>
@@ -315,7 +315,7 @@ gtag("config", "AW-18124902120");
       <div class="prod-attrs">
         <span class="attr" data-tr="Geleneksel" data-de="Traditionell">Geleneksel</span>
         <span class="attr" data-tr="900g Kavanoz" data-de="900g Glas">900g Kavanoz</span>
-        <span class="attr" data-tr="%19 KDV" data-de="19% MwSt.">%19 KDV</span>
+        <span class="attr" data-tr="%7 KDV" data-de="7% MwSt.">%7 KDV</span>
         <span class="attr" data-tr="Mudanya/Bursa" data-de="Mudanya/Bursa">Mudanya/Bursa</span>
         <span class="attr" data-tr="Kaya Tuzlu" data-de="Steinsalz">Kaya Tuzlu</span>
         <span class="attr" data-tr="Katkısız" data-de="Ohne Zusätze">Katkısız</span>
@@ -511,12 +511,14 @@ document.addEventListener('DOMContentLoaded',function(){ setLang(_lang); updateC
       var badge = document.getElementById('stock-badge');
       var inner = document.getElementById('stock-badge-inner');
       var addBtn = document.querySelector('.btn-add');
+      var buyBtn = document.querySelector('.btn-buy-now');
       var qtyInput = document.getElementById('qty');
       if (!badge || !inner) return;
 
       if (stock === 0) {
         inner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.4rem;background:#fef2f2;color:#dc2626;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600">🔴 <span data-tr="Stokta yok" data-de="Nicht vorrätig">Nicht vorrätig</span></span>';
         if (addBtn) { addBtn.disabled = true; addBtn.style.opacity = '0.4'; addBtn.style.cursor = 'not-allowed'; }
+        if (buyBtn) { buyBtn.disabled = true; buyBtn.style.opacity = '0.4'; buyBtn.style.cursor = 'not-allowed'; buyBtn.onclick = function(e){ e.preventDefault(); }; }
         if (qtyInput) { qtyInput.disabled = true; }
       } else if (stock <= 10) {
         var lang = document.documentElement.lang || 'tr';
