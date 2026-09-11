@@ -119,9 +119,36 @@ h1 {
   border-bottom: 1px solid var(--border);
 }
 .summary-item:last-of-type { border-bottom: none; margin-bottom: 0.6rem; }
+.summary-item { align-items: flex-start; }
 .summary-name { color: var(--text); }
 .summary-qty { color: var(--muted); margin-left: 0.3rem; font-size: 0.78rem; }
-.summary-price { font-weight: 500; color: var(--text); }
+.summary-price { font-weight: 500; color: var(--text); white-space: nowrap; margin-left: 0.75rem; }
+.summary-item-main { flex: 1; }
+.summary-item-controls { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; }
+.summary-qty-btn {
+  width: 22px; height: 22px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--olive-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.summary-qty-btn:hover { background: var(--cream); }
+.summary-qty-num { font-size: 0.82rem; min-width: 1.1rem; text-align: center; }
+.summary-remove-btn {
+  background: none;
+  border: none;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  margin-left: 0.4rem;
+  text-decoration: underline;
+}
+.summary-remove-btn:hover { color: #7f1d1d; }
 .summary-total {
   display: flex;
   justify-content: space-between;
@@ -369,9 +396,17 @@ function fmt(n) { return (n||0).toFixed(2).replace('.', ',') + ' €'; }
 function renderSummary() {
   const items = document.getElementById('summary-items');
   const subtotal = cart.reduce((s, i) => s + i.qty * i.price, 0);
-  items.innerHTML = cart.map(i => `
+  items.innerHTML = cart.map((i, idx) => `
     <div class="summary-item">
-      <span class="summary-name">${escHtml(i.name)}<span class="summary-qty">× ${i.qty}</span></span>
+      <div class="summary-item-main">
+        <span class="summary-name">${escHtml(i.name)}</span>
+        <div class="summary-item-controls">
+          <button type="button" class="summary-qty-btn" onclick="checkoutUpdateQty(${idx},-1)" aria-label="Menge verringern">−</button>
+          <span class="summary-qty-num">${i.qty}</span>
+          <button type="button" class="summary-qty-btn" onclick="checkoutUpdateQty(${idx},1)" aria-label="Menge erhöhen">+</button>
+          <button type="button" class="summary-remove-btn" onclick="checkoutRemoveItem(${idx})">✕ Entfernen</button>
+        </div>
+      </div>
       <span class="summary-price">${fmt(i.qty * i.price)}</span>
     </div>
   `).join('');
@@ -602,6 +637,36 @@ async function initCheckout() {
       '<br><br><a href="https://wa.me/4915906342354?text=Hallo%2C%20die%20Bestellung%20auf%20keby.shop%20klappt%20bei%20mir%20nicht." target="_blank" rel="noopener" style="display:inline-block;background:#25d366;color:#fff;padding:0.4rem 0.9rem;border-radius:20px;text-decoration:none;font-weight:600;margin-right:0.6rem">💬 Per WhatsApp bestellen</a>' +
       '<a href="/" style="color:#3d6b2a;font-weight:600">← Zurück zum Shop</a>';
   }
+}
+
+// Sepette miktar değiştir / ürün kaldır — sonra Stripe session'ı yeni tutarla yenile
+function _emptyCartAndBail() {
+  try { localStorage.removeItem('keby_cart'); } catch(e) {}
+  try { sessionStorage.removeItem('keby_checkout'); } catch(e) {}
+  if (_stripeCheckout) { try { _stripeCheckout.destroy(); } catch(e) {} _stripeCheckout = null; }
+  document.getElementById('summary-items').innerHTML = '';
+  document.getElementById('stripe-checkout-mount').innerHTML =
+    '<div class="error-box">Sepet boş. <a href="/" style="color:#3d6b2a;font-weight:600">Alışverişe dön →</a></div>';
+}
+
+function checkoutUpdateQty(idx, delta) {
+  if (!cart[idx]) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e) {}
+  if (!cart.length) { _emptyCartAndBail(); return; }
+  renderSummary();
+  reloadCheckout();
+}
+
+function checkoutRemoveItem(idx) {
+  if (!cart[idx]) return;
+  if (!confirm('"' + cart[idx].name + '" aus dem Warenkorb entfernen?')) return;
+  cart.splice(idx, 1);
+  try { localStorage.setItem('keby_cart', JSON.stringify(cart)); } catch(e) {}
+  if (!cart.length) { _emptyCartAndBail(); return; }
+  renderSummary();
+  reloadCheckout();
 }
 
 // Kupon değişince Stripe ödeme formunu yeniden oluştur (yeni indirimli session)

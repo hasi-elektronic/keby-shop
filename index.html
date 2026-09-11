@@ -1893,6 +1893,22 @@ body { color: #1a1a14; }
   white-space: nowrap;
 }
 .btn-addcart:hover { background: var(--olive); }
+.btn-addcart.is-disabled { background: #9ca3af !important; cursor: not-allowed; opacity: 0.7; }
+.btn-addcart.is-disabled:hover { background: #9ca3af !important; }
+.prod-soldout-badge {
+  position: absolute;
+  top: 0.6rem; right: 0.6rem;
+  background: #dc2626;
+  color: white;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 2px;
+  z-index: 3;
+}
+.prod-card.is-soldout .prod-carousel { filter: grayscale(0.35); }
 
 @media (max-width: 860px) {
   #produkte { padding: 2rem 0.875rem !important; }

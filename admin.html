@@ -966,6 +966,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         <div class="field">
           <label class="flabel">Stok</label>
           <input id="pf_stock" class="finput" type="number">
+          <button type="button" class="btn btn-sm" style="margin-top:0.4rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;width:100%" onclick="markModalSoldOut()">🔴 Als ausverkauft markieren</button>
         </div>
         <div class="field">
           <label class="flabel">Durum</label>
@@ -1722,6 +1723,51 @@ async function loadProducts() {
   } catch (e) { toast(e.message, 'err'); }
 }
 
+// Modal içindeki hızlı "ausverkauft" butonu — mevcut ürünü direkt işaretler ve modalı kapatır
+async function markModalSoldOut() {
+  if (!editingProduct) { toast('Önce mevcut bir ürünü açın', 'err'); return; }
+  await toggleSoldOut(editingProduct.id);
+  closeProdModal();
+}
+
+// Tek tıkla "Ausverkauft" / "Wieder verfügbar" — Kader kendisi kullanabilsin diye
+async function toggleSoldOut(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const label = p.name_de || p.name_tr || p.id;
+
+  if ((p.stock || 0) > 0) {
+    if (!confirm(`"${label}" als AUSVERKAUFT markieren?\n\nAktueller Bestand (${p.stock} Stück) wird auf 0 gesetzt. Der Artikel wird sofort auf der Website als "Ausverkauft" angezeigt und kann nicht mehr bestellt werden.`)) return;
+    try {
+      const r = await fetch(API + '/api/stock/adjust', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: id, qty: -(p.stock || 0), reason: 'Als ausverkauft markiert (Admin)', type: 'korrektur' })
+      });
+      const d = await r.json();
+      if (!d.success) { toast('Fehler: ' + (d.error || 'Unbekannt'), 'err'); return; }
+      toast('🔴 "' + label + '" ist jetzt als ausverkauft markiert', 'ok');
+      await loadProducts();
+    } catch (e) { toast('Fehler: ' + e.message, 'err'); }
+  } else {
+    const qty = prompt(`Neuer Lagerbestand für "${label}":\n\n(Wie viele Stück sind jetzt wieder verfügbar?)`, '');
+    if (qty === null) return;
+    const n = parseInt(qty, 10);
+    if (isNaN(n) || n <= 0) { toast('Bitte eine gültige Zahl eingeben', 'err'); return; }
+    try {
+      const r = await fetch(API + '/api/stock/adjust', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: id, qty: n, reason: 'Wieder verfügbar gemeldet (Admin)', type: 'zugang' })
+      });
+      const d = await r.json();
+      if (!d.success) { toast('Fehler: ' + (d.error || 'Unbekannt'), 'err'); return; }
+      toast('✅ "' + label + '" ist wieder verfügbar (' + d.after + ' Stück)', 'ok');
+      await loadProducts();
+    } catch (e) { toast('Fehler: ' + e.message, 'err'); }
+  }
+}
+
 async function loadOrders() {
   try {
     const d = await api('/api/orders');
@@ -1866,10 +1912,15 @@ function renderProducts() {
         <div class="text-muted text-sm">${escapeHtml(p.name_de || '')}</div>
       </td>
       <td><strong>€${(p.price||0).toFixed(2)}</strong><div class="text-muted text-sm">${p.mwst||'—'}</div></td>
-      <td>${p.stock != null ? p.stock : '—'} ${p.stock < 10 ? '<span class="badge badge-low">az</span>' : ''}</td>
+      <td>${p.stock != null ? p.stock : '—'} ${p.stock < 10 && p.stock > 0 ? '<span class="badge badge-low">az</span>' : ''}</td>
       <td>${p.active ? '<span class="badge badge-ok">Aktif</span>' : '<span class="badge badge-off">Pasif</span>'}</td>
       <td>${(p.images||[]).length}</td>
-      <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openProductModal('${p.id}')">Düzenle</button></td>
+      <td style="white-space:nowrap">
+        ${(p.stock||0) > 0
+          ? `<button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="event.stopPropagation();toggleSoldOut('${p.id}')">🔴 Ausverkauft melden</button>`
+          : `<button class="btn btn-sm" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0" onclick="event.stopPropagation();toggleSoldOut('${p.id}')">✅ Wieder verfügbar</button>`}
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openProductModal('${p.id}')">Düzenle</button>
+      </td>
     </tr>
   `).join('') || '<tr><td colspan="7" class="text-center text-muted" style="padding:2rem">Noch keine Produkte. Mit "+ Neues Produkt" hinzufügen.</td></tr>';
 }

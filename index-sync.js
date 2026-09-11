@@ -66,6 +66,37 @@
         `event.preventDefault();event.stopPropagation();quickAdd('${name}',${p.price},'${IMG}${imgs[0]}${V}')`
       );
     }
+
+    // Stock / sold-out handling
+    const carousel = card.querySelector('.prod-carousel');
+    const existingBadge = carousel ? carousel.querySelector('.prod-soldout-badge') : null;
+    if ((p.stock || 0) === 0) {
+      card.classList.add('is-soldout');
+      if (carousel && !existingBadge) {
+        const sb = document.createElement('span');
+        sb.className = 'prod-soldout-badge';
+        sb.setAttribute('data-tr', 'TÜKENDİ');
+        sb.setAttribute('data-de', 'AUSVERKAUFT');
+        sb.textContent = lang === 'de' ? 'AUSVERKAUFT' : 'TÜKENDİ';
+        carousel.appendChild(sb);
+      }
+      if (addBtn) {
+        addBtn.setAttribute('onclick', 'event.preventDefault();event.stopPropagation();');
+        addBtn.classList.add('is-disabled');
+        addBtn.setAttribute('data-tr', 'Tükendi');
+        addBtn.setAttribute('data-de', 'Ausverkauft');
+        addBtn.textContent = lang === 'de' ? 'Ausverkauft' : 'Tükendi';
+      }
+    } else {
+      card.classList.remove('is-soldout');
+      if (existingBadge) existingBadge.remove();
+      if (addBtn) {
+        addBtn.classList.remove('is-disabled');
+        addBtn.setAttribute('data-tr', '+ Sepet');
+        addBtn.setAttribute('data-de', '+ Warenkorb');
+        addBtn.textContent = lang === 'de' ? '+ Warenkorb' : '+ Sepet';
+      }
+    }
   }
 
   async function run() {
